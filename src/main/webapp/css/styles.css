@@ -1,0 +1,1918 @@
+/* =============================================
+   HR Intranet Portal - Custom Styles
+   ============================================= */
+
+/* CSS Variables - IEEE Theme */
+:root {
+    --primary-color: #00629B;
+    --ieee-blue: #00629B;
+    --ieee-light-blue: #0084CA;
+    --ieee-dark-blue: #003C71;
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --info-color: #2196F3;
+    --danger-color: #F44336;
+    --dark-color: #263238;
+    --light-color: #FAFAFA;
+    --ieee-gray: #757575;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --border-radius: 4px;
+    --transition: all 0.3s ease;
+    
+    /* Override Bootstrap primary colors with IEEE colors */
+    --bs-primary: #00629B;
+    --bs-primary-rgb: 0, 98, 155;
+}
+
+/* Base Styles - IEEE Typography */
+body {
+    font-family: 'Roboto', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: #FFFFFF;
+    color: #263238;
+    line-height: 1.6;
+}
+
+/* Bootstrap Overrides for IEEE Branding */
+.bg-primary {
+    background-color: #00629B !important;
+}
+
+.btn-primary {
+    background-color: #00629B;
+    border-color: #00629B;
+}
+
+.btn-primary:hover {
+    background-color: #0084CA;
+    border-color: #0084CA;
+}
+
+.btn-primary:active,
+.btn-primary:focus {
+    background-color: #003C71;
+    border-color: #003C71;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Navigation */
+.navbar {
+    padding: 0.75rem 0;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem !important;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    margin: 0 0.25rem;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hero Carousel */
+.carousel-section {
+    background-color: var(--dark-color);
+}
+
+.carousel-placeholder {
+    height: 450px;
+    background: linear-gradient(135deg, #003C71 0%, #00629B 100%);
+}
+
+.carousel-item img {
+    height: 450px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.carousel-caption {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 2rem;
+    text-align: left;
+}
+
+.carousel-caption h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-caption p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 600px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+    opacity: 0.8;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+.carousel-indicators [data-bs-target] {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: 0 6px;
+}
+
+/* Quick Stats Bar */
+.stats-bar {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Section Styles */
+.section-header {
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.section-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+/* New Joiner Cards */
+.joiner-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition);
+    height: 100%;
+    border: 1px solid #e0e0e0;
+}
+
+.joiner-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-5px);
+}
+
+.joiner-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #e9ecef;
+}
+
+.joiner-image-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #003C71 0%, #00629B 100%);
+    color: white;
+    font-size: 4rem;
+}
+
+.joiner-content {
+    padding: 1.5rem;
+}
+
+.joiner-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+}
+
+.joiner-position {
+    font-size: 1rem;
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.joiner-department {
+    display: inline-block;
+    background-color: #e8f4fd;
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.joiner-date {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.joiner-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Holiday Cards */
+.holiday-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+    border-left: 4px solid var(--warning-color);
+}
+
+.holiday-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(5px);
+}
+
+.holiday-date-box {
+    min-width: 70px;
+    text-align: center;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    border-radius: var(--border-radius);
+    color: white;
+}
+
+.holiday-day {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.holiday-month {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.holiday-content {
+    flex: 1;
+}
+
+.holiday-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+}
+
+.holiday-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+}
+
+.holiday-image {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+}
+
+/* Announcement Cards */
+.announcement-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+    border-left: 4px solid var(--info-color);
+}
+
+.announcement-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.announcement-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.announcement-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.announcement-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.announcement-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.announcement-image {
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin-bottom: 0.75rem;
+    max-height: 150px;
+    object-fit: cover;
+}
+
+.announcement-meta {
+    font-size: 0.8rem;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.empty-state h5 {
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* Error State */
+.error-state {
+    text-align: center;
+    padding: 2rem;
+    background: #fff5f5;
+    border-radius: var(--border-radius);
+    border: 1px solid #ffcccc;
+}
+
+.error-state-icon {
+    font-size: 2.5rem;
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+}
+
+/* Footer */
+.footer {
+    border-top: 1px solid #333;
+}
+
+/* Badge Styles */
+.badge-new {
+    background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .carousel-item img,
+    .carousel-placeholder {
+        height: 350px;
+    }
+    
+    .carousel-caption h3 {
+        font-size: 1.5rem;
+    }
+    
+    .carousel-caption p {
+        font-size: 1rem;
+    }
+    
+    .stat-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.75rem 0;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    #announcements {
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .carousel-item img,
+    .carousel-placeholder {
+        height: 250px;
+    }
+    
+    .carousel-caption {
+        padding: 1rem;
+    }
+    
+    .carousel-caption h3 {
+        font-size: 1.25rem;
+    }
+    
+    .carousel-caption p {
+        font-size: 0.9rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+    }
+    
+    .holiday-card {
+        flex-wrap: wrap;
+    }
+    
+    .holiday-image {
+        width: 100%;
+        height: 150px;
+        order: -1;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .carousel-section,
+    .stats-bar,
+    .footer {
+        display: none;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .joiner-card,
+    .holiday-card,
+    .announcement-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Selection Color */
+::selection {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* =============================================
+   BREAKING NEWS TICKER
+   ============================================= */
+
+.breaking-news-bar {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 0.5rem 0;
+    position: relative;
+    z-index: 1000;
+    animation: slideDown 0.5s ease-out;
+    overflow: hidden;
+}
+
+.breaking-news-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.breaking-label {
+    background: white;
+    color: #dc3545;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    animation: pulse 2s infinite;
+}
+
+.breaking-ticker {
+    flex: 1;
+    overflow: hidden;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.breaking-ticker-content {
+    display: flex;
+    gap: 3rem;
+    animation: tickerScroll 20s linear infinite;
+    white-space: nowrap;
+}
+
+.breaking-ticker-content span {
+    font-weight: 500;
+    display: inline-block;
+}
+
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.breaking-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.breaking-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* =============================================
+   EVENT COUNTDOWN BANNER
+   ============================================= */
+
+.countdown-banner {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    padding: 1rem 0;
+}
+
+.countdown-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.countdown-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.countdown-icon {
+    font-size: 2.5rem;
+    opacity: 0.9;
+}
+
+.countdown-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.countdown-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.countdown-timer {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.countdown-unit {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 70px;
+}
+
+.countdown-value {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.countdown-unit-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+/* =============================================
+   QUICK LINKS PANEL
+   ============================================= */
+
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.quick-link-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.5rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--dark-color);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.quick-link-item:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-link-item i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.quick-link-item span {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.quick-link-hidden {
+    display: none;
+}
+
+.quick-link-show-more {
+    grid-column: 1 / -1;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    padding: 0;
+    background: linear-gradient(135deg, var(--primary-color), #0084CA);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-link-show-more:hover {
+    background: linear-gradient(135deg, #003C71, var(--primary-color));
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-link-show-more i {
+    transition: transform 0.3s ease;
+}
+
+/* =============================================
+   CELEBRATIONS (BIRTHDAYS & ANNIVERSARIES)
+   ============================================= */
+
+.celebration-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 0.75rem;
+    transition: var(--transition);
+}
+
+.celebration-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.celebration-card.birthday {
+    border-left: 3px solid #dc3545;
+}
+
+.celebration-card.anniversary {
+    border-left: 3px solid #6f42c1;
+}
+
+.celebration-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e9ecef;
+}
+
+.celebration-avatar-placeholder {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.celebration-avatar-placeholder.birthday {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.celebration-avatar-placeholder.anniversary {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+.celebration-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.celebration-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--dark-color);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.celebration-detail {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+}
+
+.celebration-date {
+    font-size: 0.75rem;
+    color: #999;
+    white-space: nowrap;
+}
+
+.celebration-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.celebration-badge.birthday {
+    background: #ffeef0;
+    color: #dc3545;
+}
+
+.celebration-badge.anniversary {
+    background: #f3e8ff;
+    color: #6f42c1;
+}
+
+/* ========================================
+   UNIFIED TEAM UPDATES SECTION
+   (Joiners + Celebrations Combined)
+======================================== */
+
+/* Team Updates Horizontal Scroll Wrapper */
+.team-updates-scroll-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.team-updates-scroll-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: scrollTeamUpdates 120s linear infinite;
+}
+
+.team-updates-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollTeamUpdates {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Unified Team Card Wrapper */
+.team-card-wrapper {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+/* Team Card Base Styles */
+.team-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 450px;
+    height: 100%;
+}
+
+.team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Team Card Image */
+.team-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #e9ecef;
+}
+
+.team-card-image-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 4rem;
+}
+
+.team-card-image-placeholder.joiner {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.team-card-image-placeholder.birthday {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.team-card-image-placeholder.anniversary {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+/* Team Card Content */
+.team-card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-card-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.team-card-position {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+}
+
+.team-card-department {
+    display: inline-block;
+    background-color: #e8f4fd;
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.team-card-date {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.team-card-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+}
+
+/* Badge for NEW joiners */
+.badge-new {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Celebration Badge (Birthday/Anniversary) */
+.celebration-badge-top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.celebration-badge-top.birthday {
+    background: #ffeef0;
+    color: #dc3545;
+}
+
+.celebration-badge-top.anniversary {
+    background: #f3e8ff;
+    color: #6f42c1;
+}
+
+/* OLD celebration section styles */
+.celebration-card-wrapper {
+    flex-shrink: 0;
+}
+
+.celebration-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #e9ecef;
+}
+
+.celebration-image-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 4rem;
+}
+
+.celebration-image-placeholder.birthday {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.celebration-image-placeholder.anniversary {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+.celebration-content {
+    padding: 1.5rem;
+}
+
+.celebration-card-wrapper .celebration-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.celebration-department {
+    display: inline-block;
+    background-color: #e8f4fd;
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.celebration-card-wrapper .celebration-date {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.celebration-badge-top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.celebration-badge-top.birthday {
+    background: #ffeef0;
+    color: #dc3545;
+}
+
+.celebration-badge-top.anniversary {
+    background: #f3e8ff;
+    color: #6f42c1;
+}
+
+/* Horizontal scroll for celebrations */
+.celebrations-scroll-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.celebrations-scroll-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: scrollCelebrations 120s linear infinite;
+}
+
+.celebrations-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+.celebrations-scroll-track .celebration-card-wrapper {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+@keyframes scrollCelebrations {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Section banner cards for horizontal scroll */
+.section-banner-card {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+.section-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--ieee-dark-blue) 100%);
+    border-radius: var(--border-radius);
+    height: 100%;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+}
+
+.section-banner i {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.section-banner h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Celebrations list auto-scroll animation (legacy for sidebar - not used) */
+.celebrations-list {
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+.celebration-auto-scroll {
+    animation: scrollCelebrationsVertical 15s ease-in-out infinite;
+}
+
+.celebration-auto-scroll:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollCelebrationsVertical {
+    0%, 8% {
+        transform: translateY(0);
+    }
+    42%, 58% {
+        transform: translateY(calc(-100% + 400px));
+    }
+    92%, 100% {
+        transform: translateY(0);
+    }
+}
+
+/* =============================================
+   EMERGENCY CONTACTS
+   ============================================= */
+
+.emergency-card {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    color: white;
+}
+
+.emergency-header {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.emergency-contacts {
+    padding: 0.75rem;
+}
+
+.emergency-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.emergency-contact:last-child {
+    margin-bottom: 0;
+}
+
+.emergency-contact i {
+    font-size: 1.25rem;
+    width: 30px;
+    text-align: center;
+}
+
+.emergency-contact div {
+    display: flex;
+    flex-direction: column;
+}
+
+.emergency-contact strong {
+    font-size: 0.85rem;
+}
+
+.emergency-contact span {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.emergency-contact-hidden {
+    display: none;
+}
+
+.emergency-show-more {
+    width: 40px;
+    height: 40px;
+    margin: 0.5rem auto 0;
+    padding: 0;
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emergency-show-more:hover {
+    background: linear-gradient(135deg, #c82333, #bd2130);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.emergency-show-more i {
+    transition: transform 0.3s ease;
+}
+
+/* =============================================
+   DARK MODE STYLES
+   ============================================= */
+
+body.dark-mode {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .navbar {
+    background: #16213e !important;
+}
+
+body.dark-mode .stats-bar {
+    background: #16213e !important;
+    border-color: #2a2a4a;
+}
+
+body.dark-mode .stat-number {
+    color: #fff;
+}
+
+body.dark-mode .stat-label {
+    color: #aaa;
+}
+
+body.dark-mode .section-title {
+    color: #fff;
+}
+
+body.dark-mode .joiner-card,
+body.dark-mode .holiday-card,
+body.dark-mode .announcement-card,
+body.dark-mode .celebration-card,
+body.dark-mode .quick-link-item {
+    background: #16213e;
+    border-color: #2a2a4a;
+}
+
+body.dark-mode .joiner-name,
+body.dark-mode .holiday-title,
+body.dark-mode .announcement-title,
+body.dark-mode .celebration-name {
+    color: #fff;
+}
+
+body.dark-mode .joiner-description,
+body.dark-mode .holiday-description,
+body.dark-mode .announcement-description {
+    color: #aaa;
+}
+
+body.dark-mode .joiner-department {
+    background: #2a2a4a;
+    color: #8ab4f8;
+}
+
+body.dark-mode .quick-link-item {
+    color: #e0e0e0;
+}
+
+body.dark-mode .quick-link-item:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+body.dark-mode .empty-state {
+    background: #16213e;
+}
+
+body.dark-mode .empty-state h5 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .footer {
+    background: #0f0f1a !important;
+}
+
+body.dark-mode .scroll-wrapper::before {
+    background: linear-gradient(to bottom, #1a1a2e, transparent);
+}
+
+body.dark-mode .scroll-wrapper::after {
+    background: linear-gradient(to top, #1a1a2e, transparent);
+}
+
+/* =============================================
+   TV / KIOSK MODE STYLES
+   ============================================= */
+
+body.tv-mode {
+    overflow: hidden;
+}
+
+body.tv-mode .navbar {
+    display: none !important;
+}
+
+body.tv-mode .footer {
+    display: none !important;
+}
+
+body.tv-mode .stats-bar {
+    padding: 0.5rem 0;
+}
+
+body.tv-mode .stat-number {
+    font-size: 2rem;
+}
+
+body.tv-mode .stat-label {
+    font-size: 1rem;
+}
+
+body.tv-mode .stat-item i {
+    font-size: 1.75rem !important;
+}
+
+body.tv-mode .carousel-item img,
+body.tv-mode .carousel-placeholder {
+    height: 30vh;
+}
+
+body.tv-mode .carousel-caption h3 {
+    font-size: 1.75rem;
+}
+
+body.tv-mode .carousel-caption p {
+    font-size: 1rem;
+}
+
+body.tv-mode .section-title {
+    font-size: 1.25rem;
+}
+
+body.tv-mode .section-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.25rem;
+}
+
+body.tv-mode .section-header {
+    margin-bottom: 0.75rem !important;
+    padding-bottom: 0.5rem;
+}
+
+body.tv-mode .joiner-name {
+    font-size: 1.1rem;
+}
+
+body.tv-mode .joiner-position {
+    font-size: 0.95rem;
+}
+
+body.tv-mode .joiner-department {
+    font-size: 0.8rem;
+}
+
+body.tv-mode .joiner-date {
+    font-size: 0.8rem;
+}
+
+body.tv-mode .joiner-description {
+    font-size: 0.85rem;
+}
+
+body.tv-mode .joiner-card-wrapper {
+    width: 280px;
+}
+
+body.tv-mode .holiday-day {
+    font-size: 1.5rem;
+}
+
+body.tv-mode .holiday-month {
+    font-size: 0.8rem;
+}
+
+body.tv-mode .holiday-title {
+    font-size: 1rem;
+}
+
+body.tv-mode .holiday-description {
+    font-size: 0.85rem;
+}
+
+body.tv-mode .announcement-title {
+    font-size: 1rem;
+}
+
+body.tv-mode .announcement-description {
+    font-size: 0.85rem;
+}
+
+body.tv-mode .announcement-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+}
+
+body.tv-mode .announcement-card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+body.tv-mode .celebration-card {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+body.tv-mode .celebration-name {
+    font-size: 0.9rem;
+}
+
+body.tv-mode .celebration-avatar,
+body.tv-mode .celebration-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+}
+
+body.tv-mode .holiday-card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+body.tv-mode .holiday-date-box {
+    min-width: 60px;
+}
+
+/* TV Mode layout - single screen view */
+body.tv-mode {
+    overflow: hidden;
+    height: 100vh;
+}
+
+body.tv-mode .breaking-news-bar {
+    display: flex !important;
+    font-size: 1.2rem;
+    padding: 0.75rem 0;
+}
+
+body.tv-mode .breaking-label {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+body.tv-mode .breaking-ticker-content {
+    animation-duration: 30s;
+}
+
+body.tv-mode .countdown-banner {
+    display: flex !important;
+    padding: 0.5rem 0;
+}
+
+body.tv-mode main {
+    padding: 1rem 0;
+    overflow: visible;
+}
+
+body.tv-mode main .container {
+    max-width: 100%;
+    padding: 0 2rem;
+}
+
+body.tv-mode main .container > .row {
+    display: block;
+}
+
+body.tv-mode .col-lg-8,
+body.tv-mode .col-lg-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    width: 100%;
+}
+
+body.tv-mode #joiners {
+    margin-bottom: 1.5rem !important;
+}
+
+body.tv-mode #holidays {
+    margin-bottom: 1rem !important;
+}
+
+body.tv-mode .holiday-list {
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+body.tv-mode .tv-active .holiday-list {
+    animation: slowScrollContent 60s linear infinite;
+}
+
+body.tv-mode #quicklinks,
+body.tv-mode #emergency {
+    display: none !important;
+}
+
+body.tv-mode #celebrations {
+    margin-bottom: 1rem !important;
+}
+
+body.tv-mode .celebrations-list {
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+body.tv-mode .tv-active .celebrations-list {
+    animation: slowScrollContent 60s linear infinite;
+}
+
+body.tv-mode #announcements {
+    /* display controlled by rotation classes */
+}
+
+body.tv-mode .announcements-scroll-wrapper {
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+body.tv-mode .tv-active .announcements-scroll-track {
+    animation: slowScrollContent 60s linear infinite;
+}
+
+@keyframes slowScrollContent {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+@keyframes scrollAnnouncementsTV {
+    0%, 15% {
+        transform: translateY(0);
+    }
+    40%, 60% {
+        transform: translateY(calc(-50% + 150px));
+    }
+    85%, 100% {
+        transform: translateY(0);
+    }
+}
+
+body.tv-mode .stats-bar {
+    padding: 0.5rem 0;
+}
+
+body.tv-mode .countdown-banner {
+    padding: 0.5rem 0;
+}
+
+body.tv-mode .countdown-icon {
+    font-size: 1.5rem;
+}
+
+body.tv-mode .countdown-title {
+    font-size: 1rem;
+}
+
+body.tv-mode .countdown-unit {
+    padding: 0.5rem 0.75rem;
+    min-width: 55px;
+}
+
+body.tv-mode .countdown-value {
+    font-size: 1.25rem;
+}
+
+body.tv-mode .countdown-unit-label {
+    font-size: 0.65rem;
+}
+
+/* TV Mode Exit Button */
+.tv-exit-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+}
+
+body.tv-mode .tv-exit-btn {
+    display: block;
+}
+
+.tv-exit-btn:hover,
+body.tv-mode:hover .tv-exit-btn {
+    opacity: 1;
+}
+
+/* TV Mode Info Badge */
+.tv-info-badge {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: none;
+}
+
+body.tv-mode .tv-info-badge {
+    display: block;
+}
+
+/* Auto-scroll containers */
+.scroll-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.scroll-wrapper::before,
+.scroll-wrapper::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 30px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.scroll-wrapper::before {
+    top: 0;
+    background: linear-gradient(to bottom, #f5f7fa, transparent);
+}
+
+.scroll-wrapper::after {
+    bottom: 0;
+    background: linear-gradient(to top, #f5f7fa, transparent);
+}
+
+/* Horizontal scroll for joiners */
+.joiners-scroll-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.joiners-scroll-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: scrollJoiners 60s linear infinite;
+}
+
+.joiners-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+.joiners-scroll-track .joiner-card-wrapper {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+@keyframes scrollJoiners {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Vertical scroll for announcements */
+.announcements-scroll-wrapper {
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+.announcements-scroll-track {
+    animation: scrollAnnouncements 20s linear infinite;
+}
+
+.announcements-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollAnnouncements {
+    0%, 5% {
+        transform: translateY(0);
+    }
+    45%, 55% {
+        transform: translateY(calc(-50% + 200px));
+    }
+    95%, 100% {
+        transform: translateY(0);
+    }
+}
+
+/* TV Mode specific scroll adjustments */
+body.tv-mode .joiners-scroll-track {
+    animation-duration: 20s;
+}
+
+/* TV Mode - larger cards */
+body.tv-mode .joiner-card {
+    margin-bottom: 1.5rem;
+}
+
+/* Fullscreen API styles */
+:-webkit-full-screen {
+    background: #f5f7fa;
+}
+
+:-moz-full-screen {
+    background: #f5f7fa;
+}
+
+:fullscreen {
+    background: #f5f7fa;
+}
+
+/* Sections with no data - hidden in all modes */
+.no-data,
+body.tv-mode .no-data {
+    display: none !important;
+}
+
+/* TV Mode Section Rotation */
+body.tv-mode #joiners:not(.no-data),
+body.tv-mode #holidays:not(.no-data),
+body.tv-mode #celebrations:not(.no-data),
+body.tv-mode #announcements:not(.no-data) {
+    display: none; /* Hidden by default, shown by .tv-active */
+}
+
+body.tv-mode .tv-hidden {
+    display: none !important;
+}
+
+body.tv-mode .tv-active {
+    display: block !important;
+    animation: fadeIn 0.5s ease-in;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

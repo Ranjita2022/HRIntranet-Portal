@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery Management - Admin Panel</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        .folder-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #00629B;
+        }
+        
+        .folder-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .folder-card.inactive {
+            opacity: 0.6;
+            border-left-color: #6c757d;
+        }
+        
+        .photo-count-badge {
+            background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.active {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .status-badge.inactive {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .action-buttons .btn {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+        
+        .scan-section {
+            background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .folder-path {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-images me-2"></i>Gallery Management
+                </h1>
+                <p class="text-muted">Manage photo gallery folders for kiosk display</p>
+            </div>
+            <div class="header-actions">
+                <a href="gallery.html" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-display me-2"></i>Preview Gallery
+                </a>
+            </div>
+        </div>
+
+        <!-- Scan Section -->
+        <div class="scan-section">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-3"><i class="bi bi-folder-plus me-2"></i>Gallery Folder Management</h4>
+                    <p class="mb-0">Create new folders, upload images, or scan <code>images/gallery/</code> directory.</p>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <button class="btn btn-light me-2" onclick="showCreateFolderModal()">
+                        <i class="bi bi-folder-plus me-2"></i>Create Folder
+                    </button>
+                    <button class="btn btn-light" onclick="scanFolders()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Scan Folders
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Folders</h6>
+                                <h2 class="mb-0" id="totalFolders">0</h2>
+                            </div>
+                            <div class="text-primary">
+                                <i class="bi bi-folder fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Active Folders</h6>
+                                <h2 class="mb-0" id="activeFolders">0</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-check-circle fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Photos</h6>
+                                <h2 class="mb-0" id="totalPhotos">0</h2>
+                            </div>
+                            <div class="text-info">
+                                <i class="bi bi-images fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Folders List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">Gallery Folders</h5>
+            </div>
+            <div class="card-body">
+                <div id="foldersContainer">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading gallery folders...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Folder Modal -->
+    <div class="modal fade" id="editFolderModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editFolderId">
+                    <div class="mb-3">
+                        <label class="form-label">Folder Name</label>
+                        <input type="text" class="form-control" id="editFolderName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Display Title</label>
+                        <input type="text" class="form-control" id="editDisplayTitle">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="editDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="editDisplayOrder" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveFolder()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Folder Modal -->
+    <div class="modal fade" id="createFolderModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-folder-plus me-2"></i>Create New Folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Folder Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newFolderName" placeholder="e.g., christmas-2024">
+                        <small class="form-text text-muted">Use lowercase letters, numbers, hyphens, and underscores only</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Display Title</label>
+                        <input type="text" class="form-control" id="newDisplayTitle" placeholder="e.g., Christmas 2024">
+                        <small class="form-text text-muted">Leave empty to auto-generate from folder name</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="newDescription" rows="3" placeholder="Optional description for this folder"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createFolder()">
+                        <i class="bi bi-check-lg me-2"></i>Create Folder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Images Modal -->
+    <div class="modal fade" id="uploadImagesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i>Upload Images</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="uploadFolderId">
+                    <input type="hidden" id="uploadFolderName">
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i><strong>Folder:</strong> <span id="uploadFolderDisplayName"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Images <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="imageFiles" multiple accept="image/*">
+                        <small class="form-text text-muted">
+                            Select multiple images (JPG, PNG, GIF). Max 5MB per file. Images will be automatically numbered sequentially.
+                        </small>
+                    </div>
+                    
+                    <div id="uploadPreview" class="row g-2 mt-2" style="display: none;">
+                        <!-- Image previews will be shown here -->
+                    </div>
+                    
+                    <div id="uploadProgress" style="display: none;">
+                        <div class="progress">
+                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p class="text-center mt-2" id="uploadStatusText">Uploading...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="uploadImages()" id="uploadButton">
+                        <i class="bi bi-upload me-2"></i>Upload Images
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/jquery/jquery-3.7.1.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script src="js/admin-gallery.js"></script>
+    
+    <script>
+        // Load sidebar
+        fetch('admin-sidebar-template.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('sidebar-container').innerHTML = html;
+                setActivePage('gallery');
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Announcements - IEEE Admin Panel</title>
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/admin-common.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+            <h3><i class="bi bi-shield-check"></i> Admin</h3>
+            <p>HR Portal Management</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="admin-panel.html" class="menu-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="menu-section">Content Management</div>
+            
+            <a href="admin-employees.html" class="menu-item">
+                <i class="bi bi-people-fill"></i>
+                <span>Employees</span>
+            </a>
+            
+            <a href="admin-announcements.html" class="menu-item">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Announcements</span>
+            </a>
+            
+            <a href="admin-holidays.html" class="menu-item">
+                <i class="bi bi-calendar-event-fill"></i>
+                <span>Holidays</span>
+            </a>
+            
+            <a href="admin-carousel.html" class="menu-item">
+                <i class="bi bi-images"></i>
+                <span>Carousel Slides</span>
+            </a>
+            
+            <a href="admin-gallery.html" class="menu-item">
+                <i class="bi bi-folder2-open"></i>
+                <span>Gallery</span>
+            </a>
+            
+            <a href="admin-quick-links.html" class="menu-item">
+                <i class="bi bi-link-45deg"></i>
+                <span>Quick Links</span>
+            </a>
+            
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+            
+            <div class="menu-section">System</div>
+            
+            <a href="admin-audit.html" class="menu-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Audit Logs</span>
+            </a>
+            
+            <div class="menu-item" onclick="window.open('index.html', '_blank')">
+                <i class="bi bi-eye-fill"></i>
+                <span>View Portal</span>
+            </div>
+            
+            <div class="menu-item" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h1 id="pageTitle">Manage Announcements</h1>
+                <p class="text-muted mb-0">Create and manage announcements with images</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">Admin User</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements Section -->
+        <div class="content-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Announcements List</h2>
+                </div>
+                <button class="btn btn-primary" onclick="showAddAnnouncementModal()">
+                    <i class="bi bi-plus-circle"></i> Add Announcement
+                </button>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="announcementsEmptyState" class="text-center py-5" style="display: none;">
+                <i class="bi bi-megaphone" style="font-size: 4rem; color: #ddd;"></i>
+                <h4 class="mt-3">No Announcements Yet</h4>
+                <p class="text-muted">Click "Add Announcement" to create your first announcement</p>
+            </div>
+            
+            <!-- Announcements Table -->
+            <div class="table-responsive">
+                <table id="announcementsTable" class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Title</th>
+                            <th width="110">Type</th>
+                            <th>Description</th>
+                            <th width="120">Publish Date</th>
+                            <th width="120">Expiry Date</th>
+                            <th width="140">Status</th>
+                            <th width="130">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="announcementsTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div class="modal fade" id="announcementModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="announcementModalTitle">Add Announcement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="announcementForm" onsubmit="saveAnnouncement(event)">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementType" class="form-label">Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="announcementType" required>
+                                    <option value="GENERAL">General</option>
+                                    <option value="URGENT">Urgent</option>
+                                    <option value="BREAKING">Breaking News</option>
+                                    <option value="POLICY">Policy</option>
+                                    <option value="EVENT">Event</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementPriority" class="form-label">Priority</label>
+                                <input type="number" class="form-control" id="announcementPriority" min="0" max="10" value="0"
+                                       placeholder="0 = Normal, Higher = More important">
+                                <small class="text-muted">Higher priority announcements appear first</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="announcementTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="announcementTitle" required 
+                                   placeholder="Announcement title" maxlength="500">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="announcementDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="announcementDescription" rows="4" 
+                                      placeholder="Full announcement description"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementPublishDate" class="form-label">Publish Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="announcementPublishDate" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementExpiryDate" class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" id="announcementExpiryDate">
+                                <small class="text-muted">Optional - announcement will hide after this date</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="announcementImage" class="form-label">Image</label>
+                            <input type="file" class="form-control" id="announcementImage" accept="image/*"
+                                   onchange="handleAnnouncementImageSelect(event)">
+                            <small class="text-muted">Maximum 5MB, JPG, PNG, or GIF</small>
+                            
+                            <div id="imagePreviewContainer" class="mt-3" style="display: none;">
+                                <img id="announcementImagePreview" src="" alt="Preview" 
+                                     style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="announcementIsActive" checked>
+                            <label class="form-check-label" for="announcementIsActive">
+                                Active (visible to employees)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Announcement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script src="js/admin-announcements.js"></script>
+    
+    <script>
+        // Initialize AdminAPI
+        AdminAPI.init();
+        
+        // Check authentication
+        if (!AdminAPI.isAuthenticated()) {
+            window.location.href = 'admin-login.html';
+        } else {
+            initPage();
+        }
+        
+        function initPage() {
+            const user = AdminAPI.getCurrentUser();
+            document.getElementById('userName').textContent = user.fullName || user.username;
+            document.getElementById('userAvatar').textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+            
+            // Load announcements data
+            initAnnouncements();
+        }
+        
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>        
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div></body>
+</html>

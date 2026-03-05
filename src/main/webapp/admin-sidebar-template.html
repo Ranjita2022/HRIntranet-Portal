@@ -1,0 +1,89 @@
+<!-- =============================================
+     ADMIN SIDEBAR TEMPLATE
+     Copy this entire sidebar into any new admin page
+     The menu will auto-activate based on current URL
+     ============================================= -->
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+        <h3><i class="bi bi-shield-check"></i>Admin</h3>
+        <p>HR Portal Management</p>
+    </div>
+    
+    <div class="sidebar-menu">
+        <a href="admin-panel.html" class="menu-item">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+        
+        <div class="menu-section">Content Management</div>
+        
+        <a href="admin-employees.html" class="menu-item">
+            <i class="bi bi-people-fill"></i>
+            <span>Employees</span>
+        </a>
+        
+        <a href="admin-announcements.html" class="menu-item">
+            <i class="bi bi-megaphone-fill"></i>
+            <span>Announcements</span>
+        </a>
+        
+        <a href="admin-holidays.html" class="menu-item">
+            <i class="bi bi-calendar-event-fill"></i>
+            <span>Holidays</span>
+        </a>
+        
+        <a href="admin-carousel.html" class="menu-item">
+            <i class="bi bi-images"></i>
+            <span>Carousel Slides</span>
+        </a>
+        
+        <a href="admin-gallery.html" class="menu-item">
+            <i class="bi bi-folder2-open"></i>
+            <span>Gallery</span>
+        </a>
+        
+        <a href="admin-quick-links.html" class="menu-item">
+            <i class="bi bi-link-45deg"></i>
+            <span>Quick Links</span>
+        </a>
+        
+        <a href="admin-emergency.html" class="menu-item">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Emergency Contacts</span>
+        </a>
+        
+        <div class="menu-section">System</div>
+        
+        <a href="admin-audit.html" class="menu-item">
+            <i class="bi bi-journal-text"></i>
+            <span>Audit Logs</span>
+        </a>
+        
+        <div class="menu-item" onclick="window.open('index.html', '_blank')">
+            <i class="bi bi-eye-fill"></i>
+            <span>View Portal</span>
+        </div>
+        
+        <div class="menu-item" onclick="handleLogout()">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+        </div>
+    </div>
+</div>
+
+<!-- =============================================
+     TO ADD A NEW MENU ITEM:
+     1. Add your link in the appropriate section with this format:
+     
+        <a href="admin-your-new-page.html" class="menu-item">
+            <i class="bi bi-your-icon"></i>
+            <span>Your Page Name</span>
+        </a>
+     
+     2. Bootstrap Icons: https://icons.getbootstrap.com/
+     3. The menu will auto-highlight based on current URL
+     4. No need to add "active" class manually
+     ============================================= -->

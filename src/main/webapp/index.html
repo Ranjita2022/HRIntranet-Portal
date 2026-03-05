@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEEE HR Intranet Portal</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <!-- IEEE Fonts -->
+    <link href="vendor/fonts/fonts.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/ieee.png" alt="IEEE Logo" height="35" class="me-2">
+                <span class="fw-bold">HR Portal</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="darkModeBtn" title="Toggle Dark Mode">
+                            <i class="bi bi-moon-fill"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="tvModeBtn" title="TV/Kiosk Mode">
+                            <i class="bi bi-tv me-1"></i>TV Mode
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#joiners">
+                            <i class="bi bi-person-plus me-1"></i>New Joiners
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#holidays">
+                            <i class="bi bi-calendar-event me-1"></i>Holidays
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#announcements">
+                            <i class="bi bi-megaphone me-1"></i>Announcements
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breaking News Ticker -->
+    <div class="breaking-news-bar" id="breakingNewsBar" style="display: none;">
+        <div class="container-fluid">
+            <div class="breaking-news-content">
+                <span class="breaking-label"><i class="bi bi-exclamation-triangle-fill me-1"></i>ALERT</span>
+                <div class="breaking-ticker">
+                    <div class="breaking-ticker-content" id="breakingTickerContent">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+                <button class="breaking-close" id="closeBreakingNews" title="Dismiss">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Carousel Section -->
+    <section id="home" class="carousel-section">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
+            <div class="carousel-indicators" id="carouselIndicators">
+                <!-- Generated dynamically -->
+            </div>
+            <div class="carousel-inner" id="carouselInner">
+                <!-- Loading placeholder -->
+                <div class="carousel-item active">
+                    <div class="carousel-placeholder d-flex align-items-center justify-content-center">
+                        <div class="text-center text-white">
+                            <div class="spinner-border mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Loading carousel...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Quick Stats Bar -->
+    <section class="stats-bar bg-light py-3">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-6 col-md-3">
+                    <div class="stat-item">
+                        <i class="bi bi-person-plus-fill text-success fs-3"></i>
+                        <span class="stat-number" id="joinerCount">0</span>
+                        <span class="stat-label">New Joiners</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-item">
+                        <i class="bi bi-calendar-check-fill text-warning fs-3"></i>
+                        <span class="stat-number" id="holidayCount">0</span>
+                        <span class="stat-label">Upcoming Holidays</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-item">
+                        <i class="bi bi-cake-fill text-danger fs-3"></i>
+                        <span class="stat-number" id="birthdayCount">0</span>
+                        <span class="stat-label">Birthdays This Month</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-item">
+                        <i class="bi bi-megaphone-fill text-info fs-3"></i>
+                        <span class="stat-number" id="announcementCount">0</span>
+                        <span class="stat-label">Announcements</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Countdown Banner -->
+    <section class="countdown-banner" id="countdownBanner" style="display: none;">
+        <div class="container">
+            <div class="countdown-content">
+                <div class="countdown-info">
+                    <i class="bi bi-calendar-event countdown-icon"></i>
+                    <div class="countdown-text">
+                        <span class="countdown-label">UPCOMING EVENT</span>
+                        <h4 class="countdown-title" id="countdownTitle">Event Name</h4>
+                    </div>
+                </div>
+                <div class="countdown-timer" id="countdownTimer">
+                    <div class="countdown-unit">
+                        <span class="countdown-value" id="countdownDays">00</span>
+                        <span class="countdown-unit-label">Days</span>
+                    </div>
+                    <div class="countdown-unit">
+                        <span class="countdown-value" id="countdownHours">00</span>
+                        <span class="countdown-unit-label">Hours</span>
+                    </div>
+                    <div class="countdown-unit">
+                        <span class="countdown-value" id="countdownMinutes">00</span>
+                        <span class="countdown-unit-label">Mins</span>
+                    </div>
+                    <div class="countdown-unit">
+                        <span class="countdown-value" id="countdownSeconds">00</span>
+                        <span class="countdown-unit-label">Secs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Left Column - Team Updates -->
+                <div class="col-lg-8">
+                    <!-- Team Updates Section (Joiners + Celebrations Combined) -->
+                    <section id="teamUpdates" class="mb-5">
+                        <div class="section-header d-flex align-items-center mb-4">
+                            <div class="section-icon bg-primary text-white">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <h2 class="section-title mb-0 ms-3">Team Updates</h2>
+                            <button class="btn btn-sm btn-outline-secondary ms-auto" id="toggleTeamScroll" title="Toggle auto-scroll">
+                                <i class="bi bi-pause-fill"></i>
+                            </button>
+                        </div>
+                        <div class="team-updates-scroll-wrapper">
+                        <div class="team-updates-scroll-track" id="teamUpdatesContainer">
+                            <!-- Loading placeholder -->
+                            <div class="col-12 text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Loading team updates...</p>
+                            </div>
+                        </div>
+                        </div>
+                    </section>
+
+                    <!-- Announcements Section -->
+                    <section id="announcements" class="mb-5">
+                        <div class="section-header d-flex align-items-center mb-4">
+                            <div class="section-icon bg-info text-white">
+                                <i class="bi bi-megaphone"></i>
+                            </div>
+                            <h2 class="section-title mb-0 ms-3">Announcements</h2>
+                            <button class="btn btn-sm btn-outline-secondary ms-auto" id="toggleAnnouncementScroll" title="Toggle auto-scroll">
+                                <i class="bi bi-pause-fill"></i>
+                            </button>
+                        </div>
+                        <div class="announcements-scroll-wrapper">
+                        <div class="announcements-scroll-track" id="announcementsContainer">
+                            <!-- Loading placeholder -->
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Loading announcements...</p>
+                            </div>
+                        </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column - Holidays, Quick Links, Emergency -->
+                <div class="col-lg-4">
+                    <!-- Upcoming Holidays Section -->
+                    <section id="holidays" class="mb-4">
+                        <div class="section-header d-flex align-items-center mb-3">
+                            <div class="section-icon bg-warning text-white" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <h5 class="section-title mb-0 ms-3" style="font-size: 1.1rem;">Upcoming Holidays</h5>
+                        </div>
+                        <div class="holiday-list" id="holidaysContainer">
+                            <!-- Loading placeholder -->
+                            <div class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading holidays...</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Links Panel -->
+                    <section id="quicklinks" class="mb-4">
+                        <div class="section-header d-flex align-items-center mb-3">
+                            <div class="section-icon bg-secondary text-white" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                <i class="bi bi-link-45deg"></i>
+                            </div>
+                            <h5 class="section-title mb-0 ms-3" style="font-size: 1.1rem;">Quick Links</h5>
+                        </div>
+                        <div class="quick-links-grid" id="quickLinksContainer">
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>HR Policies</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-calendar3"></i>
+                                <span>Leave Request</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Employee Directory</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-cash-stack"></i>
+                                <span>Payroll Info</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-heart-pulse"></i>
+                                <span>Benefits</span>
+                            </a>
+                            <a href="#" class="quick-link-item">
+                                <i class="bi bi-headset"></i>
+                                <span>IT Support</span>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- Emergency Contacts -->
+                    <section id="emergency" class="mb-4">
+                        <div class="emergency-card">
+                            <div class="emergency-header">
+                                <i class="bi bi-exclamation-octagon-fill"></i>
+                                <span>Emergency Contacts</span>
+                            </div>
+                            <div class="emergency-contacts">
+                                <div class="emergency-contact">
+                                    <i class="bi bi-telephone-fill"></i>
+                                    <div>
+                                        <strong>Security</strong>
+                                        <span>Ext. 1111</span>
+                                    </div>
+                                </div>
+                                <div class="emergency-contact">
+                                    <i class="bi bi-heart-pulse-fill"></i>
+                                    <div>
+                                        <strong>First Aid</strong>
+                                        <span>Ext. 1122</span>
+                                    </div>
+                                </div>
+                                <div class="emergency-contact">
+                                    <i class="bi bi-tools"></i>
+                                    <div>
+                                        <strong>Facilities</strong>
+                                        <span>Ext. 1133</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- TV Mode Exit Button -->
+    <button class="tv-exit-btn" id="tvExitBtn">
+        <i class="bi bi-x-lg me-2"></i>Exit TV Mode (ESC)
+    </button>
+    
+    <!-- TV Mode Info Badge -->
+    <div class="tv-info-badge" id="tvInfoBadge">
+        <i class="bi bi-tv me-2"></i>
+        <span id="tvClock">--:--</span> | 
+        <span>Auto-refresh: <span id="tvRefreshTimer">--</span>s</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-light py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <img src="images/ieee.png" alt="IEEE Logo" height="28" class="mb-2">
+                    <p class="mb-0">&copy; <span id="currentYear"></span> IEEE. All rights reserved.</p>
+                    <p class="mb-0 small">Institute of Electrical and Electronics Engineers</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <i class="bi bi-clock me-1"></i>
+                        Last updated: <span id="lastUpdated">--</span>
+                    </p>
+                    <p class="mb-0 small mt-1">IEEE HR Intranet Portal</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Error Loading Data
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage">Unable to load data. Please check your configuration.</p>
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="bi bi-info-circle me-2"></i>Troubleshooting:</h6>
+                        <ul class="mb-0">
+                            <li>Verify backend server is running on port 8080</li>
+                            <li>Check database connection in backend logs</li>
+                            <li>Ensure API endpoint is accessible: <code>http://localhost:8080/api/public/portal-data</code></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Retry
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="vendor/jquery/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+    <!-- Main Application -->
+    <script src="js/app.js"></script>
+</body>
+</html>

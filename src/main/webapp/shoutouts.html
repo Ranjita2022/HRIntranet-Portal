@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Shoutouts - IEEE HR Portal</title>
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .shoutout-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 0;
+        }
+        .shoutout-card {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 2.5rem;
+        }
+        .shoutout-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .shoutout-header h1 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .shoutout-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .shoutout-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border-radius: 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .category-badge:hover {
+            background: #667eea;
+            color: white;
+        }
+        .category-badge.active {
+            background: #667eea;
+            color: white;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .btn-shoutout {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-shoutout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="shoutout-page">
+        <div class="container">
+            <div class="shoutout-card">
+                <!-- Success Message -->
+                <div class="success-message" id="successMessage">
+                    <i class="bi bi-check-circle-fill success-icon"></i>
+                    <h2>Shoutout Submitted!</h2>
+                    <p class="text-muted">Your shoutout will appear on the kiosk display immediately.</p>
+                    <button class="btn btn-primary mt-3" onclick="resetForm()">Submit Another</button>
+                </div>
+
+                <!-- Form -->
+                <div id="shoutoutForm">
+                    <div class="shoutout-header">
+                        <i class="bi bi-megaphone-fill shoutout-icon"></i>
+                        <h1>Give a Shoutout!</h1>
+                        <p>Recognize and appreciate your colleagues</p>
+                    </div>
+
+                    <form id="submitShoutoutForm">
+                        <!-- From (Who is giving the shoutout) -->
+                        <div class="mb-4">
+                            <label for="fromEmployee" class="form-label"><i class="bi bi-person-fill text-primary"></i> Your Name</label>
+                            <select class="form-select form-select-lg" id="fromEmployee" required>
+                                <option value="">Who are you?</option>
+                            </select>
+                        </div>
+
+                        <!-- To (Who is receiving the shoutout) -->
+                        <div class="mb-4">
+                            <label for="toEmployee" class="form-label"><i class="bi bi-star-fill text-warning"></i> Shoutout To</label>
+                            <select class="form-select form-select-lg" id="toEmployee" required>
+                                <option value="">Who do you want to recognize?</option>
+                            </select>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label class="form-label"><i class="bi bi-tag-fill text-success"></i> Category</label>
+                            <div class="d-flex flex-wrap justify-content-center">
+                                <span class="category-badge" data-category="Teamwork">🤝 Teamwork</span>
+                                <span class="category-badge" data-category="Innovation">💡 Innovation</span>
+                                <span class="category-badge" data-category="Excellence">⭐ Excellence</span>
+                                <span class="category-badge active" data-category="Appreciation">❤️ Appreciation</span>
+                                <span class="category-badge" data-category="Leadership">👑 Leadership</span>
+                            </div>
+                            <input type="hidden" id="category" value="Appreciation">
+                        </div>
+
+                        <!-- Message -->
+                        <div class="mb-4">
+                            <label for="message" class="form-label"><i class="bi bi-chat-quote-fill text-info"></i> Your Message</label>
+                            <textarea class="form-control form-control-lg" id="message" rows="4" 
+                                placeholder="Write your appreciation message here..." 
+                                maxlength="500" required></textarea>
+                            <div class="form-text text-end"><span id="charCount">0</span>/500 characters</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-shoutout btn-primary btn-lg">
+                                <i class="bi bi-send-fill me-2"></i>Submit Shoutout
+                            </button>
+                        </div>
+
+                        <!-- View Kiosk Link -->
+                        <div class="text-center mt-3">
+                            <a href="shoutouts-kiosk.html" class="text-muted" target="_blank">
+                                <i class="bi bi-tv"></i> View Shoutouts Display
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        let employees = [];
+
+        // Load employees on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEmployees();
+            setupCategorySelection();
+            setupCharacterCount();
+        });
+
+        // Load employee list
+        async function loadEmployees() {
+            try {
+                console.log('Loading employees from:', `${CONFIG.API_BASE_URL}/public/employees`);
+                const response = await fetch(`${CONFIG.API_BASE_URL}/public/employees`);
+                console.log('Response status:', response.status);
+                
+                employees = await response.json();
+                console.log('Loaded employees:', employees.length, employees);
+                
+                const fromSelect = document.getElementById('fromEmployee');
+                const toSelect = document.getElementById('toEmployee');
+                
+                if (!fromSelect || !toSelect) {
+                    console.error('Dropdown elements not found!');
+                    return;
+                }
+                
+                employees.forEach(emp => {
+                    const option1 = new Option(`${emp.name} - ${emp.department}`, emp.name);
+                    const option2 = new Option(`${emp.name} - ${emp.department}`, emp.name);
+                    fromSelect.add(option1);
+                    toSelect.add(option2);
+                });
+                
+                console.log('Employees loaded successfully. From dropdown has', fromSelect.options.length, 'options');
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                alert('Failed to load employees. Please refresh the page.');
+            }
+        }
+
+        // Setup category selection
+        function setupCategorySelection() {
+            document.querySelectorAll('.category-badge').forEach(badge => {
+                badge.addEventListener('click', function() {
+                    document.querySelectorAll('.category-badge').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('category').value = this.dataset.category;
+                });
+            });
+        }
+
+        // Character count
+        function setupCharacterCount() {
+            const message = document.getElementById('message');
+            const charCount = document.getElementById('charCount');
+            message.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+        }
+
+        // Submit form
+        document.getElementById('submitShoutoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fromName = document.getElementById('fromEmployee').value;
+            const toName = document.getElementById('toEmployee').value;
+            
+            if (fromName === toName) {
+                alert('You cannot give a shoutout to yourself!');
+                return;
+            }
+            
+            const shoutout = {
+                fromName: fromName,
+                toName: toName,
+                message: document.getElementById('message').value,
+                category: document.getElementById('category').value
+            };
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/public/shoutouts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(shoutout)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('shoutoutForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error submitting shoutout:', error);
+                alert('Failed to submit shoutout. Please try again.');
+            }
+        });
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('submitShoutoutForm').reset();
+            document.getElementById('charCount').textContent = '0';
+            document.querySelectorAll('.category-badge').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-category="Appreciation"]').classList.add('active');
+            document.getElementById('category').value = 'Appreciation';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('shoutoutForm').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

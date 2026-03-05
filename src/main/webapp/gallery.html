@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery - HR Portal</title>
+    <link href="vendor/fonts/fonts.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #000;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .gallery-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-display {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .photo-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .photo-slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .photo-slide img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .info-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            padding: 30px 50px 20px;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        .info-bar.hidden {
+            opacity: 0;
+        }
+
+        .folder-name {
+            color: #00629B;
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .photo-counter {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        body:hover .controls {
+            opacity: 1;
+        }
+
+        .control-btn {
+            background: rgba(0, 98, 155, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #003C71;
+        }
+
+        .loading {
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-size: 20px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Hide cursor after inactivity */
+        body.hide-cursor {
+            cursor: none;
+        }
+
+        body.hide-cursor * {
+            cursor: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <div class="photo-display" id="photoDisplay">
+            <div class="loading" id="loading">Loading gallery...</div>
+        </div>
+        
+        <div class="info-bar" id="infoBar">
+            <div class="folder-name" id="folderName">Gallery</div>
+            <div class="photo-counter" id="photoCounter">0 / 0</div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="togglePause()" id="pauseBtn">Pause</button>
+            <button class="control-btn" onclick="previousPhoto()">Previous</button>
+            <button class="control-btn" onclick="nextPhoto()">Next</button>
+            <button class="control-btn" onclick="toggleFullscreen()">Fullscreen</button>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        // Gallery Configuration
+        const GALLERY_CONFIG = {
+            PHOTO_INTERVAL: 5000,        // 5 seconds per photo
+            AUTO_HIDE_INFO: true,        // Auto-hide info bar
+            AUTO_HIDE_DELAY: 3000,       // Hide after 3 seconds
+            ENABLE_KEYBOARD: true,       // Enable keyboard controls
+            LOOP_GALLERY: true,          // Loop back to first folder
+            SHOW_CURSOR_TIMEOUT: 2000,   // Hide cursor after 2 seconds
+            API_BASE_URL: CONFIG.API_BASE_URL  // Backend API URL from centralized config
+        };
+
+        let allPhotos = [];              // All photos from all folders
+        let currentPhotoIndex = 0;
+        let intervalTimer = null;
+        let isPaused = false;
+        let cursorTimeout = null;
+
+        const photoDisplay = document.getElementById('photoDisplay');
+        const loading = document.getElementById('loading');
+        const infoBar = document.getElementById('infoBar');
+        const folderNameEl = document.getElementById('folderName');
+        const photoCounterEl = document.getElementById('photoCounter');
+        const pauseBtn = document.getElementById('pauseBtn');
+
+        // Load gallery data
+        async function loadGallery() {
+            try {
+                // Fetch active gallery folders from backend
+                const response = await fetch(`${GALLERY_CONFIG.API_BASE_URL}/public/gallery/folders`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch gallery folders');
+                }
+                
+                const folders = await response.json();
+                console.log('Loaded folders from backend:', folders);
+                
+                if (folders.length === 0) {
+                    showError('No gallery folders found');
+                    return;
+                }
+                
+                // Build photo list from all folders
+                for (const folder of folders) {
+                    const photos = await scanFolder(folder.folderName, folder.displayTitle, folder.photoCount);
+                    allPhotos.push(...photos);
+                }
+
+                if (allPhotos.length === 0) {
+                    showError('No photos found in gallery folders');
+                    return;
+                }
+
+                console.log(`Loaded ${allPhotos.length} photos from ${folders.length} folders`);
+                startSlideshow();
+            } catch (error) {
+                console.error('Failed to load gallery:', error);
+                showError('Failed to load gallery. Please check console for details.');
+            }
+        }
+
+        // Scan a folder for images
+        async function scanFolder(folderName, displayTitle, expectedCount) {
+            const photos = [];
+            const extensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            
+            // Load images based on expected count from backend
+            for (let i = 1; i <= (expectedCount || 50); i++) {
+                const filename = `image-${i}.jpg`;
+                const path = `images/gallery/${folderName}/${filename}`;
+                
+                // Test if image exists by trying to load it
+                if (await imageExists(path)) {
+                    photos.push({
+                        path: path,
+                        folder: folderName,
+                        folderDisplay: displayTitle || formatFolderName(folderName),
+                        filename: filename
+                    });
+                }
+            }
+            
+            return photos;
+        }
+
+        // Check if image exists
+        function imageExists(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        // Start slideshow
+        function startSlideshow() {
+            loading.style.display = 'none';
+            showPhoto(0);
+            
+            if (!isPaused) {
+                intervalTimer = setInterval(nextPhoto, GALLERY_CONFIG.PHOTO_INTERVAL);
+            }
+
+            // Auto-hide info bar
+            if (GALLERY_CONFIG.AUTO_HIDE_INFO) {
+                setTimeout(() => {
+                    infoBar.classList.add('hidden');
+                }, GALLERY_CONFIG.AUTO_HIDE_DELAY);
+            }
+
+            // Auto-hide cursor
+            setupCursorHiding();
+        }
+
+        // Show specific photo
+        function showPhoto(index) {
+            if (allPhotos.length === 0) return;
+
+            currentPhotoIndex = index;
+            const photo = allPhotos[index];
+
+            // Clear existing slides
+            photoDisplay.innerHTML = '';
+
+            // Create new slide
+            const slide = document.createElement('div');
+            slide.className = 'photo-slide active';
+            
+            const img = document.createElement('img');
+            img.src = photo.path;
+            img.alt = photo.filename;
+            
+            slide.appendChild(img);
+            photoDisplay.appendChild(slide);
+
+            // Update info
+            folderNameEl.textContent = photo.folderDisplay || formatFolderName(photo.folder);
+            photoCounterEl.textContent = `Photo ${index + 1} of ${allPhotos.length}`;
+
+            console.log(`Showing: ${photo.path} (${index + 1}/${allPhotos.length})`);
+        }
+
+        // Format folder name for display
+        function formatFolderName(folder) {
+            return folder.charAt(0).toUpperCase() + folder.slice(1).replace(/-/g, ' ');
+        }
+
+        // Next photo
+        function nextPhoto() {
+            let nextIndex = currentPhotoIndex + 1;
+            
+            if (nextIndex >= allPhotos.length) {
+                if (GALLERY_CONFIG.LOOP_GALLERY) {
+                    nextIndex = 0;
+                } else {
+                    stopSlideshow();
+                    return;
+                }
+            }
+            
+            showPhoto(nextIndex);
+        }
+
+        // Previous photo
+        function previousPhoto() {
+            let prevIndex = currentPhotoIndex - 1;
+            
+            if (prevIndex < 0) {
+                prevIndex = allPhotos.length - 1;
+            }
+            
+            showPhoto(prevIndex);
+        }
+
+        // Toggle pause
+        function togglePause() {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                clearInterval(intervalTimer);
+                pauseBtn.textContent = 'Resume';
+            } else {
+                intervalTimer = setInterval(nextPhoto, GALLERY_CONFIG.PHOTO_INTERVAL);
+                pauseBtn.textContent = 'Pause';
+            }
+        }
+
+        // Stop slideshow
+        function stopSlideshow() {
+            if (intervalTimer) {
+                clearInterval(intervalTimer);
+                intervalTimer = null;
+            }
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            photoDisplay.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Keyboard controls
+        if (GALLERY_CONFIG.ENABLE_KEYBOARD) {
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowRight':
+                    case ' ':
+                        nextPhoto();
+                        break;
+                    case 'ArrowLeft':
+                        previousPhoto();
+                        break;
+                    case 'p':
+                    case 'P':
+                        togglePause();
+                        break;
+                    case 'f':
+                    case 'F':
+                        toggleFullscreen();
+                        break;
+                    case 'i':
+                    case 'I':
+                        infoBar.classList.toggle('hidden');
+                        break;
+                    case 'Escape':
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        }
+                        break;
+                }
+            });
+        }
+
+        // Cursor hiding
+        function setupCursorHiding() {
+            document.body.addEventListener('mousemove', () => {
+                document.body.classList.remove('hide-cursor');
+                
+                if (cursorTimeout) {
+                    clearTimeout(cursorTimeout);
+                }
+                
+                cursorTimeout = setTimeout(() => {
+                    document.body.classList.add('hide-cursor');
+                }, GALLERY_CONFIG.SHOW_CURSOR_TIMEOUT);
+            });
+
+            // Initial hide
+            cursorTimeout = setTimeout(() => {
+                document.body.classList.add('hide-cursor');
+            }, GALLERY_CONFIG.SHOW_CURSOR_TIMEOUT);
+        }
+
+        // Mouse movement shows info bar temporarily
+        document.addEventListener('mousemove', () => {
+            if (GALLERY_CONFIG.AUTO_HIDE_INFO) {
+                infoBar.classList.remove('hidden');
+                setTimeout(() => {
+                    infoBar.classList.add('hidden');
+                }, GALLERY_CONFIG.AUTO_HIDE_DELAY);
+            }
+        });
+
+        // Start loading gallery on page load
+        window.addEventListener('load', loadGallery);
+
+        console.log('[Gallery] Initialized');
+        console.log('[Gallery] Keyboard: Space/→ (next), ← (previous), P (pause), F (fullscreen), I (info), Esc (exit)');
+    </script>
+</body>
+</html>

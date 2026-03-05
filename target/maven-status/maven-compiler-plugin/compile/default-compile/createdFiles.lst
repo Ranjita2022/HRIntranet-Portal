@@ -1,0 +1,6 @@
+org\ieee\hrintranet\entity\GalleryFolder.class
+org\ieee\hrintranet\entity\AdminUser$UserRole.class
+org\ieee\hrintranet\HRIntranetApplication.class
+org\ieee\hrintranet\entity\AdminUser.class
+org\ieee\hrintranet\security\JwtTokenProvider.class
+org\ieee\hrintranet\util\AdminPasswordUtility.class

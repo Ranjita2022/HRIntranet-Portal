@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - IEEE Admin Panel</title>
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        .filter-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .json-viewer {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .action-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+            <h3><i class="bi bi-shield-check"></i>Admin</h3>
+            <p>HR Portal Management</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="admin-panel.html" class="menu-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="menu-section">Content Management</div>
+            
+            <a href="admin-employees.html" class="menu-item">
+                <i class="bi bi-people-fill"></i>
+                <span>Employees</span>
+            </a>
+            
+            <a href="admin-announcements.html" class="menu-item">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Announcements</span>
+            </a>
+            
+            <a href="admin-holidays.html" class="menu-item">
+                <i class="bi bi-calendar-event-fill"></i>
+                <span>Holidays</span>
+            </a>
+            
+            <a href="admin-carousel.html" class="menu-item">
+                <i class="bi bi-images"></i>
+                <span>Carousel Slides</span>
+            </a>
+            
+            <a href="admin-gallery.html" class="menu-item">
+                <i class="bi bi-folder2-open"></i>
+                <span>Gallery</span>
+            </a>
+            
+            <a href="admin-quick-links.html" class="menu-item">
+                <i class="bi bi-link-45deg"></i>
+                <span>Quick Links</span>
+            </a>
+            
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+            
+            <div class="menu-section">System</div>
+            
+            <a href="admin-audit.html" class="menu-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Audit Logs</span>
+            </a>
+            
+            <div class="menu-item" onclick="window.open('index.html', '_blank')">
+                <i class="bi bi-eye-fill"></i>
+                <span>View Portal</span>
+            </div>
+            
+            <div class="menu-item" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <div>
+                <h2>Audit Logs</h2>
+                <p class="text-muted mb-0">View system activity and changes</p>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span id="adminNameDisplay">Admin</span>
+            </div>
+        </div>
+
+        <div class="content-body">
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Logs</h5>
+                            <h2 class="mb-0" id="statTotalLogs">-</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Last 24 Hours</h5>
+                            <h2 class="mb-0" id="statLast24Hours">-</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Last 7 Days</h5>
+                            <h2 class="mb-0" id="statLast7Days">-</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-card">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Action</label>
+                        <select class="form-select" id="filterAction" onchange="loadAuditLogs()">
+                            <option value="">All Actions</option>
+                            <option value="CREATE">Create</option>
+                            <option value="UPDATE">Update</option>
+                            <option value="DELETE">Delete</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Table</label>
+                        <select class="form-select" id="filterTable" onchange="loadAuditLogs()">
+                            <option value="">All Tables</option>
+                            <option value="employees">Employees</option>
+                            <option value="announcements">Announcements</option>
+                            <option value="holidays">Holidays</option>
+                            <option value="carousel_slides">Carousel</option>
+                            <option value="quick_links">Quick Links</option>
+                            <option value="emergency_contacts">Emergency Contacts</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Page Size</label>
+                        <select class="form-select" id="pageSize" onchange="loadAuditLogs()">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-secondary w-100" onclick="resetFilters()">
+                            <i class="fas fa-redo me-2"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Logs Table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Audit Trail</h5>
+                    <div class="pagination-info">
+                        <span id="paginationInfo" class="text-muted small">-</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">ID</th>
+                                    <th style="width: 150px;">Date/Time</th>
+                                    <th style="width: 100px;">Action</th>
+                                    <th style="width: 130px;">Table</th>
+                                    <th style="width: 80px;">Record ID</th>
+                                    <th>User</th>
+                                    <th style="width: 100px;">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    <nav aria-label="Audit logs pagination" class="mt-3">
+                        <ul class="pagination justify-content-center mb-0" id="paginationControls">
+                            <!-- Pagination buttons will be inserted here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Audit Log Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Action:</strong> <span id="detailAction"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Table:</strong> <span id="detailTable"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Record ID:</strong> <span id="detailRecordId"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Timestamp:</strong> <span id="detailTimestamp"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Old Data</h6>
+                            <div class="json-viewer" id="detailOldData">-</div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>New Data</h6>
+                            <div class="json-viewer" id="detailNewData">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span id="errorMessage">Error occurred</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script src="js/admin-audit.js"></script>
+        
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

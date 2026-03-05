@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEEE Admin Panel - HR Portal</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        /* Dashboard-specific styles */
+        .top-bar {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        
+        .top-bar h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .menu-section {
+            padding: 0.5rem 1.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 1rem;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .stat-card {
+            background: #00629B;
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .stat-card p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #00629B;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-left: 1rem;
+        }
+        
+        .logout-btn:hover {
+            background: #003C71;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 98, 155, 0.3);
+        }
+        
+        .logout-btn i {
+            margin-right: 0.25rem;
+        }
+        
+        .admin-footer {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 3rem;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+            <h3><i class="bi bi-shield-check"></i>Admin</h3>
+            <p>HR Portal Management</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="admin-panel.html" class="menu-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="menu-section">Content Management</div>
+            
+            <a href="admin-employees.html" class="menu-item">
+                <i class="bi bi-people-fill"></i>
+                <span>Employees</span>
+            </a>
+            
+            <a href="admin-announcements.html" class="menu-item">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Announcements</span>
+            </a>
+            
+            <a href="admin-holidays.html" class="menu-item">
+                <i class="bi bi-calendar-event-fill"></i>
+                <span>Holidays</span>
+            </a>
+            
+            <a href="admin-carousel.html" class="menu-item">
+                <i class="bi bi-images"></i>
+                <span>Carousel Slides</span>
+            </a>
+            
+            <a href="admin-gallery.html" class="menu-item">
+                <i class="bi bi-folder2-open"></i>
+                <span>Gallery</span>
+            </a>
+            
+            <a href="admin-quick-links.html" class="menu-item">
+                <i class="bi bi-link-45deg"></i>
+                <span>Quick Links</span>
+            </a>
+            
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+            
+            <div class="menu-section">System</div>
+            
+            <a href="admin-audit.html" class="menu-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Audit Logs</span>
+            </a>
+            
+            <div class="menu-item" onclick="window.open('index.html', '_blank')">
+                <i class="bi bi-eye-fill"></i>
+                <span>View Portal</span>
+            </div>
+            
+            <div class="menu-item" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div>
+                    <strong id="userName">Admin</strong><br>
+                    <small class="text-muted">Administrator</small>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </div>
+        </div>
+        
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+            <div class="content-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
+                        <h3 id="totalEmployees">--</h3>
+                        <p>Total Employees</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: #0084CA;">
+                        <i class="bi bi-megaphone-fill" style="font-size: 2rem;"></i>
+                        <h3 id="totalAnnouncements">--</h3>
+                        <p>Announcements</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: #2196F3;">
+                        <i class="bi bi-calendar-event-fill" style="font-size: 2rem;"></i>
+                        <h3 id="totalHolidays">--</h3>
+                        <p>Holidays</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: #4CAF50;">
+                        <i class="bi bi-images" style="font-size: 2rem;"></i>
+                        <h3 id="totalGallery">--</h3>
+                        <p>Gallery Images</p>
+                    </div>
+                </div>
+            </div>
+            </div>
+            
+            <div class="content-body">
+            <div class="content-card">
+                <h4><i class="bi bi-graph-up"></i> Quick Stats</h4>
+                <div id="dashboardStats" class="mt-3">
+                    <p class="text-muted">Loading statistics...</p>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <h4><i class="bi bi-clock-history"></i> Recent Activity</h4>
+                <div id="recentActivity" class="mt-3">
+                    <p class="text-muted">Loading recent activity...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Other sections will be loaded dynamically -->
+        <div id="employees" class="content-section"></div>
+        
+        <!-- Announcements Section -->
+        <div id="announcements" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Manage Announcements</h2>
+                    <p class="text-muted mb-0">Create and manage announcements with images</p>
+                </div>
+                <button class="btn btn-primary" onclick="showAddAnnouncementModal()">
+                    <i class="bi bi-plus-circle"></i> Add Announcement
+                </button>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="announcementsEmptyState" class="text-center py-5" style="display: none;">
+                <i class="bi bi-megaphone" style="font-size: 4rem; color: #ddd;"></i>
+                <h4 class="mt-3">No Announcements Yet</h4>
+                <p class="text-muted">Click "Add Announcement" to create your first announcement</p>
+            </div>
+            
+            <!-- Announcements Table -->
+            <div class="table-responsive">
+                <table id="announcementsTable" class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Title</th>
+                            <th width="110">Type</th>
+                            <th>Description</th>
+                            <th width="120">Publish Date</th>
+                            <th width="120">Expiry Date</th>
+                            <th width="140">Status</th>
+                            <th width="130">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="announcementsTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Holidays Section -->
+        <div id="holidays" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Manage Holidays</h2>
+                    <p class="text-muted mb-0">Add and manage company holidays</p>
+                </div>
+                <button class="btn btn-primary" onclick="showAddHolidayModal()">
+                    <i class="bi bi-plus-circle"></i> Add Holiday
+                </button>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="holidaysEmptyState" class="text-center py-5" style="display: none;">
+                <i class="bi bi-calendar-event" style="font-size: 4rem; color: #ddd;"></i>
+                <h4 class="mt-3">No Holidays Yet</h4>
+                <p class="text-muted">Click "Add Holiday" to create your first holiday</p>
+            </div>
+            
+            <!-- Holidays Table -->
+            <div class="table-responsive">
+                <table id="holidaysTable" class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="80">ID</th>
+                            <th>Holiday Name</th>
+                            <th width="150">Date</th>
+                            <th>Description</th>
+                            <th width="150">Status</th>
+                            <th width="130">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="holidaysTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="carousel" class="content-section"></div>
+        <div id="gallery" class="content-section"></div>
+        <div id="quick-links" class="content-section"></div>
+        <div id="emergency" class="content-section"></div>
+        <div id="audit" class="content-section"></div>
+        
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Holiday Modal -->
+    <div class="modal fade" id="holidayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="holidayModalTitle">Add Holiday</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="holidayForm" onsubmit="saveHoliday(event)">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="holidayTitle" class="form-label">Holiday Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="holidayTitle" required 
+                                   placeholder="e.g., New Year's Day, Independence Day">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="holidayDate" class="form-label">Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="holidayDate" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="holidayDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="holidayDescription" rows="3" 
+                                      placeholder="Optional description or note about this holiday"></textarea>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="holidayIsActive" checked>
+                            <label class="form-check-label" for="holidayIsActive">
+                                Active (visible to employees)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Holiday</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div class="modal fade" id="announcementModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="announcementModalTitle">Add Announcement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="announcementForm" onsubmit="saveAnnouncement(event)">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementType" class="form-label">Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="announcementType" required>
+                                    <option value="GENERAL">General</option>
+                                    <option value="URGENT">Urgent</option>
+                                    <option value="BREAKING">Breaking News</option>
+                                    <option value="POLICY">Policy</option>
+                                    <option value="EVENT">Event</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementPriority" class="form-label">Priority</label>
+                                <input type="number" class="form-control" id="announcementPriority" min="0" max="10" value="0"
+                                       placeholder="0 = Normal, Higher = More important">
+                                <small class="text-muted">Higher priority announcements appear first</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="announcementTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="announcementTitle" required 
+                                   placeholder="Announcement title" maxlength="500">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="announcementDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="announcementDescription" rows="4" 
+                                      placeholder="Full announcement description"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementPublishDate" class="form-label">Publish Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="announcementPublishDate" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="announcementExpiryDate" class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" id="announcementExpiryDate">
+                                <small class="text-muted">Optional - announcement will hide after this date</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="announcementImage" class="form-label">Image</label>
+                            <input type="file" class="form-control" id="announcementImage" accept="image/*"
+                                   onchange="handleAnnouncementImageSelect(event)">
+                            <small class="text-muted">Maximum 5MB, JPG, PNG, or GIF</small>
+                            
+                            <div id="imagePreviewContainer" class="mt-3" style="display: none;">
+                                <img id="announcementImagePreview" src="" alt="Preview" 
+                                     style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="announcementIsActive" checked>
+                            <label class="form-check-label" for="announcementIsActive">
+                                Active (visible to employees)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Announcement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script src="js/admin-holidays.js"></script>
+    <script src="js/admin-announcements.js"></script>
+    
+    <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 DOM loaded, initializing admin panel...');
+            
+            // Initialize AdminAPI
+            AdminAPI.init();
+            
+            console.log('🔍 Checking authentication...');
+            console.log('Token from localStorage:', localStorage.getItem('admin_jwt_token'));
+            console.log('AdminAPI.token:', AdminAPI.token);
+            console.log('isAuthenticated:', AdminAPI.isAuthenticated());
+            
+            // Check authentication with redirect protection
+            if (!AdminAPI.isAuthenticated()) {
+                console.error('❌ Not authenticated, redirecting to login...');
+                // Prevent infinite redirects by checking if we just came from login
+                const justLoggedIn = sessionStorage.getItem('just_logged_in');
+                if (justLoggedIn) {
+                    sessionStorage.removeItem('just_logged_in');
+                    console.error('❌ Authentication failed even after login.');
+                    console.error('Token:', AdminAPI.token);
+                    console.error('LocalStorage keys:', Object.keys(localStorage));
+                    alert('Authentication failed. Please clear your browser cache and try logging in again.');
+                    localStorage.clear();
+                }
+                setTimeout(() => {
+                    window.location.href = 'admin-login.html';
+                }, 100);
+            } else {
+                console.log('✅ User authenticated, initializing admin panel...');
+                // Clear the just_logged_in flag after successful auth
+                sessionStorage.removeItem('just_logged_in');
+                try {
+                    initializeAdminPanel();
+                } catch (error) {
+                    console.error('❌ Error initializing admin panel:', error);
+                    alert('Error loading admin panel: ' + error.message);
+                }
+            }
+        });
+        
+        function initializeAdminPanel() {
+            const user = AdminAPI.getCurrentUser();
+            console.log('👤 Current user:', user);
+            
+            if (!user || !user.username) {
+                throw new Error('User data is incomplete');
+            }
+            
+            const userNameEl = document.getElementById('userName');
+            const userAvatarEl = document.getElementById('userAvatar');
+            
+            if (userNameEl) {
+                userNameEl.textContent = user.fullName || user.username;
+            }
+            if (userAvatarEl) {
+                userAvatarEl.textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+            }
+            
+            loadDashboardStats();
+            setupNavigation();
+        }
+        
+        function setupNavigation() {
+            document.querySelectorAll('.menu-item[data-section]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    switchSection(section);
+                });
+            });
+        }
+        
+        function switchSection(section) {
+            // Update menu active state
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.menu-item[data-section="${section}"]`).classList.add('active');
+            
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            
+            // Show selected section
+            const sectionElement = document.getElementById(section);
+            sectionElement.classList.add('active');
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'employees': 'Manage Employees',
+                'announcements': 'Manage Announcements',
+                'holidays': 'Manage Holidays',
+                'carousel': 'Manage Carousel',
+                'gallery': 'Manage Gallery',
+                'quick-links': 'Manage Quick Links',
+                'emergency': 'Emergency Contacts',
+                'audit': 'Audit Logs'
+            };
+            document.getElementById('pageTitle').textContent = titles[section] || section;
+            
+            // Initialize section-specific functionality
+            if (section === 'holidays' && typeof initHolidays === 'function') {
+                initHolidays();
+            }
+            if (section === 'announcements' && typeof initAnnouncements === 'function') {
+                initAnnouncements();
+            }
+            
+            // Load section content if empty
+            if (!sectionElement.innerHTML.trim()) {
+                loadSectionContent(section);
+            }
+        }
+        
+        function loadSectionContent(section) {
+            const sectionElement = document.getElementById(section);
+            sectionElement.innerHTML = '<div class="text-center py-5"><div class="spinner-border" role="status"></div><p class="mt-3">Loading...</p></div>';
+            
+            // Load the appropriate management script
+            const script = document.createElement('script');
+            script.src = `js/admin-${section}.js`;
+            script.onload = () => {
+                if (window[`init${capitalize(section)}`]) {
+                    window[`init${capitalize(section)}`](sectionElement);
+                }
+            };
+            script.onerror = () => {
+                sectionElement.innerHTML = `
+                    <div class="content-card">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            This section is under development.
+                        </div>
+                    </div>
+                `;
+            };
+            document.head.appendChild(script);
+        }
+        
+        function capitalize(str) {
+            return str.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+        }
+        
+        async function loadDashboardStats() {
+            try {
+                // Use AdminAPI token instead of manually getting from localStorage
+                if (!AdminAPI.isAuthenticated()) {
+                    console.error('❌ Not authenticated in loadDashboardStats');
+                    window.location.href = 'admin-login.html';
+                    return;
+                }
+
+                const headers = {
+                    'Authorization': `Bearer ${AdminAPI.token}`,
+                    'Content-Type': 'application/json'
+                };
+
+                // Fetch all data from admin endpoints to get accurate counts
+                const [employees, announcements, holidays, carousel, quickLinks, emergencyContacts, galleryFolders] = await Promise.all([
+                    fetch(AdminAPI.baseURL + '/admin/employees', { headers }).then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/admin/announcements', { headers }).then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/admin/holidays', { headers }).then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/admin/carousel', { headers }).then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/admin/quick-links', { headers }).then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/admin/emergency-contacts', { headers }).then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/public/gallery/folders').then(r => r.ok ? r.json() : [])
+                ]);
+
+                // Calculate total gallery images from all folders
+                const totalGalleryImages = galleryFolders.reduce((sum, folder) => sum + (folder.photoCount || 0), 0);
+
+                // Update main stats
+                document.getElementById('totalEmployees').textContent = employees.length;
+                document.getElementById('totalAnnouncements').textContent = announcements.length;
+                document.getElementById('totalHolidays').textContent = holidays.length;
+                document.getElementById('totalGallery').textContent = totalGalleryImages;
+
+                // Calculate additional stats
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                const newJoinersThisMonth = employees.filter(e => {
+                    if (!e.startDate) return false;
+                    const joinDate = new Date(e.startDate);
+                    return joinDate.getMonth() === currentMonth && joinDate.getFullYear() === currentYear;
+                }).length;
+
+                const activeAnnouncements = announcements.filter(a => {
+                    if (a.expiryDate) {
+                        return new Date(a.expiryDate) >= now;
+                    }
+                    return true;
+                }).length;
+
+                const upcomingHolidays = holidays.filter(h => {
+                    return new Date(h.holidayDate) >= now;
+                }).length;
+
+                const emergencyContactsCount = emergencyContacts.filter(c => c.isEmergency).length;
+
+                // Show quick stats
+                const statsHtml = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-people-fill text-primary"></i> Active Employees:</strong> ${employees.filter(e => e.status === 'ACTIVE').length} / ${employees.length}</p>
+                            <p><strong><i class="bi bi-star-fill text-warning"></i> New Joiners (This Month):</strong> ${newJoinersThisMonth}</p>
+                            <p><strong><i class="bi bi-megaphone-fill text-info"></i> Active Announcements:</strong> ${activeAnnouncements} / ${announcements.length}</p>
+                            <p><strong><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:</strong> ${upcomingHolidays} / ${holidays.length}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-images text-purple"></i> Carousel Slides:</strong> ${carousel.length}</p>
+                            <p><strong><i class="bi bi-link-45deg text-primary"></i> Quick Links:</strong> ${quickLinks.length}</p>
+                            <p><strong><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Contacts:</strong> ${emergencyContactsCount} / ${emergencyContacts.length}</p>
+                            <p><strong><i class="bi bi-folder2-open text-secondary"></i> Gallery Images:</strong> ${totalGalleryImages} in ${galleryFolders.length} folders</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('dashboardStats').innerHTML = statsHtml;
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('dashboardStats').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Failed to load statistics. Please ensure the backend is running.
+                    </div>
+                `;
+            }
+            
+            loadRecentActivity();
+        }
+        
+        async function loadRecentActivity() {
+            try {
+                if (!AdminAPI.token) {
+                    console.log('No token available for recent activity');
+                    return;
+                }
+
+                const response = await fetch(AdminAPI.baseURL + '/admin/audit-logs?page=0&size=10', {
+                    headers: {
+                        'Authorization': `Bearer ${AdminAPI.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const logs = data.content || [];
+
+                    if (logs.length === 0) {
+                        document.getElementById('recentActivity').innerHTML = `
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-inbox"></i> No recent activity
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const activityRows = logs.map(log => {
+                        const actionBadge = log.action === 'CREATE' ? 'bg-success' : 
+                                          log.action === 'UPDATE' ? 'bg-primary' : 'bg-danger';
+                        const tableName = (log.tableName || '').replace('_', ' ');
+                        const timeAgo = formatTimeAgo(new Date(log.createdAt));
+                        const userName = log.user ? log.user.username : 'System';
+
+                        return `
+                            <tr>
+                                <td><span class="badge ${actionBadge}">${log.action}</span></td>
+                                <td>${userName}</td>
+                                <td>${tableName} #${log.recordId || 'N/A'}</td>
+                                <td>${timeAgo}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    const activityHtml = `
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th width="100">Action</th>
+                                        <th width="120">User</th>
+                                        <th>Resource</th>
+                                        <th width="150">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${activityRows}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-end mt-2">
+                            <a href="admin-audit.html" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-journal-text"></i> View All Logs
+                            </a>
+                        </div>
+                    `;
+                    document.getElementById('recentActivity').innerHTML = activityHtml;
+                } else {
+                    throw new Error('Failed to load activity');
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Unable to load recent activity
+                    </div>
+                `;
+            }
+        }
+
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+            
+            return date.toLocaleDateString();
+        }
+        
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>
+</body>
+</html>

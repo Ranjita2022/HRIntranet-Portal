@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Employees - IEEE Admin Panel</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-common.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+            <h3><i class="bi bi-shield-check"></i>Admin</h3>
+            <p>HR Portal Management</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="admin-panel.html" class="menu-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="menu-section">Content Management</div>
+            
+            <a href="admin-employees.html" class="menu-item">
+                <i class="bi bi-people-fill"></i>
+                <span>Employees</span>
+            </a>
+            
+            <a href="admin-announcements.html" class="menu-item">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Announcements</span>
+            </a>
+            
+            <a href="admin-holidays.html" class="menu-item">
+                <i class="bi bi-calendar-event-fill"></i>
+                <span>Holidays</span>
+            </a>
+            
+            <a href="admin-carousel.html" class="menu-item">
+                <i class="bi bi-images"></i>
+                <span>Carousel Slides</span>
+            </a>
+            
+            <a href="admin-gallery.html" class="menu-item">
+                <i class="bi bi-folder2-open"></i>
+                <span>Gallery</span>
+            </a>
+            
+            <a href="admin-quick-links.html" class="menu-item">
+                <i class="bi bi-link-45deg"></i>
+                <span>Quick Links</span>
+            </a>
+            
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+            
+            <div class="menu-section">System</div>
+            
+            <a href="admin-audit.html" class="menu-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Audit Logs</span>
+            </a>
+            
+            <div class="menu-item" onclick="window.open('index.html', '_blank')">
+                <i class="bi bi-eye-fill"></i>
+                <span>View Portal</span>
+            </div>
+            
+            <div class="menu-item" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h1 id="pageTitle">Manage Employees</h1>
+                <p class="text-muted mb-0">Add and manage employee records (includes new joiners)</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">Admin User</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employees Section -->
+        <div class="content-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Employees List</h2>
+                </div>
+                <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                    <i class="bi bi-plus-circle"></i> Add Employee
+                </button>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="employeesEmptyState" class="text-center py-5" style="display: none;">
+                <i class="bi bi-people" style="font-size: 4rem; color: #ddd;"></i>
+                <h4 class="mt-3">No Employees Yet</h4>
+                <p class="text-muted">Click "Add Employee" to create your first employee record</p>
+            </div>
+            
+            <!-- Employees Table -->
+            <div class="table-responsive">
+                <table id="employeesTable" class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th width="120">Employee ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Position</th>
+                            <th>Department</th>
+                            <th width="130">Start Date</th>
+                            <th width="100">Status</th>
+                            <th width="130">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center">
+                                <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Employee Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeModalTitle">Add Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="employeeForm" onsubmit="saveEmployee(event)">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeId" class="form-label">Employee ID <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="employeeId" required 
+                                       placeholder="e.g., EMP001">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeStatus" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="employeeStatus" required>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="TERMINATED">Terminated</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeFirstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="employeeFirstName" required 
+                                       placeholder="First name">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeLastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="employeeLastName" required 
+                                       placeholder="Last name">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="employeeEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="employeeEmail" required 
+                                   placeholder="email@company.com">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employeePosition" class="form-label">Position <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="employeePosition" required 
+                                       placeholder="e.g., Software Engineer">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeDepartment" class="form-label">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" id="employeeDepartment" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="IT">IT</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Product">Product</option>
+                                    <option value="Design">Design</option>
+                                    <option value="Analytics">Analytics</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="employeeStartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="employeeStartDate" required>
+                            <small class="text-muted">Employees who joined within last 30 days appear as "New Joiners"</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="employeePhoto" class="form-label">Profile Photo</label>
+                            <input type="file" class="form-control" id="employeePhoto" accept="image/*"
+                                   onchange="handleEmployeePhotoSelect(event)">
+                            <small class="text-muted">Maximum 2MB, JPG, PNG, or GIF</small>
+                            
+                            <div id="photoPreviewContainer" class="mt-3" style="display: none;">
+                                <img id="employeePhotoPreview" src="" alt="Preview" 
+                                     style="max-width: 150px; max-height: 150px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Employee</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script src="js/admin-employees.js"></script>
+    
+    <script>
+        // Initialize AdminAPI
+        AdminAPI.init();
+        
+        // Check authentication
+        if (!AdminAPI.isAuthenticated()) {
+            window.location.href = 'admin-login.html';
+        } else {
+            initPage();
+        }
+        
+        function initPage() {
+            const user = AdminAPI.getCurrentUser();
+            document.getElementById('userName').textContent = user.fullName || user.username;
+            document.getElementById('userAvatar').textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+            
+            // Load employees data
+            initEmployees();
+        }
+        
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>
+</body>
+</html>

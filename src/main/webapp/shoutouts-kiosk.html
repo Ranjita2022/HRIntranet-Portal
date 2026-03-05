@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Shoutouts Display - IEEE HR Portal</title>
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+        .kiosk-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .shoutout-display {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.4);
+            padding: 4rem;
+            max-width: 900px;
+            width: 100%;
+            min-height: 500px;
+            position: relative;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 1.5rem;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .header .icon {
+            font-size: 3.5rem;
+        }
+        .shoutout-content {
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border-radius: 30px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .category-teamwork {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .category-innovation {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .category-excellence {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        .category-appreciation {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        .category-leadership {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+        }
+        .recognition {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .from-name {
+            color: #667eea;
+        }
+        .to-name {
+            color: #764ba2;
+        }
+        .message {
+            font-size: 1.8rem;
+            line-height: 1.8;
+            color: #555;
+            font-style: italic;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 20px;
+            border-left: 5px solid #667eea;
+        }
+        .timestamp {
+            font-size: 1.2rem;
+            color: #999;
+            margin-top: 2rem;
+        }
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            animation: progress 10s linear infinite;
+        }
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        .navigation {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .nav-btn {
+            background: rgba(102, 126, 234, 0.2);
+            border: 2px solid #667eea;
+            color: #667eea;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+        .counter {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .no-shoutouts {
+            text-align: center;
+            padding: 4rem;
+            color: #999;
+        }
+        .no-shoutouts i {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="kiosk-container">
+        <div class="shoutout-display">
+            <div class="header">
+                <h1>
+                    <i class="bi bi-megaphone-fill icon"></i>
+                    Employee Shoutouts
+                </h1>
+            </div>
+
+            <div class="counter" id="counter"></div>
+
+            <div class="shoutout-content" id="shoutoutContent">
+                <div class="no-shoutouts">
+                    <i class="bi bi-hourglass-split"></i>
+                    <h2>Loading shoutouts...</h2>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-btn" id="prevBtn" title="Previous">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="nav-btn" id="pauseBtn" title="Pause/Play">
+                    <i class="bi bi-pause-fill"></i>
+                </button>
+                <button class="nav-btn" id="nextBtn" title="Next">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        let shoutouts = [];
+        let currentIndex = 0;
+        let autoPlayInterval = null;
+        let isPaused = false;
+        const DISPLAY_DURATION = 10000; // 10 seconds per shoutout
+
+        // Load shoutouts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadShoutouts();
+            setupNavigation();
+        });
+
+        // Load approved shoutouts
+        async function loadShoutouts() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/public/shoutouts`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    shoutouts = result.data;
+                    displayShoutout(0);
+                    startAutoPlay();
+                } else {
+                    showNoShoutouts();
+                }
+            } catch (error) {
+                console.error('Error loading shoutouts:', error);
+                showNoShoutouts();
+            }
+        }
+
+        // Display a specific shoutout
+        function displayShoutout(index) {
+            if (shoutouts.length === 0) return;
+            
+            currentIndex = index;
+            const shoutout = shoutouts[currentIndex];
+            
+            const categoryClass = `category-${shoutout.category.toLowerCase()}`;
+            const categoryEmoji = getCategoryEmoji(shoutout.category);
+            const date = new Date(shoutout.createdAt);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            const content = `
+                <div class="category-badge ${categoryClass}">
+                    ${categoryEmoji} ${shoutout.category}
+                </div>
+                <div class="recognition">
+                    <span class="from-name">${escapeHtml(shoutout.fromName)}</span>
+                    <span style="color: #999;"> recognizes </span>
+                    <span class="to-name">${escapeHtml(shoutout.toName)}</span>
+                </div>
+                <div class="message">
+                    "${escapeHtml(shoutout.message)}"
+                </div>
+                <div class="timestamp">
+                    <i class="bi bi-calendar-check"></i> ${formattedDate}
+                </div>
+            `;
+            
+            document.getElementById('shoutoutContent').innerHTML = content;
+            document.getElementById('counter').textContent = `${currentIndex + 1} / ${shoutouts.length}`;
+            
+            // Restart progress bar animation
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.animation = 'none';
+            setTimeout(() => {
+                progressBar.style.animation = `progress ${DISPLAY_DURATION}ms linear`;
+            }, 10);
+        }
+
+        // Show when no shoutouts available
+        function showNoShoutouts() {
+            document.getElementById('shoutoutContent').innerHTML = `
+                <div class="no-shoutouts">
+                    <i class="bi bi-inbox"></i>
+                    <h2>No Shoutouts Yet</h2>
+                    <p>Be the first to recognize a colleague!</p>
+                </div>
+            `;
+            document.getElementById('counter').textContent = '0 / 0';
+        }
+
+        // Get emoji for category
+        function getCategoryEmoji(category) {
+            const emojis = {
+                'Teamwork': '🤝',
+                'Innovation': '💡',
+                'Excellence': '⭐',
+                'Appreciation': '❤️',
+                'Leadership': '👑'
+            };
+            return emojis[category] || '✨';
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-play functionality
+        function startAutoPlay() {
+            if (autoPlayInterval) clearInterval(autoPlayInterval);
+            
+            autoPlayInterval = setInterval(() => {
+                if (!isPaused) {
+                    nextShoutout();
+                }
+            }, DISPLAY_DURATION);
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+        }
+
+        // Navigation functions
+        function nextShoutout() {
+            if (shoutouts.length === 0) return;
+            currentIndex = (currentIndex + 1) % shoutouts.length;
+            displayShoutout(currentIndex);
+        }
+
+        function previousShoutout() {
+            if (shoutouts.length === 0) return;
+            currentIndex = (currentIndex - 1 + shoutouts.length) % shoutouts.length;
+            displayShoutout(currentIndex);
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const icon = document.querySelector('#pauseBtn i');
+            if (isPaused) {
+                icon.classList.remove('bi-pause-fill');
+                icon.classList.add('bi-play-fill');
+            } else {
+                icon.classList.remove('bi-play-fill');
+                icon.classList.add('bi-pause-fill');
+            }
+        }
+
+        // Setup navigation buttons
+        function setupNavigation() {
+            document.getElementById('nextBtn').addEventListener('click', nextShoutout);
+            document.getElementById('prevBtn').addEventListener('click', previousShoutout);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+        }
+
+        // Reload shoutouts every 5 minutes to get new ones
+        setInterval(() => {
+            if (!isPaused) {
+                loadShoutouts();
+            }
+        }, 300000); // 5 minutes
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Contacts Management - IEEE Admin Panel</title>
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/admin-common.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+            <h3><i class="bi bi-shield-check"></i> Admin</h3>
+            <p>HR Portal Management</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="admin-panel.html" class="menu-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="menu-section">Content Management</div>
+            
+            <a href="admin-employees.html" class="menu-item">
+                <i class="bi bi-people-fill"></i>
+                <span>Employees</span>
+            </a>
+            
+            <a href="admin-announcements.html" class="menu-item">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Announcements</span>
+            </a>
+            
+            <a href="admin-holidays.html" class="menu-item">
+                <i class="bi bi-calendar-event-fill"></i>
+                <span>Holidays</span>
+            </a>
+            
+            <a href="admin-carousel.html" class="menu-item">
+                <i class="bi bi-images"></i>
+                <span>Carousel Slides</span>
+            </a>
+            
+            <a href="admin-gallery.html" class="menu-item">
+                <i class="bi bi-folder2-open"></i>
+                <span>Gallery</span>
+            </a>
+            
+            <a href="admin-quick-links.html" class="menu-item">
+                <i class="bi bi-link-45deg"></i>
+                <span>Quick Links</span>
+            </a>
+            
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+            
+            <div class="menu-section">System</div>
+            
+            <a href="admin-audit.html" class="menu-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Audit Logs</span>
+            </a>
+            
+            <div class="menu-item" onclick="window.open('index.html', '_blank')">
+                <i class="bi bi-eye-fill"></i>
+                <span>View Portal</span>
+            </div>
+            
+            <div class="menu-item" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <div>
+                <h2>Emergency Contacts Management</h2>
+                <p class="text-muted mb-0">Manage emergency and important contacts</p>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span id="adminNameDisplay">Admin</span>
+            </div>
+        </div>
+
+        <div class="content-body">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Emergency Contacts</h5>
+                    <button class="btn btn-primary" onclick="showEmergencyContactModal()">
+                        <i class="fas fa-plus me-2"></i>Add Contact
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Contact Name</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Display Order</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emergencyContactsTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Contact Modal -->
+    <div class="modal fade" id="emergencyContactModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emergencyContactModalTitle">Add Emergency Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="emergencyContactForm">
+                        <input type="hidden" id="emergencyContactId">
+                        
+                        <div class="mb-3">
+                            <label for="emergencyContactTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="emergencyContactTitle" 
+                                   placeholder="e.g., Security Desk" maxlength="200" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergencyContactName" class="form-label">Contact Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="emergencyContactName" 
+                                           placeholder="Enter contact person name" maxlength="200" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergencyContactType" class="form-label">Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="emergencyContactType" required>
+                                        <option value="">Select type</option>
+                                        <option value="SECURITY">Security</option>
+                                        <option value="IT_SUPPORT">IT Support</option>
+                                        <option value="HR">HR</option>
+                                        <option value="MEDICAL">Medical</option>
+                                        <option value="FACILITY">Facility</option>
+                                        <option value="GENERAL">General</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergencyContactPhone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="emergencyContactPhone" 
+                                           placeholder="+1 (555) 123-4567" maxlength="50" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergencyContactEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="emergencyContactEmail" 
+                                           placeholder="contact@company.com" maxlength="200">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="emergencyContactDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="emergencyContactDescription" rows="2" 
+                                      placeholder="Enter additional information" maxlength="500"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="emergencyContactDisplayOrder" class="form-label">Display Order</label>
+                            <input type="number" class="form-control" id="emergencyContactDisplayOrder" 
+                                   value="0" min="0" max="999">
+                            <small class="text-muted">Lower numbers appear first</small>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="emergencyContactIsEmergency">
+                            <label class="form-check-label" for="emergencyContactIsEmergency">
+                                <strong>Mark as Emergency</strong>
+                                <small class="text-muted d-block">Critical contacts that require immediate attention</small>
+                            </label>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="emergencyContactIsActive" checked>
+                            <label class="form-check-label" for="emergencyContactIsActive">Active</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEmergencyContact()">
+                        <i class="fas fa-save me-2"></i>Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span id="successMessage">Success!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span id="errorMessage">Error occurred</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script src="js/admin-emergency.js"></script>
+        
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
