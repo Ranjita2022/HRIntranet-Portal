@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         AdminUser user = adminUserRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         
-        if (!user.getIsActive()) {
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new UsernameNotFoundException("User is inactive: " + username);
         }
         

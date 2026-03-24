@@ -3,6 +3,26 @@ let quickLinksData = [];
 let editingQuickLinkId = null;
 let quickLinkModal = null;
 
+const QUICK_LINK_ICON_OPTIONS = [
+    { label: 'Link', value: 'bi-link-45deg' },
+    { label: 'Website', value: 'bi-globe' },
+    { label: 'Intranet', value: 'bi-building' },
+    { label: 'Email', value: 'bi-envelope-fill' },
+    { label: 'Employee Portal', value: 'bi-people-fill' },
+    { label: 'IT Help Desk', value: 'bi-headset' },
+    { label: 'Time Tracking', value: 'bi-clock-history' },
+    { label: 'Benefits', value: 'bi-heart-pulse-fill' },
+    { label: 'Learning', value: 'bi-book-fill' },
+    { label: 'Documents', value: 'bi-file-earmark-text-fill' },
+    { label: 'Policy', value: 'bi-shield-check' },
+    { label: 'Dashboard', value: 'bi-speedometer2' },
+    { label: 'Phone', value: 'bi-telephone-fill' },
+    { label: 'Office', value: 'bi-bank' },
+    { label: 'Downloads', value: 'bi-download' },
+    { label: 'External Link', value: 'bi-box-arrow-up-right' },
+    { label: 'App', value:'bi-box-arrow-in-right' }
+];
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Check authentication
@@ -19,10 +39,50 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize modal
     quickLinkModal = new bootstrap.Modal(document.getElementById('quickLinkModal'));
+    populateQuickLinkIconDropdown();
     
     // Load quick links
     loadQuickLinks();
 });
+
+function populateQuickLinkIconDropdown() {
+    const select = document.getElementById('quickLinkIcon');
+    if (!select) return;
+
+    const defaultOption = select.querySelector('option[value=""]');
+    select.innerHTML = '';
+
+    if (defaultOption) {
+        select.appendChild(defaultOption);
+    } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Default Link Icon';
+        select.appendChild(option);
+    }
+
+    QUICK_LINK_ICON_OPTIONS.forEach(icon => {
+        const option = document.createElement('option');
+        option.value = icon.value;
+        option.textContent = `${icon.label} (${icon.value})`;
+        select.appendChild(option);
+    });
+}
+
+function ensureIconOptionExists(iconValue) {
+    if (!iconValue) return;
+
+    const select = document.getElementById('quickLinkIcon');
+    if (!select) return;
+
+    const exists = Array.from(select.options).some(option => option.value === iconValue);
+    if (exists) return;
+
+    const customOption = document.createElement('option');
+    customOption.value = iconValue;
+    customOption.textContent = `Existing icon (${iconValue})`;
+    select.appendChild(customOption);
+}
 
 // Load all quick links
 async function loadQuickLinks() {
@@ -113,6 +173,7 @@ function showQuickLinkModal(id = null) {
             document.getElementById('quickLinkTitle').value = link.title;
             document.getElementById('quickLinkUrl').value = link.url;
             document.getElementById('quickLinkDescription').value = link.description || '';
+            ensureIconOptionExists(link.icon || '');
             document.getElementById('quickLinkIcon').value = link.icon || '';
             document.getElementById('quickLinkCategory').value = link.category || '';
             document.getElementById('quickLinkDisplayOrder').value = link.displayOrder;

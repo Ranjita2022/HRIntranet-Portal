@@ -48,7 +48,7 @@ const CONFIG = {
     PRODUCTION_API_URL: 'https://your-domain.com/api',
     
     // Development API URL
-    // Works for both Maven Spring Boot and Tomcat WAR (when deployed as ROOT.war)
+    // Works for both Maven Spring Boot and Tomcat WAR (when deployed as ROOT.war
     DEVELOPMENT_API_URL: 'http://localhost:8080/api',
     
     // Auto-detect API URL based on environment
@@ -68,28 +68,16 @@ const CONFIG = {
             : this.DEVELOPMENT_API_URL;
     },
     
-
-    
-    // ============================================
-    // DISPLAY SETTINGS
-    // ============================================
     // Maximum number of items to display in each section
     MAX_JOINERS: 6,           // Max new joiners to display
     MAX_HOLIDAYS: 5,          // Max holidays to display
     MAX_ANNOUNCEMENTS: 10,    // Max announcements to display
     MAX_CAROUSEL_SLIDES: 2000,  // Max carousel slides (supports up to 2000 photos)
-                                 // Note: All images load fine, but 100-200 optimal for performance
-                                 // Set to 9999 for unlimited
     
-    // ============================================
-    // CAROUSEL SETTINGS
-    // ============================================
     CAROUSEL_INTERVAL: 5000,  // Time between slides (milliseconds)
     CAROUSEL_PAUSE_ON_HOVER: true,
     
-    // ============================================
-    // DATE SETTINGS
-    // ============================================
+   
     // Show only future holidays (set to false to show all)
     SHOW_ONLY_FUTURE_HOLIDAYS: true,
     
@@ -104,22 +92,12 @@ const CONFIG = {
     DEFAULT_HOLIDAY_IMAGE: '', // Leave empty for no image
     DEFAULT_CAROUSEL_IMAGE: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDEyMDAgNDAwIj48cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM2NjdlZWEiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkhSIFBvcnRhbDwvdGV4dD48L3N2Zz4=',
     
-    // ============================================
-    // REFRESH SETTINGS
-    // ============================================
     // Auto-refresh interval in minutes (0 to disable)
     AUTO_REFRESH_MINUTES: 0,
     
-    // ============================================
-    // DEBUG MODE
-    // ============================================
     // Set to true to see console logs
     DEBUG: true
 };
-
-// ================================================
-// DO NOT EDIT BELOW THIS LINE
-// ================================================
 
 // Debug logger
 function debugLog(...args) {

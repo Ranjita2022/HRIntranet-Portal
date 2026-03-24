@@ -115,6 +115,8 @@ function showAddEmployeeModal() {
     // Set start date to today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('employeeStartDate').value = today;
+    // Clear birth date when adding
+    document.getElementById('employeeBirthDate').value = '';
     
     // Clear photo preview
     document.getElementById('photoPreviewContainer').style.display = 'none';
@@ -144,6 +146,8 @@ async function showEditEmployeeModal(id) {
     document.getElementById('employeeDepartment').value = employee.department;
     document.getElementById('employeeStartDate').value = employee.startDate;
     document.getElementById('employeeStatus').value = employee.status;
+    // Populate birth date for edit if available
+    document.getElementById('employeeBirthDate').value = employee.birthDate || employee.birthdate || '';
     
     // Show photo preview if exists
     if (employee.profileImageUrl) {
@@ -200,6 +204,7 @@ async function saveEmployee(event) {
     const position = document.getElementById('employeePosition').value.trim();
     const department = document.getElementById('employeeDepartment').value.trim();
     const startDate = document.getElementById('employeeStartDate').value;
+    const birthDate = document.getElementById('employeeBirthDate').value;
     const status = document.getElementById('employeeStatus').value;
     const photoFile = document.getElementById('employeePhoto').files[0];
     
@@ -244,6 +249,7 @@ async function saveEmployee(event) {
         position,
         department,
         startDate,
+        birthDate,
         status
     };
     

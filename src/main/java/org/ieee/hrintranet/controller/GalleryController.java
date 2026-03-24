@@ -52,7 +52,7 @@ public class GalleryController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<GalleryImage> getImage(@PathVariable Integer id) {
+    public ResponseEntity<GalleryImage> getImage(@PathVariable int id) {
         return galleryImageRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -126,7 +126,7 @@ public class GalleryController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateGalleryImage(@PathVariable Integer id, 
+    public ResponseEntity<?> updateGalleryImage(@PathVariable int id, 
                                                 @RequestBody GalleryImage galleryImage,
                                                 Authentication authentication) {
         return galleryImageRepository.findById(id)
@@ -148,7 +148,7 @@ public class GalleryController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteGalleryImage(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteGalleryImage(@PathVariable int id, Authentication authentication) {
         return galleryImageRepository.findById(id)
                 .map(galleryImage -> {
                     auditService.logAction(authentication.getName(), "DELETE", "gallery_images", galleryImage.getId(), galleryImage, null);
@@ -263,7 +263,7 @@ public class GalleryController {
     
     @PutMapping("/folders/{id}")
     public ResponseEntity<?> updateFolder(
-            @PathVariable Integer id,
+            @PathVariable int id,
             @RequestBody Map<String, Object> updates,
             Authentication authentication) {
         try {
@@ -298,7 +298,7 @@ public class GalleryController {
     
     @PatchMapping("/folders/{id}/toggle")
     public ResponseEntity<?> toggleFolderStatus(
-            @PathVariable Integer id,
+            @PathVariable int id,
             Authentication authentication) {
         try {
             GalleryFolder folder = galleryFolderRepository.findById(id)
@@ -400,7 +400,7 @@ public class GalleryController {
      */
     @PostMapping("/folders/{folderId}/upload")
     public ResponseEntity<?> uploadImages(
-            @PathVariable Integer folderId,
+            @PathVariable int folderId,
             @RequestParam("files") MultipartFile[] files,
             Authentication authentication) {
         try {

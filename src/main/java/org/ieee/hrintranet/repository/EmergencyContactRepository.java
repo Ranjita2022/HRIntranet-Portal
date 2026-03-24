@@ -17,5 +17,5 @@ public interface EmergencyContactRepository extends JpaRepository<EmergencyConta
     List<EmergencyContact> findByIsEmergencyAndIsActiveOrderByDisplayOrderAscCreatedAtDesc(
         Boolean isEmergency, Boolean isActive);
     
-    Long countByIsActive(Boolean isActive);
+    long countByIsActive(Boolean isActive);
 }

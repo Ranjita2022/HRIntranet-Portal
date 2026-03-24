@@ -36,7 +36,7 @@ public class AnnouncementController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Announcement> getAnnouncement(@PathVariable Integer id) {
+    public ResponseEntity<Announcement> getAnnouncement(@PathVariable int id) {
         return announcementRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -56,7 +56,7 @@ public class AnnouncementController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAnnouncement(@PathVariable Integer id, 
+    public ResponseEntity<?> updateAnnouncement(@PathVariable int id, 
                                                @RequestBody Announcement announcement,
                                                Authentication authentication) {
         return announcementRepository.findById(id)
@@ -83,7 +83,7 @@ public class AnnouncementController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAnnouncement(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteAnnouncement(@PathVariable int id, Authentication authentication) {
         return announcementRepository.findById(id)
                 .map(announcement -> {
                     auditService.logAction(authentication.getName(), "DELETE", "announcements", announcement.getId(), announcement, null);
@@ -94,7 +94,7 @@ public class AnnouncementController {
     }
     
     @PostMapping("/{id}/upload-image")
-    public ResponseEntity<?> uploadAnnouncementImage(@PathVariable Integer id,
+    public ResponseEntity<?> uploadAnnouncementImage(@PathVariable int id,
                                                      @RequestParam("file") MultipartFile file,
                                                      Authentication authentication) {
         try {

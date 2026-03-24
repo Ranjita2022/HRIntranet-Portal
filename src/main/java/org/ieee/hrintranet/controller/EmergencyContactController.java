@@ -42,7 +42,7 @@ public class EmergencyContactController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<EmergencyContact> getContact(@PathVariable Integer id) {
+    public ResponseEntity<EmergencyContact> getContact(@PathVariable int id) {
         return emergencyContactRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -61,7 +61,7 @@ public class EmergencyContactController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateContact(@PathVariable Integer id, @RequestBody EmergencyContact contact, Authentication authentication) {
+    public ResponseEntity<?> updateContact(@PathVariable int id, @RequestBody EmergencyContact contact, Authentication authentication) {
         return emergencyContactRepository.findById(id)
                 .map(existing -> {
                     EmergencyContact oldData = new EmergencyContact();
@@ -86,7 +86,7 @@ public class EmergencyContactController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteContact(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteContact(@PathVariable int id, Authentication authentication) {
         return emergencyContactRepository.findById(id)
                 .map(contact -> {
                     auditService.logAction(authentication.getName(), "DELETE", "emergency_contacts", contact.getId(), contact, null);

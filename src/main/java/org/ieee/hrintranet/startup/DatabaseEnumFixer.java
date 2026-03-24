@@ -99,7 +99,8 @@ public class DatabaseEnumFixer {
                 jdbcTemplate.update("UPDATE admin_users SET role = 'SUPER_ADMIN' WHERE role = 'super_admin'");
                 jdbcTemplate.update("UPDATE admin_users SET role = 'ADMIN' WHERE role = 'admin'");
                 jdbcTemplate.update("UPDATE admin_users SET role = 'HR_STAFF' WHERE role = 'hr_staff'");
-                int updated = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM admin_users", Integer.class);
+                Integer updatedObj = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM admin_users", Integer.class);
+                int updated = updatedObj != null ? updatedObj : 0;
                 logger.info("Updated {} admin user rows", updated);
                 
                 // Step 3: Convert back to ENUM with uppercase values
@@ -208,7 +209,8 @@ public class DatabaseEnumFixer {
                 // Step 2: Update values to uppercase with underscores
                 logger.info("Step 2: Converting values to uppercase...");
                 jdbcTemplate.update("UPDATE emergency_contacts SET type = UPPER(type)");
-                int updated = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM emergency_contacts", Integer.class);
+                Integer updatedObj = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM emergency_contacts", Integer.class);
+                int updated = updatedObj != null ? updatedObj : 0;
                 logger.info("Updated {} emergency contact rows", updated);
                 
                 // Step 3: Convert back to ENUM with uppercase values

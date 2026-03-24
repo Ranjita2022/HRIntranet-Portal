@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/public")
@@ -26,7 +27,6 @@ public class PublicController {
     private final org.ieee.hrintranet.repository.GalleryFolderRepository galleryFolderRepository;
     private final org.ieee.hrintranet.repository.QuickLinkRepository quickLinkRepository;
     private final org.ieee.hrintranet.repository.EmergencyContactRepository emergencyContactRepository;
-    private final org.ieee.hrintranet.repository.WorkAnniversaryRepository workAnniversaryRepository;
     
     @GetMapping("/portal-data")
     public ResponseEntity<Map<String, Object>> getPortalData(
@@ -59,10 +59,18 @@ public class PublicController {
             joiner.put("Date", "");
             joiner.put("Description", "We are excited to welcome " + emp.getFullName() + 
                                      " as our new " + emp.getPosition() + ".");
-            joiner.put("ImageURL", emp.getProfileImage() != null ? 
-                                   (emp.getProfileImage().getFilePath().startsWith("http") ? 
-                                    emp.getProfileImage().getFilePath() : 
-                                    "/api/uploads/" + emp.getProfileImage().getFilename()) : "");
+            String joinerImageUrl = "";
+            if (emp.getProfileImage() != null) {
+                if (emp.getProfileImage().getFilePath() != null && emp.getProfileImage().getFilePath().startsWith("http")) {
+                    joinerImageUrl = emp.getProfileImage().getFilePath();
+                } else {
+                    joinerImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                            .path("/api/uploads/")
+                            .path(emp.getProfileImage().getFilename())
+                            .toUriString();
+                }
+            }
+            joiner.put("ImageURL", joinerImageUrl);
             return joiner;
         }).collect(Collectors.toList());
         
@@ -111,8 +119,10 @@ public class PublicController {
                     e.put("Title", ann.getTitle());
                     e.put("Date", ann.getPublishDate().toString());
                     e.put("Description", ann.getDescription() != null ? ann.getDescription() : "");
-                    e.put("ImageURL", ann.getImage() != null ? 
-                                     "/api/uploads/" + ann.getImage().getFilename() : "");
+                        String eventImageUrl = ann.getImage() != null ?
+                            ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
+                                .path(ann.getImage().getFilename()).toUriString() : "";
+                        e.put("ImageURL", eventImageUrl);
                     return e;
                 }).collect(Collectors.toList());
         
@@ -128,8 +138,10 @@ public class PublicController {
                     a.put("StartDate", "");
                     a.put("Date", ann.getPublishDate().toString());
                     a.put("Description", ann.getDescription() != null ? ann.getDescription() : "");
-                    a.put("ImageURL", ann.getImage() != null ? 
-                                     "/api/uploads/" + ann.getImage().getFilename() : "");
+                        String annImageUrl = ann.getImage() != null ?
+                            ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
+                                .path(ann.getImage().getFilename()).toUriString() : "";
+                        a.put("ImageURL", annImageUrl);
                     a.put("Priority", ann.getPriority());
                     return a;
                 }).collect(Collectors.toList());
@@ -157,60 +169,107 @@ public class PublicController {
             c.put("ID", slide.getId());
             c.put("Title", slide.getTitle() != null ? slide.getTitle() : "");
             c.put("Subtitle", slide.getSubtitle() != null ? slide.getSubtitle() : "");
-            c.put("ImageURL", slide.getImage() != null ? 
-                             "/api/uploads/" + slide.getImage().getFilename() : 
-                             (slide.getImageUrl() != null ? slide.getImageUrl() : ""));
+            String slideImageUrl = "";
+            if (slide.getImage() != null) {
+                slideImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
+                        .path(slide.getImage().getFilename()).toUriString();
+            } else if (slide.getImageUrl() != null) {
+                slideImageUrl = slide.getImageUrl();
+            }
+            c.put("ImageURL", slideImageUrl);
             c.put("DisplayOrder", slide.getDisplayOrder());
             return c;
         }).collect(Collectors.toList());
         
-        // Get published work anniversaries (if in current month, show until month end)
+        // Calculate work anniversaries dynamically from employee start dates (if in current month, show until month end)
         LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
-        List<WorkAnniversary> publishedAnniversaries = workAnniversaryRepository
-                .findPublishedAnniversaries(today, endOfMonth);
+        List<Map<String, Object>> celebrations = new java.util.ArrayList<>();
         
-        List<Map<String, Object>> celebrations = new java.util.ArrayList<>(publishedAnniversaries.stream().map(wa -> {
-            Map<String, Object> c = new HashMap<>();
-            c.put("ID", wa.getId());
-            c.put("Type", "anniversary");
-            c.put("Name", wa.getEmployee().getFullName());
-            c.put("Date", wa.getAnniversaryDate().toString());
-            c.put("Years", wa.getAnniversaryYear());
-            c.put("Department", wa.getEmployee().getDepartment());
-            c.put("ImageURL", wa.getEmployee().getProfileImage() != null ? 
-                             (wa.getEmployee().getProfileImage().getFilePath().startsWith("http") ? 
-                              wa.getEmployee().getProfileImage().getFilePath() : 
-                              "/api/uploads/" + wa.getEmployee().getProfileImage().getFilename()) : "");
-            return c;
-        }).collect(Collectors.toList()));
-        
-        // Get upcoming birthdays (if in current month, show until month end)
+        // Get all active employees for calculating work anniversaries and birthdays
         List<Employee> allActiveEmployees = employeeRepository.findAll().stream()
-                .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE && emp.getBirthDate() != null)
+                .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
                 .collect(Collectors.toList());
         
+        // Calculate work anniversaries dynamically for all active employees
+        // Show only the HIGHEST/MOST RECENT anniversary milestone reached
+        // Data is derived directly from employee start dates for this endpoint.
         for (Employee emp : allActiveEmployees) {
-            LocalDate birthDate = emp.getBirthDate();
-            // Calculate birthday in current year
-            LocalDate upcomingBirthday = birthDate.withYear(today.getYear());
+            LocalDate startDate = emp.getStartDate();
+            if (startDate == null || startDate.isAfter(today)) continue;
             
-            // If birthday already passed this year, check next year
-            if (upcomingBirthday.isBefore(today)) {
-                upcomingBirthday = birthDate.withYear(today.getYear() + 1);
+            // Calculate years of service (complete years passed)
+            int yearsOfService = today.getYear() - startDate.getYear();
+            
+            // Adjust if anniversary hasn't occurred yet this year
+            if (today.getMonthValue() < startDate.getMonthValue() || 
+                (today.getMonthValue() == startDate.getMonthValue() && today.getDayOfMonth() < startDate.getDayOfMonth())) {
+                yearsOfService--;
             }
             
-            // Include if birthday is in current month (today through end of month)
-            if (!upcomingBirthday.isBefore(today) && !upcomingBirthday.isAfter(endOfMonth)) {
+            // Show only the HIGHEST milestone (not all prior ones)
+            if (yearsOfService >= 1) {
+                LocalDate anniversaryDate = startDate.plusYears(yearsOfService);
+                
+                // Include in celebrations if anniversary date falls within the current MONTH (1st to last day)
+                // This includes anniversaries that already happened this month
+                LocalDate startOfMonth = today.withDayOfMonth(1);
+                if (!anniversaryDate.isBefore(startOfMonth) && !anniversaryDate.isAfter(endOfMonth)) {
+                    Map<String, Object> anniversary = new HashMap<>();
+                    anniversary.put("ID", emp.getId() + "-anniversary-" + yearsOfService);
+                    anniversary.put("Type", "anniversary");
+                    anniversary.put("Name", emp.getFullName());
+                    anniversary.put("Date", anniversaryDate.toString());
+                    anniversary.put("Years", yearsOfService);
+                    anniversary.put("Department", emp.getDepartment());
+                    String annImg = "";
+                    if (emp.getProfileImage() != null) {
+                        if (emp.getProfileImage().getFilePath() != null && emp.getProfileImage().getFilePath().startsWith("http")) {
+                            annImg = emp.getProfileImage().getFilePath();
+                        } else {
+                            annImg = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
+                                    .path(emp.getProfileImage().getFilename()).toUriString();
+                        }
+                    }
+                    anniversary.put("ImageURL", annImg);
+                    celebrations.add(anniversary);
+                }
+            }
+        }
+        
+        // Calculate and add birthdays that fall within the CURRENT MONTH (1st through month end)
+        for (Employee emp : allActiveEmployees) {
+            if (emp.getBirthDate() == null) continue;
+
+            LocalDate birthDate = emp.getBirthDate();
+
+            // Safe construction of birthday in current year (handles Feb 29 -> Feb 28 on non-leap years)
+            int year = today.getYear();
+            int monthVal = birthDate.getMonthValue();
+            int dayVal = birthDate.getDayOfMonth();
+            int maxDay = java.time.Month.of(monthVal).length(java.time.Year.isLeap(year));
+            int daySafe = Math.min(dayVal, maxDay);
+            LocalDate birthdayThisYear = LocalDate.of(year, monthVal, daySafe);
+
+            LocalDate startOfMonth = today.withDayOfMonth(1);
+
+            // Include if birthdayThisYear falls within current month (including days earlier than today)
+            if (!birthdayThisYear.isBefore(startOfMonth) && !birthdayThisYear.isAfter(endOfMonth)) {
                 Map<String, Object> birthday = new HashMap<>();
-                birthday.put("ID", emp.getId());
+                birthday.put("ID", emp.getId() + "-birthday");
                 birthday.put("Type", "birthday");
                 birthday.put("Name", emp.getFullName());
-                birthday.put("Date", upcomingBirthday.toString());
+                birthday.put("Date", birthdayThisYear.toString());
                 birthday.put("Department", emp.getDepartment());
-                birthday.put("ImageURL", emp.getProfileImage() != null ? 
-                                       (emp.getProfileImage().getFilePath().startsWith("http") ? 
-                                        emp.getProfileImage().getFilePath() : 
-                                        "/api/uploads/" + emp.getProfileImage().getFilename()) : "");
+                String bImg = "";
+                if (emp.getProfileImage() != null) {
+                    if (emp.getProfileImage().getFilePath() != null && emp.getProfileImage().getFilePath().startsWith("http")) {
+                        bImg = emp.getProfileImage().getFilePath();
+                    } else {
+                        bImg = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
+                                .path(emp.getProfileImage().getFilename()).toUriString();
+                    }
+                }
+                birthday.put("ImageURL", bImg);
                 celebrations.add(birthday);
             }
         }

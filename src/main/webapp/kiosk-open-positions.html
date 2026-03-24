@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Positions - IEEE Kiosk Display</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kiosk-header {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 3px solid #ffc107;
+        }
+
+        .kiosk-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .kiosk-header p {
+            font-size: 1.3rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .kiosk-container {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .month-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .month-selector label {
+            font-weight: 600;
+            color: #00629B;
+            margin: 0;
+        }
+
+        .month-selector select {
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #00629B;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            background: white;
+        }
+
+        .refresh-btn {
+            background: #00629B;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #003C71;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .positions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .position-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .position-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .position-header {
+            background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
+            color: white;
+            padding: 1.5rem;
+            border-bottom: 3px solid #ffc107;
+        }
+
+        .position-header h2 {
+            font-size: 1.5rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .requisition-id {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .position-body {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .position-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .position-field-label {
+            font-weight: 600;
+            color: #00629B;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .position-field-value {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .location-badge {
+            display: inline-block;
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .posting-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status-badge.open {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-badge.closed {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .status-badge.on-hold {
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        .apply-button {
+            margin-top: auto;
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .apply-button:hover {
+            background: #ffb300;
+            transform: scale(1.02);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+        }
+
+        .empty-state i {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .loading .spinner-border {
+            color: #ffc107;
+            width: 4rem;
+            height: 4rem;
+        }
+
+        /* Auto-refresh indicator */
+        .auto-refresh-info {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .kiosk-header h1 {
+                font-size: 2rem;
+            }
+
+            .positions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .month-selector {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .month-selector select {
+                width: 100%;
+            }
+
+            .refresh-btn {
+                width: 100%;
+            }
+        }
+
+        /* Auto-scroll animation */
+        @keyframes scroll-animation {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="kiosk-header">
+        <h1><i class="bi bi-briefcase-fill"></i> Open Positions</h1>
+        <p>Join IEEE - Explore Career Opportunities</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="kiosk-container">
+        <!-- Month Selector -->
+        <div class="month-selector">
+            <label for="monthFilter">View Positions for:</label>
+            <select id="monthFilter" onchange="loadPositionsByMonth()">
+                <option value="">Current Month</option>
+            </select>
+            <button class="refresh-btn" onclick="loadPositionsByMonth()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading" style="display: none;">
+            <div class="spinner-border" role="status"></div>
+            <p style="margin-top: 1rem;">Loading positions...</p>
+        </div>
+
+        <!-- Positions Grid -->
+        <div id="positionsGrid" class="positions-grid" style="display: none;"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="bi bi-inbox"></i>
+            <h2>No Positions Available</h2>
+            <p>No open positions for this month. Please check back later!</p>
+        </div>
+    </div>
+
+    <!-- Auto-refresh Indicator -->
+    <div class="auto-refresh-info">
+        <i class="bi bi-arrow-repeat"></i> Auto-refreshes every 5 minutes
+    </div>
+
+    <!-- Scripts -->
+    <script src="vendor/jquery/jquery-3.7.1.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        const API_BASE_URL = CONFIG.API_BASE_URL;
+        let allPositions = [];
+        let autoRefreshInterval = null;
+
+        $(document).ready(function() {
+            loadAvailableMonths();
+            loadPositionsByMonth();
+            
+            // Auto-refresh every 5 minutes
+            autoRefreshInterval = setInterval(() => {
+                loadPositionsByMonth();
+            }, 5 * 60 * 1000);
+        });
+
+        function loadAvailableMonths() {
+            $.ajax({
+                url: `${API_BASE_URL}/public/positions/available-months`,
+                method: 'GET',
+                success: function(months) {
+                    const $select = $('#monthFilter');
+                    months.forEach(month => {
+                        const [year, monthNum] = month.split('-');
+                        const date = new Date(year, parseInt(monthNum) - 1);
+                        const label = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                        $select.append(`<option value="${month}">${label}</option>`);
+                    });
+                },
+                error: function(e) {
+                    console.error('Error loading months:', e);
+                }
+            });
+        }
+
+        function loadPositionsByMonth() {
+            const selectedMonth = $('#monthFilter').val();
+            
+            $('#loadingState').show();
+            $('#positionsGrid').hide();
+            $('#emptyState').hide();
+
+            let url = `${API_BASE_URL}/public/positions/by-month`;
+            if (selectedMonth) {
+                const [year, month] = selectedMonth.split('-');
+                url += `?month=${month}&year=${year}`;
+            } else {
+                url += `?month=${new Date().getMonth() + 1}&year=${new Date().getFullYear()}`;
+            }
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                success: function(positions) {
+                    $('#loadingState').hide();
+                    allPositions = positions || [];
+                    displayPositions();
+                },
+                error: function(e) {
+                    $('#loadingState').hide();
+                    console.error('Error loading positions:', e);
+                    $('#emptyState').show();
+                    $('#emptyState h2').text('Error Loading Positions');
+                    $('#emptyState p').text('Please try again later.');
+                }
+            });
+        }
+
+        function displayPositions() {
+            const $grid = $('#positionsGrid');
+            $grid.empty();
+
+            if (allPositions.length === 0) {
+                $('#emptyState').show();
+                return;
+            }
+
+            $('#emptyState').hide();
+
+            allPositions.forEach(position => {
+                const statusClass = position.status === 'OPEN' ? 'open' : 
+                                   position.status === 'CLOSED' ? 'closed' : 'on-hold';
+                const statusText = position.status === 'OPEN' ? 'Open' : 
+                                  position.status === 'CLOSED' ? 'Closed' : 'On Hold';
+
+                const card = `
+                    <div class="position-card">
+                        <div class="position-header">
+                            <h2>${escapeHtml(position.requisitionTitle)}</h2>
+                            ${position.requisitionId ? `<p class="requisition-id"><strong>ID:</strong> ${escapeHtml(position.requisitionId)}</p>` : ''}
+                        </div>
+                        <div class="position-body">
+                            <div class="position-field">
+                                <span class="position-field-label"><i class="bi bi-geo-alt"></i> Location</span>
+                                <span class="location-badge">${escapeHtml(position.location)}</span>
+                            </div>
+                            
+                            <div class="position-field">
+                                <span class="position-field-label"><i class="bi bi-calendar-event"></i> Posted Date</span>
+                                <span class="posting-date">${formatDate(position.postingDate)}</span>
+                            </div>
+
+                            <div class="position-field">
+                                <span class="position-field-label"><i class="bi bi-tag"></i> Status</span>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+
+                            ${position.description ? `
+                            <div class="position-field">
+                                <span class="position-field-label"><i class="bi bi-file-text"></i> Description</span>
+                                <span class="position-field-value" style="font-size: 0.95rem; line-height: 1.4;">${escapeHtml(position.description)}</span>
+                            </div>
+                            ` : ''}
+
+                            <button class="apply-button" onclick="window.open('index.html', '_blank')">
+                                <i class="bi bi-arrow-right"></i> Learn More & Apply
+                            </button>
+                        </div>
+                    </div>
+                `;
+                $grid.append(card);
+            });
+
+            $grid.show();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Clean up interval on page unload
+        window.addEventListener('beforeunload', function() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        });
+    </script>
+</body>
+</html>

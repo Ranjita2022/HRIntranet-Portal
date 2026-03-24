@@ -9,9 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Admin User Management Controller
@@ -43,9 +43,10 @@ public class AdminUserController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> getAdminUserById(@PathVariable Integer id) {
+    public ResponseEntity<?> getAdminUserById(@PathVariable int id) {
         return adminUserRepository.findById(id)
-            .map(user -> {
+            .map(u -> {
+                AdminUser user = Objects.requireNonNull(u);
                 user.setPasswordHash("***");
                 return ResponseEntity.ok(user);
             })
@@ -90,12 +91,13 @@ public class AdminUserController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> updateAdminUser(
-            @PathVariable Integer id,
+        public ResponseEntity<?> updateAdminUser(
+            @PathVariable int id,
             @RequestBody AdminUserUpdateRequest request) {
         
         return adminUserRepository.findById(id)
-            .map(user -> {
+            .map(u -> {
+                AdminUser user = Objects.requireNonNull(u);
                 // Update fields if provided
                 if (request.getFullName() != null) {
                     user.setFullName(request.getFullName());
@@ -138,13 +140,14 @@ public class AdminUserController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> deleteAdminUser(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteAdminUser(@PathVariable int id) {
         return adminUserRepository.findById(id)
-            .map(user -> {
+            .map(u -> {
+                AdminUser user = Objects.requireNonNull(u);
                 // Prevent deleting last SUPER_ADMIN
                 if (user.getRole() == AdminUser.UserRole.SUPER_ADMIN) {
                     long superAdminCount = adminUserRepository.findAll().stream()
-                        .filter(u -> u.getRole() == AdminUser.UserRole.SUPER_ADMIN)
+                        .filter(a -> a.getRole() == AdminUser.UserRole.SUPER_ADMIN)
                         .count();
                     
                     if (superAdminCount <= 1) {
@@ -164,10 +167,11 @@ public class AdminUserController {
      */
     @PatchMapping("/{id}/toggle-active")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> toggleActiveStatus(@PathVariable Integer id) {
+    public ResponseEntity<?> toggleActiveStatus(@PathVariable int id) {
         return adminUserRepository.findById(id)
-            .map(user -> {
-                user.setIsActive(!user.getIsActive());
+            .map(u -> {
+                AdminUser user = Objects.requireNonNull(u);
+                user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
                 AdminUser savedUser = adminUserRepository.save(user);
                 savedUser.setPasswordHash("***");
                 return ResponseEntity.ok(savedUser);
@@ -181,7 +185,8 @@ public class AdminUserController {
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
         return adminUserRepository.findByUsername(request.getUsername())
-            .map(user -> {
+            .map(u -> {
+                AdminUser user = Objects.requireNonNull(u);
                 // Verify old password
                 if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
                     return ResponseEntity.badRequest()

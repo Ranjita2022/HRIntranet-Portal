@@ -145,19 +145,19 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
+    gap: 0.4rem;
+    padding: 0.2rem;
 }
 
 .stat-number {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--dark-color);
 }
 
 .stat-label {
     font-size: 0.9rem;
-    color: #666;
+    color: #0c0c0c;
 }
 
 /* Section Styles */
@@ -264,7 +264,7 @@ html {
     background: white;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
-    padding: 1.25rem;
+    padding: 1.1rem;
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -923,14 +923,18 @@ html {
 
 /* Team Updates Horizontal Scroll Wrapper */
 .team-updates-scroll-wrapper {
-    overflow: hidden;
+    overflow-x: auto; /* allow horizontal scrolling */
+    overflow-y: hidden;
     position: relative;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px; /* space for scrollbar */
 }
 
 .team-updates-scroll-track {
     display: flex;
     gap: 1.5rem;
     width: max-content;
+    /* keep optional auto-scroll animation but allow it to be paused via JS or hover */
     animation: scrollTeamUpdates 120s linear infinite;
 }
 
@@ -939,12 +943,20 @@ html {
 }
 
 @keyframes scrollTeamUpdates {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Slightly larger horizontal scrollbar for kiosk/TV visibility */
+.team-updates-scroll-wrapper::-webkit-scrollbar {
+    height: 12px;
+}
+.team-updates-scroll-wrapper::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.06);
+}
+.team-updates-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.35);
+    border-radius: 6px;
 }
 
 /* Unified Team Card Wrapper */
@@ -1037,7 +1049,14 @@ html {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Meta wrapper groups date + description and stays at the bottom */
+.team-card-meta {
     margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .team-card-description {
@@ -1047,20 +1066,29 @@ html {
     margin-bottom: 0;
 }
 
+/* TV Mode - Full size team updates descriptions */
+body.tv-mode .team-card-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #495057;
+    display: block !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
 /* Badge for NEW joiners */
 .badge-new {
     position: absolute;
     top: 12px;
-    left: 12px;
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-    color: white;
+    right: 12px;
+    background: #fff3cd;
+    color: #856404;
     padding: 0.35rem 0.75rem;
     border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 600;
     z-index: 10;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Celebration Badge (Birthday/Anniversary) */
@@ -1145,6 +1173,118 @@ html {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* ========================================
+   CELEBRATION LIST CARDS (Birthday/Anniversary)
+   Horizontal card with avatar, info, badge, date
+======================================== */
+.cel-list-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 0.65rem;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+
+.cel-list-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.cel-list-card.birthday {
+    border-left-color: #dc3545;
+}
+
+.cel-list-card.anniversary {
+    border-left-color: #6f42c1;
+}
+
+.cel-list-avatar-wrap {
+    flex-shrink: 0;
+}
+
+.cel-list-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #e9ecef;
+}
+
+.cel-list-avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.cel-list-avatar-placeholder.birthday {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.cel-list-avatar-placeholder.anniversary {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+.cel-list-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cel-list-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--dark-color);
+    margin: 0 0 0.15rem 0;
+}
+
+.cel-list-dept {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.cel-list-meta {
+    flex-shrink: 0;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.cel-list-badge {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cel-list-badge.birthday {
+    background: #ffeef0;
+    color: #dc3545;
+}
+
+.cel-list-badge.anniversary {
+    background: #f3e8ff;
+    color: #6f42c1;
+}
+
+.cel-list-date {
+    font-size: 0.8rem;
+    color: #888;
+    white-space: nowrap;
 }
 
 .celebration-badge-top {
@@ -1264,6 +1404,125 @@ html {
 /* =============================================
    EMERGENCY CONTACTS
    ============================================= */
+
+/* Announcements and Holidays - vertical scroll wrappers */
+.announcements-scroll-wrapper {
+    /* fixed height so scrollbar is consistently positioned in the layout */
+    height: 420px;
+    overflow-y: scroll; /* always show scrollbar (even when not overflowing on some platforms) */
+    overflow-x: hidden;
+    padding-right: 8px; /* keep content clear of scrollbar */
+}
+
+.announcements-scroll-wrapper::-webkit-scrollbar {
+    width: 12px;
+}
+.announcements-scroll-wrapper::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.06);
+}
+.announcements-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.35);
+    border-radius: 5px;
+}
+
+/* Firefox scrollbar styles and cross-browser hints */
+.announcements-scroll-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.06);
+    -ms-overflow-style: auto;
+}
+
+/* If you prefer the scrollbar to appear as a colored persistent bar on the left,
+   uncomment the block below and adjust the color as needed.
+
+.announcements-scroll-wrapper::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 6px;
+    background: linear-gradient(180deg, #0dcaf0, #0d6efd);
+    border-radius: 4px;
+}
+*/
+
+.holiday-list {
+    max-height: 380px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+    position: relative;
+    scroll-behavior: smooth;
+}
+
+/* Note: Holiday auto-scroll requires JavaScript implementation 
+   due to lack of wrapper container in HTML structure */
+
+.holiday-list::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.06);
+}
+
+@media (max-width: 991.98px) {
+    .announcements-scroll-wrapper {
+        max-height: 300px;
+    }
+    .holiday-list {
+        max-height: 260px;
+    }
+}
+
+/* Visual mask to shorten the visible scrollbar thumb length
+   so it matches the compact appearance of the team-updates scrollbar. */
+.announcements-scroll-wrapper,
+.holiday-list {
+    position: relative; /* ensure pseudo elements align to wrapper */
+}
+.announcements-scroll-wrapper::before,
+.announcements-scroll-wrapper::after,
+.holiday-list::before,
+.holiday-list::after {
+    content: '';
+    position: absolute;
+    right: 0; /* cover the scrollbar area on the right */
+    width: 18px; /* slightly wider than scrollbar to fully mask */
+    background: #ffffff; /* matches page background; change for dark modes if needed */
+    z-index: 10;
+    pointer-events: none;
+}
+.announcements-scroll-wrapper::before,
+.holiday-list::before {
+    top: 0;
+    height: 40%; /* larger masks -> much smaller visible thumb */
+    border-bottom-left-radius: 4px;
+}
+.announcements-scroll-wrapper::after,
+.holiday-list::after {
+    bottom: 0;
+    height: 40%; /* larger masks -> much smaller visible thumb */
+    border-top-left-radius: 4px;
+}
+
+/* Ensure the visible scrollbar track in the middle remains the same width as team updates */
+.announcements-scroll-wrapper::-webkit-scrollbar,
+.holiday-list::-webkit-scrollbar {
+    width: 10px;
+}
+.announcements-scroll-wrapper::-webkit-scrollbar-thumb,
+.holiday-list::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.4);
+    border-radius: 10px;
+    border: 3px solid var(--light-color); /* pill look against masked edges */
+    min-height: 24px; /* ensure thumb is always draggable */
+}
+
+/* Use page background for masks so they blend in (works for default light theme) */
+.announcements-scroll-wrapper::before,
+.announcements-scroll-wrapper::after,
+.holiday-list::before,
+.holiday-list::after {
+    background: var(--light-color);
+}
 
 .emergency-card {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
@@ -1440,8 +1699,10 @@ body.dark-mode .scroll-wrapper::after {
    TV / KIOSK MODE STYLES
    ============================================= */
 
+/* TV Mode layout - single screen view */
 body.tv-mode {
-    overflow: hidden;
+    overflow: hidden !important;
+    height: 100vh;
 }
 
 body.tv-mode .navbar {
@@ -1458,6 +1719,7 @@ body.tv-mode .stats-bar {
 
 body.tv-mode .stat-number {
     font-size: 2rem;
+    font-weight: 700;
 }
 
 body.tv-mode .stat-label {
@@ -1465,30 +1727,31 @@ body.tv-mode .stat-label {
 }
 
 body.tv-mode .stat-item i {
-    font-size: 1.75rem !important;
+    font-size: 2rem !important;
 }
 
 body.tv-mode .carousel-item img,
 body.tv-mode .carousel-placeholder {
-    height: 30vh;
+    height: 60vh;
 }
 
 body.tv-mode .carousel-caption h3 {
-    font-size: 1.75rem;
+    font-size: 2rem;
+    font-weight: 600;
 }
 
 body.tv-mode .carousel-caption p {
-    font-size: 1rem;
+    font-size: 1.2rem;
 }
 
 body.tv-mode .section-title {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
 }
 
 body.tv-mode .section-icon {
-    width: 45px;
-    height: 45px;
-    font-size: 1.25rem;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
 }
 
 body.tv-mode .section-header {
@@ -1497,57 +1760,73 @@ body.tv-mode .section-header {
 }
 
 body.tv-mode .joiner-name {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 body.tv-mode .joiner-position {
-    font-size: 0.95rem;
+    font-size: 1rem;
 }
 
 body.tv-mode .joiner-department {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 body.tv-mode .joiner-date {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 body.tv-mode .joiner-description {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+}
+
+/* TV Mode - Enhanced Team Updates Display */
+body.tv-mode .team-card-name {
+    font-size: 1.5rem !important;
+    font-weight: 600;
+}
+
+body.tv-mode .team-card-position {
+    font-size: 1.15rem !important;
+}
+
+body.tv-mode .team-card-department {
+    font-size: 1rem !important;
+    padding: 0.4rem 1rem;
+}
+
+body.tv-mode .team-card-date {
+    font-size: 1rem !important;
 }
 
 body.tv-mode .joiner-card-wrapper {
-    width: 280px;
+    width: 300px;
 }
 
-body.tv-mode .holiday-day {
-    font-size: 1.5rem;
+/* TV Mode - Enhanced Team Card Display */
+body.tv-mode .team-card-wrapper {
+    min-width: 400px !important;
+    margin-right: 2rem;
 }
 
-body.tv-mode .holiday-month {
-    font-size: 0.8rem;
-}
-
-body.tv-mode .holiday-title {
-    font-size: 1rem;
-}
-
-body.tv-mode .holiday-description {
-    font-size: 0.85rem;
+body.tv-mode .team-card {
+    padding: 1rem;
+    min-height: 280px;
 }
 
 body.tv-mode .announcement-title {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 body.tv-mode .announcement-description {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
 }
 
 body.tv-mode .announcement-icon {
-    width: 35px;
-    height: 35px;
-    font-size: 1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
 }
 
 body.tv-mode .announcement-card {
@@ -1556,39 +1835,25 @@ body.tv-mode .announcement-card {
 }
 
 body.tv-mode .celebration-card {
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-body.tv-mode .celebration-name {
-    font-size: 0.9rem;
-}
-
-body.tv-mode .celebration-avatar,
-body.tv-mode .celebration-avatar-placeholder {
-    width: 40px;
-    height: 40px;
-}
-
-body.tv-mode .holiday-card {
     padding: 0.75rem;
     margin-bottom: 0.75rem;
 }
 
-body.tv-mode .holiday-date-box {
-    min-width: 60px;
+body.tv-mode .celebration-name {
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-/* TV Mode layout - single screen view */
-body.tv-mode {
-    overflow: hidden;
-    height: 100vh;
+body.tv-mode .celebration-avatar,
+body.tv-mode .celebration-avatar-placeholder {
+    width: 50px;
+    height: 50px;
 }
 
+/* TV Mode breaking news and countdown */
 body.tv-mode .breaking-news-bar {
-    display: flex !important;
-    font-size: 1.2rem;
-    padding: 0.75rem 0;
+    font-size: 1.1rem;
+    padding: 0.2rem 0;
 }
 
 body.tv-mode .breaking-label {
@@ -1601,22 +1866,37 @@ body.tv-mode .breaking-ticker-content {
 }
 
 body.tv-mode .countdown-banner {
-    display: flex !important;
-    padding: 0.5rem 0;
+    padding: 1rem 0;
+}
+
+body.tv-mode .countdown-title {
+    font-size: 1.75rem;
+}
+
+body.tv-mode .countdown-value {
+    font-size: 2.5rem;
+}
+
+body.tv-mode .countdown-unit-label {
+    font-size: 1rem;
 }
 
 body.tv-mode main {
-    padding: 1rem 0;
+    padding: 0.5rem 0;
     overflow: visible;
+    display: block !important;
+    height: auto;
 }
 
 body.tv-mode main .container {
     max-width: 100%;
     padding: 0 2rem;
+    height: auto;
+    overflow: visible;
 }
 
 body.tv-mode main .container > .row {
-    display: block;
+    display: block !important;
 }
 
 body.tv-mode .col-lg-8,
@@ -1624,57 +1904,180 @@ body.tv-mode .col-lg-4 {
     flex: 0 0 100%;
     max-width: 100%;
     width: 100%;
+    display: block !important;
 }
 
-body.tv-mode #joiners {
-    margin-bottom: 1.5rem !important;
-}
-
-body.tv-mode #holidays {
-    margin-bottom: 1rem !important;
-}
-
-body.tv-mode .holiday-list {
-    max-height: 400px;
-    overflow: hidden;
-    position: relative;
-}
-
-body.tv-mode .tv-active .holiday-list {
-    animation: slowScrollContent 60s linear infinite;
+#celebrations {
+    display: none !important;
 }
 
 body.tv-mode #quicklinks,
-body.tv-mode #emergency {
+body.tv-mode #emergency,
+body.tv-mode #joiners {
     display: none !important;
+}
+
+body.tv-mode #teamUpdates {
+    margin-bottom: 1rem !important;
+}
+
+body.tv-mode #announcements {
+    margin-bottom: 1rem !important;
 }
 
 body.tv-mode #celebrations {
     margin-bottom: 1rem !important;
 }
 
-body.tv-mode .celebrations-list {
-    max-height: 400px;
-    overflow: hidden;
-    position: relative;
+body.tv-mode .celebrations-scroll-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
 }
 
-body.tv-mode .tv-active .celebrations-list {
-    animation: slowScrollContent 60s linear infinite;
+body.tv-mode .celebrations-scroll-track {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-body.tv-mode #announcements {
-    /* display controlled by rotation classes */
+/* TV mode: scale up celebration list cards */
+body.tv-mode .cel-list-card {
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    border-left-width: 4px;
+}
+
+body.tv-mode .cel-list-avatar,
+body.tv-mode .cel-list-avatar-placeholder {
+    width: 64px;
+    height: 64px;
+    font-size: 1.75rem;
+}
+
+body.tv-mode .cel-list-name {
+    font-size: 1.3rem;
+}
+
+body.tv-mode .cel-list-dept {
+    font-size: 1.05rem;
+}
+
+body.tv-mode .cel-list-badge {
+    font-size: 0.95rem;
+    padding: 0.35rem 0.85rem;
+}
+
+body.tv-mode .cel-list-date {
+    font-size: 1rem;
+}
+
+body.tv-mode .carousel-section {
+    margin-bottom: 0.5rem !important;
+}
+
+/* TV mode: stretch holidays to fill the screen with 5 static cards */
+body.tv-mode #holidays {
+    height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+}
+
+body.tv-mode .holiday-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: none !important;
+    overflow: hidden !important;
+    padding-right: 0 !important;
+}
+
+body.tv-mode .holiday-list .holiday-card {
+    flex: 1;
+    min-height: 0;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 0 !important;
+    gap: 0.9rem;
+}
+
+body.tv-mode .holiday-date-box {
+    min-width: 80px !important;
+    padding: 0.5rem !important;
+}
+
+body.tv-mode .holiday-day {
+    font-size: 1.8rem !important;
+    font-weight: 700;
+}
+
+body.tv-mode .holiday-month {
+    font-size: 0.9rem !important;
+    font-weight: 700;
+}
+
+body.tv-mode .holiday-title {
+    font-size: 1.45rem !important;
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
+}
+
+body.tv-mode .holiday-description {
+    font-size: 1.1rem !important;
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* Keep holidays static in TV mode: render first 5 only */
+body.tv-mode .holiday-list .holiday-card:nth-child(n+6) {
+    display: none;
+}
+
+/* TV mode: keep content static but hide visible scrollbar UI */
+body.tv-mode .holiday-list,
+body.tv-mode .announcements-scroll-wrapper {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body.tv-mode .holiday-list::-webkit-scrollbar,
+body.tv-mode .announcements-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+body.tv-mode .holiday-list::before,
+body.tv-mode .holiday-list::after,
+body.tv-mode .announcements-scroll-wrapper::before,
+body.tv-mode .announcements-scroll-wrapper::after {
+    display: none !important;
+}
+
+body.tv-mode .team-updates-scroll-wrapper {
+    max-height: none !important;
+    overflow: hidden !important;
+    height: auto !important;
+}
+
+body.tv-mode .team-updates-scroll-track {
+    animation-name: scrollTeamUpdates;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    /* animation-duration is set dynamically by JS based on content width */
+    padding: 2rem 0;
 }
 
 body.tv-mode .announcements-scroll-wrapper {
-    max-height: 400px;
-    overflow: hidden;
-    position: relative;
+    max-height: none !important;
+    overflow: visible !important;
 }
 
-body.tv-mode .tv-active .announcements-scroll-track {
-    animation: slowScrollContent 60s linear infinite;
+body.tv-mode #announcementsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: none;
 }
 
 @keyframes slowScrollContent {
@@ -1704,6 +2107,46 @@ body.tv-mode .stats-bar {
 
 body.tv-mode .countdown-banner {
     padding: 0.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Infinite upward scroll animation for TV mode content */
+@keyframes tvInfiniteScrollUp {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+body.tv-mode .tv-infinite-scrolling {
+    overflow: hidden !important;
+}
+
+/* Inner track that actually moves via translateY animation */
+body.tv-mode .tv-scroll-track {
+    will-change: transform;
+}
+
+/* When a section is actively scrolling, enforce clipping on all child wrappers */
+body.tv-mode .tv-section-scroll-active {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+body.tv-mode .tv-section-scroll-active > .announcements-scroll-wrapper,
+body.tv-mode .tv-section-scroll-active > .celebrations-scroll-wrapper,
+body.tv-mode .tv-section-scroll-active > .holiday-list {
+    flex: 1 !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
 }
 
 body.tv-mode .countdown-icon {
@@ -1830,33 +2273,6 @@ body.tv-mode .tv-info-badge {
     }
 }
 
-/* Vertical scroll for announcements */
-.announcements-scroll-wrapper {
-    max-height: 400px;
-    overflow: hidden;
-    position: relative;
-}
-
-.announcements-scroll-track {
-    animation: scrollAnnouncements 20s linear infinite;
-}
-
-.announcements-scroll-track:hover {
-    animation-play-state: paused;
-}
-
-@keyframes scrollAnnouncements {
-    0%, 5% {
-        transform: translateY(0);
-    }
-    45%, 55% {
-        transform: translateY(calc(-50% + 200px));
-    }
-    95%, 100% {
-        transform: translateY(0);
-    }
-}
-
 /* TV Mode specific scroll adjustments */
 body.tv-mode .joiners-scroll-track {
     animation-duration: 20s;
@@ -1886,14 +2302,6 @@ body.tv-mode .no-data {
     display: none !important;
 }
 
-/* TV Mode Section Rotation */
-body.tv-mode #joiners:not(.no-data),
-body.tv-mode #holidays:not(.no-data),
-body.tv-mode #celebrations:not(.no-data),
-body.tv-mode #announcements:not(.no-data) {
-    display: none; /* Hidden by default, shown by .tv-active */
-}
-
 body.tv-mode .tv-hidden {
     display: none !important;
 }
@@ -1914,5 +2322,243 @@ body.tv-mode .tv-active {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* =============================================
+   Open Positions Section Styles
+   ============================================= */
+
+/* Positions are visible by default; TV mode hides via tv-hidden-section */
+#positions {
+    display: block;
+}
+
+.tv-position-visible {
+    display: block !important;
+}
+
+/* Utility to force-hide sections during TV rotation */
+.tv-hidden-section {
+    display: none !important;
+}
+
+/* Horizontal scrolling wrapper for positions (Home shows scrollbar; TV animates) */
+.positions-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.positions-scroll-track {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem 0 1rem 0;
+    animation: scrollPositions 20s linear infinite;
+}
+
+body.tv-mode .positions-scroll-wrapper {
+    overflow: hidden;
+}
+
+.positions-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+.position-card-wrapper {
+    width: 350px;
+    flex-shrink: 0;
+}
+
+.position-card-tv {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    background: white;
+    height: 100%;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.position-card-tv:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.position-card-header-tv {
+    background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
+    color: white;
+    padding: 1.8rem 1.5rem;
+    border-bottom: 4px solid #ffc107;
+    margin-bottom: 0;
+}
+
+.position-title-tv {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.6rem 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.requisition-id-tv {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    margin: 0;
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.position-card-body-tv {
+    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.card-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.2rem 1.4rem 1.2rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.apply-button-tv {
+    color: #000;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    background: rgb(255, 193, 7);
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.apply-button-tv:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.learn-more-btn {
+    background: transparent;
+    color: #263238;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.learn-more-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.position-field-tv {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.2rem;
+}
+
+.position-field-label-tv {
+    font-weight: 600;
+    color: #00629B;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.1rem;
+}
+
+.location-badge-tv {
+    display: block;
+    background: #e7f3ff;
+    color: #0066cc;
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.posting-date-tv {
+    color: #555;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.status-badge-tv {
+    display: block;
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.status-badge-tv.open {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-badge-tv.closed {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.status-badge-tv.on-hold {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.position-description-tv {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #555;
+    margin: 0;
+}
+
+.apply-button-tv {
+    margin-top: auto;
+    background: #ffc107;
+    color: #000;
+    border: none;
+    padding:1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* box-sizing: border-box; */
+}
+
+.apply-button-tv:hover {
+    background: #ffb300;
+}
+
+@keyframes scrollPositions {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
     }
 }
