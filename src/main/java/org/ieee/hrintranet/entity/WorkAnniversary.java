@@ -21,6 +21,9 @@ public class WorkAnniversary {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
     
+    @Column(name = "employee_name", length = 200)
+    private String employeeName;
+    
     @Column(name = "anniversary_year", nullable = false)
     private Integer anniversaryYear;
     

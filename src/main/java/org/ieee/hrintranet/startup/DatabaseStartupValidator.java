@@ -37,7 +37,8 @@ public class DatabaseStartupValidator implements CommandLineRunner {
             // Count records in all tables
             long employeeCount = employeeRepository.count();
             long announcementCount = announcementRepository.count();
-            long workAnniversaryCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM work_anniversaries", Long.class);
+            Long workAnniversaryCountObj = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM work_anniversaries", Long.class);
+            long workAnniversaryCount = workAnniversaryCountObj != null ? workAnniversaryCountObj : 0L;
             long carouselCount = carouselSlideRepository.count();
             long galleryCount = galleryImageRepository.count();
             long quickLinkCount = quickLinkRepository.count();

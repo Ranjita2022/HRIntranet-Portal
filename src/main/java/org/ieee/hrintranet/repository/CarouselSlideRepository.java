@@ -11,5 +11,5 @@ public interface CarouselSlideRepository extends JpaRepository<CarouselSlide, In
     
     List<CarouselSlide> findByIsActiveOrderByDisplayOrderAscCreatedAtDesc(Boolean isActive);
     
-    Long countByIsActive(Boolean isActive);
+    long countByIsActive(Boolean isActive);
 }

@@ -15,7 +15,7 @@ public interface GalleryImageRepository extends JpaRepository<GalleryImage, Inte
     
     List<GalleryImage> findByCategoryAndIsActiveOrderByCreatedAtDesc(String category, Boolean isActive);
     
-    Long countByIsActive(Boolean isActive);
+       long countByIsActive(Boolean isActive);
     
     @Query(value = "SELECT * FROM gallery_images WHERE is_active = true ORDER BY RAND() LIMIT :limit", 
            nativeQuery = true)

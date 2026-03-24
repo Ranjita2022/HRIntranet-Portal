@@ -16,7 +16,7 @@ public interface GalleryFolderRepository extends JpaRepository<GalleryFolder, In
     
     Optional<GalleryFolder> findByFolderName(String folderName);
     
-    Long countByIsActive(Boolean isActive);
+    long countByIsActive(Boolean isActive);
     
     boolean existsByFolderName(String folderName);
 }

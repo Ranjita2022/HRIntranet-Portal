@@ -61,6 +61,7 @@ public class DatabaseMaintenanceUtil {
     /**
      * Add a future event to test the countdown banner
      */
+    @SuppressWarnings("unused")
     private static void addFutureEvent(Connection conn) throws Exception {
         System.out.println("Adding future event for countdown testing...\n");
         
@@ -80,6 +81,7 @@ public class DatabaseMaintenanceUtil {
     /**
      * Add additional work anniversary records to show all milestone years (1-10)
      */
+    @SuppressWarnings("unused")
     private static void addMoreAnniversaries(Connection conn) throws Exception {
         System.out.println("Adding additional work anniversary records...\n");
         
@@ -149,6 +151,7 @@ public class DatabaseMaintenanceUtil {
     /**
      * Populate celebrations: Add birth dates and work anniversaries
      */
+    @SuppressWarnings("unused")
     private static void populateCelebrations(Connection conn) throws Exception {
         System.out.println("Populating celebrations data...\n");
         

@@ -9,7 +9,7 @@
     <!-- Bootstrap Icons -->
     <link href="vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <!-- IEEE Fonts -->
-    <link href="vendor/fonts/fonts.css" rel="stylesheet">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="css/styles.css" rel="stylesheet">
 </head>
@@ -56,6 +56,11 @@
                             <i class="bi bi-megaphone me-1"></i>Announcements
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#positions">
+                            <i class="bi bi-briefcase me-1"></i>Open Positions
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -80,7 +85,7 @@
 
     <!-- Hero Carousel Section -->
     <section id="home" class="carousel-section">
-        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
             <div class="carousel-indicators" id="carouselIndicators">
                 <!-- Generated dynamically -->
             </div>
@@ -138,6 +143,13 @@
                         <i class="bi bi-megaphone-fill text-info fs-3"></i>
                         <span class="stat-number" id="announcementCount">0</span>
                         <span class="stat-label">Announcements</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-item">
+                        <i class="bi bi-briefcase-fill text-success fs-3"></i>
+                        <span class="stat-number" id="positionCount">0</span>
+                        <span class="stat-label">Open Positions</span>
                     </div>
                 </div>
             </div>
@@ -214,18 +226,60 @@
                                 <i class="bi bi-megaphone"></i>
                             </div>
                             <h2 class="section-title mb-0 ms-3">Announcements</h2>
-                            <button class="btn btn-sm btn-outline-secondary ms-auto" id="toggleAnnouncementScroll" title="Toggle auto-scroll">
-                                <i class="bi bi-pause-fill"></i>
-                            </button>
                         </div>
                         <div class="announcements-scroll-wrapper">
-                        <div class="announcements-scroll-track" id="announcementsContainer">
+                        <div id="announcementsContainer">
                             <!-- Loading placeholder -->
                             <div class="text-center py-5">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                                 <p class="mt-3 text-muted">Loading announcements...</p>
+                            </div>
+                        </div>
+                        </div>
+                    </section>
+
+                    <!-- Positions Section -->
+                    <section id="positions" class="mb-5">
+                        <div class="section-header d-flex align-items-center mb-4">
+                            <div class="section-icon bg-success text-white">
+                                <i class="bi bi-briefcase-fill"></i>
+                            </div>
+                            <h2 class="section-title mb-0 ms-3">Open Positions</h2>
+                            <button class="btn btn-sm btn-outline-secondary ms-auto" id="togglePositionsScroll"
+                                title="Toggle auto-scroll">
+                                <i class="bi bi-pause-fill"></i>
+                            </button>
+                        </div>
+                        <div class="positions-scroll-wrapper">
+                            <div class="positions-scroll-track" id="positionsContainer">
+                                <!-- Loading placeholder -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-3 text-muted">Loading open positions...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Celebrations Section (Birthdays & Anniversaries) -->
+                    <section id="celebrations" class="mb-5" style="display: none;">
+                        <div class="section-header d-flex align-items-center mb-4">
+                            <div class="section-icon bg-danger text-white">
+                                <i class="bi bi-cake-fill"></i>
+                            </div>
+                            <h2 class="section-title mb-0 ms-3">Birthdays &amp; Celebrations</h2>
+                        </div>
+                        <div class="celebrations-scroll-wrapper">
+                        <div class="celebrations-scroll-track" id="celebrationsContainer">
+                            <div class="col-12 text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Loading celebrations...</p>
                             </div>
                         </div>
                         </div>
@@ -237,10 +291,10 @@
                     <!-- Upcoming Holidays Section -->
                     <section id="holidays" class="mb-4">
                         <div class="section-header d-flex align-items-center mb-3">
-                            <div class="section-icon bg-warning text-white" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                            <div class="section-icon bg-warning text-white">
                                 <i class="bi bi-calendar-event"></i>
                             </div>
-                            <h5 class="section-title mb-0 ms-3" style="font-size: 1.1rem;">Upcoming Holidays</h5>
+                            <h2 class="section-title mb-0 ms-3" fs-4>Upcoming Holidays</h2>
                         </div>
                         <div class="holiday-list" id="holidaysContainer">
                             <!-- Loading placeholder -->

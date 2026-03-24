@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Positions - IEEE Admin Panel</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        .position-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .requisition-title {
+            color: #00629B;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .requisition-title:hover {
+            text-decoration: underline;
+        }
+        
+        .location-badge {
+            display: inline-block;
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .posting-date {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        
+        .apply-btn {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .apply-btn:hover {
+            background: #ffb300;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .stat-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00629B;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .stat-card p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .filter-group {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group label {
+            margin: 0 0.5rem 0 0;
+            font-weight: 500;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
+            <h3><i class="bi bi-shield-check"></i>Admin</h3>
+            <p>HR Portal Management</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="admin-panel.html" class="menu-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="menu-section">Content Management</div>
+            
+            <a href="admin-employees.html" class="menu-item">
+                <i class="bi bi-people-fill"></i>
+                <span>Employees</span>
+            </a>
+            
+            <a href="admin-announcements.html" class="menu-item">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Announcements</span>
+            </a>
+            
+            <a href="admin-holidays.html" class="menu-item">
+                <i class="bi bi-calendar-event-fill"></i>
+                <span>Holidays</span>
+            </a>
+            
+            <a href="admin-carousel.html" class="menu-item">
+                <i class="bi bi-images"></i>
+                <span>Carousel Slides</span>
+            </a>
+            
+            <a href="admin-gallery.html" class="menu-item">
+                <i class="bi bi-folder2-open"></i>
+                <span>Gallery</span>
+            </a>
+            
+            <a href="admin-quick-links.html" class="menu-item">
+                <i class="bi bi-link-45deg"></i>
+                <span>Quick Links</span>
+            </a>
+            
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+            
+            <a href="admin-work-anniversaries.html" class="menu-item">
+                <i class="bi bi-award-fill"></i>
+                <span>Work Anniversaries</span>
+            </a>
+            
+            <a href="admin-open-positions.html" class="menu-item">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Open Positions</span>
+            </a>
+            
+            <div class="menu-section">System</div>
+            
+            <a href="admin-audit.html" class="menu-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Audit Logs</span>
+            </a>
+            
+            <div class="menu-item" onclick="window.open('index.html', '_blank')">
+                <i class="bi bi-eye-fill"></i>
+                <span>View Portal</span>
+            </div>
+            
+            <div class="menu-item" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h1 id="pageTitle">Open Positions</h1>
+                <p class="text-muted mb-0">Manage IEEE job requisitions and openings</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">Admin User</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Positions Section -->
+        <div class="content-body">
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3 id="totalPositionsCount">0</h3>
+                    <p>Total Open Positions</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="activePositionsCount">0</h3>
+                    <p>Active Postings</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="newPositionsCount">0</h3>
+                    <p>Posted This Month</p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-group">
+                <label for="statusFilter">Filter by Status:</label>
+                <select id="statusFilter" class="form-select" style="width: 150px;">
+                    <option value="">All Positions</option>
+                    <option value="OPEN">Open</option>
+                    <option value="CLOSED">Closed</option>
+                    <option value="ON_HOLD">On Hold</option>
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="loadPositions()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="exportToCSV()">
+                    <i class="bi bi-download"></i> Export CSV
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="showAddPositionModal()">
+                    <i class="bi bi-plus-circle"></i> Add Position
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="bi bi-briefcase"></i>
+                <h4 class="mt-3">No Open Positions Found</h4>
+                <p class="text-muted">Add a new position to get started</p>
+            </div>
+
+            <!-- Positions Table -->
+            <div class="table-responsive" id="tableContainer">
+                <table id="positionsTable" class="table table-hover position-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="40">#</th>
+                            <th>Requisition Title</th>
+                            <th width="200">Location</th>
+                            <th width="120">Posting Date</th>
+                            <th width="100">Status</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="positionsTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Position Modal -->
+    <div class="modal fade" id="addPositionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Position</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="positionForm">
+                        <div class="mb-3">
+                            <label for="requisitionTitle" class="form-label">Requisition Title *</label>
+                            <input type="text" class="form-control" id="requisitionTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location *</label>
+                            <input type="text" class="form-control" id="location" placeholder="e.g., United States-New Jersey-Piscataway" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postingDate" class="form-label">Posting Date *</label>
+                            <input type="date" class="form-control" id="postingDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="requisitionId" class="form-label">Requisition ID</label>
+                            <input type="text" class="form-control" id="requisitionId" placeholder="e.g., E3480">
+                        </div>
+                        <div class="mb-3">
+                            <label for="positionStatus" class="form-label">Status *</label>
+                            <select class="form-select" id="positionStatus" required>
+                                <option value="OPEN">Open</option>
+                                <option value="CLOSED">Closed</option>
+                                <option value="ON_HOLD">On Hold</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="savePosition()">Save Position</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="vendor/jquery/jquery-3.7.1.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/admin-utils.js"></script>
+    <script>
+        const API_BASE_URL = CONFIG.API_BASE_URL;
+        let allPositions = [];
+
+        $(document).ready(function() {
+            initializePage();
+            setupAutoMenuHighlight();
+        });
+
+        function initializePage() {
+            AdminAPI.init();
+
+            // Redirect to login if there is no valid admin token
+            if (!AdminAPI.isAuthenticated()) {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            // Set user info from stored admin profile
+            const userName = AdminAPI.getAdminName();
+            if (userName) {
+                $('#userName').text(userName);
+                $('#userAvatar').text(userName.charAt(0).toUpperCase());
+            }
+
+            loadPositions();
+        }
+
+        function loadPositions() {
+            // Determine which API to use based on authentication
+            const isAuthenticated = AdminAPI && AdminAPI.isAuthenticated();
+            
+            if (isAuthenticated) {
+                // Try admin API first (shows ALL positions)
+                console.log('Authenticated - fetching all positions from admin API');
+                AdminAPI.fetch('/admin/positions', {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Admin API failed');
+                    return response.json();
+                })
+                .then(data => {
+                    allPositions = data || [];
+                    displayPositions();
+                    updateStats();
+                    console.log(`✅ Loaded ${allPositions.length} positions from admin API`);
+                })
+                .catch(error => {
+                    console.warn('Admin API failed, falling back to public API:', error);
+                    loadPositionsPublic();
+                });
+            } else {
+                // Not authenticated, use public API
+                console.log('Not authenticated - fetching positions from public API');
+                loadPositionsPublic();
+            }
+        }
+
+        function loadPositionsPublic() {
+            // Fetch all positions (both OPEN and CLOSED) from public API
+            const baseURL = CONFIG.API_BASE_URL || 'http://localhost:8080/api';
+            const url = `${baseURL}/public/positions/all`;
+            
+            fetch(url, {
+                method: 'GET'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load positions');
+                return response.json();
+            })
+            .then(data => {
+                allPositions = data || [];
+                displayPositions();
+                updateStats();
+                console.log(`✅ Loaded ${allPositions.length} positions (all statuses)`);
+            })
+            .catch(error => {
+                console.error('Error loading positions:', error);
+                showError('Failed to load positions: ' + error.message);
+                $('#positionsTableBody').html('<tr><td colspan="6" class="text-center text-danger">Error loading positions. Please try again.</td></tr>');
+            });
+        }
+
+        function displayPositions() {
+            const $tbody = $('#positionsTableBody');
+            $tbody.empty();
+
+            if (allPositions.length === 0) {
+                $('#emptyState').show();
+                $('#tableContainer').hide();
+                updateStats();
+                return;
+            }
+
+            $('#emptyState').hide();
+            $('#tableContainer').show();
+
+            // Apply status filter
+            const selectedStatus = $('#statusFilter').val();
+            let filtered = allPositions;
+            if (selectedStatus) {
+                filtered = allPositions.filter(p => p.status === selectedStatus);
+            }
+
+            if (filtered.length === 0) {
+                $tbody.html('<tr><td colspan="6" class="text-center">No positions match the selected filter</td></tr>');
+                return;
+            }
+
+            filtered.forEach((position, index) => {
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <a href="#" class="requisition-title" onclick="return false;">
+                                ${escapeHtml(position.requisitionTitle)}
+                            </a>
+                        </td>
+                        <td><span class="location-badge">${escapeHtml(position.location)}</span></td>
+                        <td class="posting-date">${formatDate(position.postingDate)}</td>
+                        <td>
+                            <span class="badge ${position.status === 'OPEN' ? 'bg-success' : position.status === 'ON_HOLD' ? 'bg-warning' : 'bg-secondary'}">
+                                ${position.status === 'OPEN' ? 'Open' : position.status === 'CLOSED' ? 'Closed' : position.status === 'ON_HOLD' ? 'On Hold' : position.status}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="apply-btn" onclick="handleApply(${position.id})">Apply</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="editPosition(${position.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deletePosition(${position.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                $tbody.append(row);
+            });
+        }
+
+        function updateStats() {
+            const total = allPositions.length;
+            const active = allPositions.filter(p => p.status === 'OPEN').length;
+            
+            const currentMonth = new Date();
+            const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+            
+            const thisMonth = allPositions.filter(p => {
+                const postDate = new Date(p.postingDate);
+                return postDate >= monthStart && postDate <= monthEnd;
+            }).length;
+
+            $('#totalPositionsCount').text(total);
+            $('#activePositionsCount').text(active);
+            $('#newPositionsCount').text(thisMonth);
+        }
+
+        function showAddPositionModal() {
+            document.getElementById('positionForm').reset();
+            delete document.getElementById('positionForm').dataset.positionId;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('postingDate').value = today;
+            new bootstrap.Modal(document.getElementById('addPositionModal')).show();
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        function savePosition() {
+            const form = document.getElementById('positionForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Check if user is authenticated
+            if (!AdminAPI || !AdminAPI.isAuthenticated()) {
+                alert('Please login first to save changes. Redirecting to login...');
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            const positionData = {
+                requisitionTitle: document.getElementById('requisitionTitle').value,
+                location: document.getElementById('location').value,
+                postingDate: document.getElementById('postingDate').value,
+                requisitionId: document.getElementById('requisitionId').value,
+                status: document.getElementById('positionStatus').value,
+                isPublished: true,
+                description: '',
+                requirements: ''
+            };
+
+            // Check if editing or creating new
+            const positionId = form.dataset.positionId;
+            const method = positionId ? 'PUT' : 'POST';
+            const url = positionId ? `/admin/positions/${positionId}` : '/admin/positions';
+
+            AdminAPI.fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(positionData)
+            })
+            .then(response => {
+                // AdminAPI.fetch already handles responses, just proceed to success
+                loadPositions();
+                bootstrap.Modal.getInstance(document.getElementById('addPositionModal')).hide();
+                alert(positionId ? 'Position updated successfully!' : 'Position added successfully!');
+            })
+            .catch(error => {
+                console.error('Error saving position:', error);
+                // Check if it's a 401 Unauthorized
+                if (error.message && error.message.includes('401')) {
+                    alert('Your session has expired. Please login again.');
+                    window.location.href = 'admin-login.html';
+                } else {
+                    alert('Error saving position: ' + error.message);
+                }
+            });
+        }
+
+        function editPosition(id) {
+            const position = allPositions.find(p => p.id === id);
+            if (position) {
+                document.getElementById('requisitionTitle').value = position.requisitionTitle;
+                document.getElementById('location').value = position.location;
+                document.getElementById('postingDate').value = position.postingDate;
+                document.getElementById('requisitionId').value = position.requisitionId || '';
+                document.getElementById('positionStatus').value = position.status;
+                
+                const form = document.getElementById('positionForm');
+                form.dataset.positionId = id;
+                
+                new bootstrap.Modal(document.getElementById('addPositionModal')).show();
+            }
+        }
+
+        function deletePosition(id) {
+            if (!confirm('Are you sure you want to delete this position?')) return;
+
+            // Check if user is authenticated
+            if (!AdminAPI || !AdminAPI.isAuthenticated()) {
+                alert('Please login first to delete positions. Redirecting to login...');
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            AdminAPI.fetch(`/admin/positions/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to delete position');
+                loadPositions();
+                alert('Position deleted successfully!');
+            })
+            .catch(error => {
+                console.error('Error deleting position:', error);
+                alert('Error deleting position: ' + error.message);
+            });
+        }
+
+        function handleApply(id) {
+            const position = allPositions.find(p => p.id === id);
+            if (position) {
+                window.open('https://ieee.taleo.net/careersection/1/jobsearch.ftl', '_blank');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportToCSV() {
+            if (allPositions.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            let csv = 'Requisition ID,Requisition Title,Location,Posting Date,Status\n';
+
+            allPositions.forEach(position => {
+                csv += `${position.requisitionId},"${position.requisitionTitle}","${position.location}",${position.postingDate},${position.status}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `open-positions-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
+
+        function setupAutoMenuHighlight() {
+            const currentPage = window.location.pathname.split('/').pop() || 'admin-panel.html';
+            $('.sidebar-menu .menu-item').each(function() {
+                const href = $(this).attr('href') || '';
+                if (href.includes(currentPage)) {
+                    $(this).addClass('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

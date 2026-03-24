@@ -3,7 +3,6 @@ package org.ieee.hrintranet.controller;
 import org.ieee.hrintranet.entity.Employee;
 import org.ieee.hrintranet.entity.Image;
 import org.ieee.hrintranet.repository.EmployeeRepository;
-import org.ieee.hrintranet.repository.ImageRepository;
 import org.ieee.hrintranet.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,6 @@ import java.util.Map;
 public class EmployeeController {
     
     private final EmployeeRepository employeeRepository;
-    private final ImageRepository imageRepository;
     private final FileStorageService fileStorageService;
     private final org.ieee.hrintranet.service.AuditService auditService;
     
@@ -33,7 +31,7 @@ public class EmployeeController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployee(@PathVariable Integer id) {
+    public ResponseEntity<Employee> getEmployee(@PathVariable int id) {
         return employeeRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -59,7 +57,7 @@ public class EmployeeController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateEmployee(@PathVariable Integer id, @RequestBody Employee employee, Authentication authentication) {
+    public ResponseEntity<?> updateEmployee(@PathVariable int id, @RequestBody Employee employee, Authentication authentication) {
         return employeeRepository.findById(id)
                 .map(existing -> {
                     Employee oldData = new Employee();
@@ -87,7 +85,7 @@ public class EmployeeController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEmployee(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteEmployee(@PathVariable int id, Authentication authentication) {
         return employeeRepository.findById(id)
                 .map(employee -> {
                     auditService.logAction(authentication.getName(), "DELETE", "employees", employee.getId(), employee, null);
@@ -98,7 +96,7 @@ public class EmployeeController {
     }
     
     @PostMapping("/{id}/upload-photo")
-    public ResponseEntity<?> uploadEmployeePhoto(@PathVariable Integer id, 
+    public ResponseEntity<?> uploadEmployeePhoto(@PathVariable int id, 
                                                  @RequestParam("file") MultipartFile file,
                                                  Authentication authentication) {
         try {

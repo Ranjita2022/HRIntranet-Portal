@@ -35,7 +35,7 @@ public class AuditLogController {
     
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByUser(@PathVariable Integer userId) {
+    public ResponseEntity<List<AuditLog>> getAuditLogsByUser(@PathVariable int userId) {
         return ResponseEntity.ok(auditLogRepository.findByUserId(userId));
     }
     
@@ -47,9 +47,9 @@ public class AuditLogController {
     
     @GetMapping("/record/{tableName}/{recordId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByRecord(
+        public ResponseEntity<List<AuditLog>> getAuditLogsByRecord(
             @PathVariable String tableName,
-            @PathVariable Integer recordId) {
+            @PathVariable int recordId) {
         return ResponseEntity.ok(auditLogRepository.findByTableNameAndRecordId(tableName, recordId));
     }
     

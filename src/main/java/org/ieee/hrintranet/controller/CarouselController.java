@@ -35,7 +35,7 @@ public class CarouselController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<CarouselSlide> getSlide(@PathVariable Integer id) {
+    public ResponseEntity<CarouselSlide> getSlide(@PathVariable int id) {
         return carouselSlideRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -68,7 +68,7 @@ public class CarouselController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateSlide(@PathVariable Integer id, @RequestBody CarouselSlide slide, Authentication authentication) {
+    public ResponseEntity<?> updateSlide(@PathVariable int id, @RequestBody CarouselSlide slide, Authentication authentication) {
         return carouselSlideRepository.findById(id)
                 .map(existing -> {
                     CarouselSlide oldData = new CarouselSlide();
@@ -87,7 +87,7 @@ public class CarouselController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSlide(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteSlide(@PathVariable int id, Authentication authentication) {
         return carouselSlideRepository.findById(id)
                 .map(slide -> {
                     auditService.logAction(authentication.getName(), "DELETE", "carousel_slides", slide.getId(), slide, null);

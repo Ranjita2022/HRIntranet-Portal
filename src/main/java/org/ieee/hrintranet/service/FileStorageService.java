@@ -43,9 +43,16 @@ public class FileStorageService {
             Files.createDirectories(uploadPath);
         }
         
-        // Generate unique filename
+        // Generate unique filename (guard against null original filename)
         String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        if (originalFilename == null) {
+            originalFilename = "";
+        }
+        String extension = "";
+        int dot = originalFilename.lastIndexOf('.');
+        if (dot >= 0 && dot < originalFilename.length() - 1) {
+            extension = originalFilename.substring(dot);
+        }
         String filename = UUID.randomUUID().toString() + extension;
         
         // Save file
@@ -94,7 +101,7 @@ public class FileStorageService {
         }
     }
     
-    public void deleteImage(Integer imageId) throws IOException {
+    public void deleteImage(int imageId) throws IOException {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IOException("Image not found"));
         

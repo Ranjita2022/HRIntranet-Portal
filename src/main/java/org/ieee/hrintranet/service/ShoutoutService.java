@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class ShoutoutService {
     }
     
     @Transactional
-    public Shoutout approveShoutout(Long id, String approvedBy) {
+    public Shoutout approveShoutout(long id, String approvedBy) {
         Shoutout shoutout = shoutoutRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Shoutout not found"));
         shoutout.setIsApproved(true);
@@ -50,15 +51,15 @@ public class ShoutoutService {
     }
     
     @Transactional
-    public void deleteShoutout(Long id) {
+    public void deleteShoutout(long id) {
         shoutoutRepository.deleteById(id);
     }
     
     @Transactional
-    public Shoutout toggleDisplay(Long id) {
+    public Shoutout toggleDisplay(long id) {
         Shoutout shoutout = shoutoutRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Shoutout not found"));
-        shoutout.setIsDisplayed(!shoutout.getIsDisplayed());
+        shoutout.setIsDisplayed(!Boolean.TRUE.equals(shoutout.getIsDisplayed()));
         return shoutoutRepository.save(shoutout);
     }
 }

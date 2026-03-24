@@ -42,7 +42,7 @@ public class QuickLinkController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<QuickLink> getQuickLink(@PathVariable Integer id) {
+    public ResponseEntity<QuickLink> getQuickLink(@PathVariable int id) {
         return quickLinkRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -61,7 +61,7 @@ public class QuickLinkController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateQuickLink(@PathVariable Integer id, @RequestBody QuickLink quickLink, Authentication authentication) {
+    public ResponseEntity<?> updateQuickLink(@PathVariable int id, @RequestBody QuickLink quickLink, Authentication authentication) {
         return quickLinkRepository.findById(id)
                 .map(existing -> {
                     QuickLink oldData = new QuickLink();
@@ -85,7 +85,7 @@ public class QuickLinkController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteQuickLink(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteQuickLink(@PathVariable int id, Authentication authentication) {
         return quickLinkRepository.findById(id)
                 .map(quickLink -> {
                     auditService.logAction(authentication.getName(), "DELETE", "quick_links", quickLink.getId(), quickLink, null);

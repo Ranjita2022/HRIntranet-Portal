@@ -67,7 +67,7 @@
     </style>
 </head>
 <body>
-    <iframe id="kiosk-frame" src="index.html?tv=1"></iframe>
+    <iframe id="kiosk-frame" src="index.html?tv=1" title="Kiosk Portal"></iframe>
     
     <div class="kiosk-indicator">
         <span id="mode-label">Portal</span>
@@ -80,7 +80,8 @@
     <script>
         // Kiosk Configuration
         const KIOSK_CONFIG = {
-            PORTAL_DURATION: 0.5 * 60 * 1000,  // 3 minutes
+            PORTAL_DURATION: 1.5 * 60 * 1000, // 1.5 minutes
+            // PORTAL_DURATION: 0.5 * 60 * 1000,  // 30 seconds 
             GALLERY_DURATION: 0.5 * 60 * 1000,  // 5 minutes
             SHOUTOUTS_DURATION: 0.5 * 60 * 1000, // 2 minutes
             ENABLE_INDICATOR: true,           // Show progress indicator

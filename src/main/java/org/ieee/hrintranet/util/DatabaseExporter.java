@@ -6,7 +6,9 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Database Exporter Utility
@@ -92,11 +94,28 @@ public class DatabaseExporter {
         };
         
         DatabaseMetaData metaData = conn.getMetaData();
-        ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-        
-        // Add tables in specific order to respect foreign keys
+        Set<String> existingTables = new HashSet<>();
+        try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
+            while (rs.next()) {
+                String tbl = rs.getString("TABLE_NAME");
+                if (tbl != null) {
+                    existingTables.add(tbl);
+                }
+            }
+        }
+
+        // Add tables in specific order to respect foreign keys (only if they exist)
         for (String table : tableOrder) {
-            tables.add(table);
+            if (existingTables.contains(table)) {
+                tables.add(table);
+            }
+        }
+
+        // Append any other existing tables not in the predefined order
+        for (String tbl : existingTables) {
+            if (!tables.contains(tbl)) {
+                tables.add(tbl);
+            }
         }
         
         return tables;

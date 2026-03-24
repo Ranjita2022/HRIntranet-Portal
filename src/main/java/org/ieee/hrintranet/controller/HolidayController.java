@@ -34,7 +34,7 @@ public class HolidayController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Holiday> getHoliday(@PathVariable Integer id) {
+    public ResponseEntity<Holiday> getHoliday(@PathVariable int id) {
         return holidayRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -53,7 +53,7 @@ public class HolidayController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateHoliday(@PathVariable Integer id, @RequestBody Holiday holiday, Authentication authentication) {
+    public ResponseEntity<?> updateHoliday(@PathVariable int id, @RequestBody Holiday holiday, Authentication authentication) {
         return holidayRepository.findById(id)
                 .map(existing -> {
                     Holiday oldData = new Holiday();
@@ -72,7 +72,7 @@ public class HolidayController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteHoliday(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<?> deleteHoliday(@PathVariable int id, Authentication authentication) {
         return holidayRepository.findById(id)
                 .map(holiday -> {
                     auditService.logAction(authentication.getName(), "DELETE", "holidays", holiday.getId(), holiday, null);

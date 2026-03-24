@@ -17,5 +17,5 @@ public interface QuickLinkRepository extends JpaRepository<QuickLink, Integer> {
     @Query("SELECT DISTINCT q.category FROM QuickLink q WHERE q.isActive = true ORDER BY q.category")
     List<String> findAllActiveCategories();
     
-    Long countByIsActive(Boolean isActive);
+    long countByIsActive(Boolean isActive);
 }
