@@ -1075,6 +1075,18 @@ html {
     100% { transform: translateX(-50%); }
 }
 
+/* TV mode positions horizontal infinite scroll */
+@keyframes scrollPositions {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* TV mode holidays horizontal scroll (if used) */
+@keyframes scrollHolidays {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
 /* Slightly larger horizontal scrollbar for kiosk/TV visibility */
 .team-updates-scroll-wrapper::-webkit-scrollbar {
     height: 12px;
@@ -2027,6 +2039,12 @@ body.tv-mode .navbar  { display: none !important; }
 body.tv-mode .footer  { display: none !important; }
 body.tv-mode #breakingNewsBar { display: none !important; }
 
+/* ── Hide the 3px accent bar so carousel aligns with TV header ─────── */
+body.tv-mode > div:first-child { display: none !important; }
+
+/* ── Push carousel section below the fixed 60px TV header ─────────── */
+body.tv-mode .carousel-section { margin-top: 60px !important; }
+
 /* ── Fixed TV Header Bar ─────────────────────── */
 #tvHeader {
     display: none;
@@ -2406,8 +2424,17 @@ body.tv-mode .team-card-image-placeholder.anniversary { background: linear-gradi
 /* ── Open Positions in TV ─────────────────────── */
 body.tv-mode .positions-scroll-wrapper { overflow: hidden; }
 
+/* tv-position-visible: class applied by JS when the positions section is active */
+body.tv-mode .tv-position-visible {
+    display: flex !important;
+    height: calc(100vh - 68px) !important;
+    flex-direction: column !important;
+}
+
 body.tv-mode .positions-scroll-track {
-    animation: scrollPositions 20s linear infinite;
+    animation: scrollPositions 30s linear infinite;
+    display: flex;
+    width: max-content;
 }
 
 body.tv-mode .position-card-tv {
@@ -2800,13 +2827,13 @@ body.tv-mode .announcements-scroll-wrapper::after {
 body.tv-mode #countdownBanner.tv-event-active {
     display: flex !important;
     position: fixed !important;
-    inset: 60px 0 0 0 !important;      /* top=60px, rest=0 */
+    inset: 60px 0 0 0 !important;      /* top=60px (matches TV header height), rest=0 */
     z-index: 8500 !important;
     background: radial-gradient(ellipse at 50% 40%, #0f2d6b 0%, #07111e 65%) !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 3vh 4vw !important;
+    padding: clamp(1.5rem, 4vh, 4rem) clamp(1rem, 5vw, 6rem) !important;
     overflow: hidden !important;
     /* reset any stray margin/border from the .countdown-banner base class */
     margin: 0 !important;
@@ -3043,12 +3070,35 @@ body.tv-mode .stat-item:last-child {
     border-right: none !important;
 }
 
-/* ── Carousel image: fill remaining viewport (100vh - header 60px
-   - accent-bar 3px - carousel margin-top 60px - stats-bar 80px)
-   = calc(100vh - 143px).  Round up to 145px for a small safety gap. */
+/* ── Carousel image: fill remaining viewport (100vh - 60px header - 80px stats = 140px) */
 body.tv-mode .carousel-item img,
 body.tv-mode .carousel-placeholder {
-    height: calc(100vh - 145px) !important;
+    height: calc(100vh - 140px) !important;
     object-fit: cover !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   TV MODE — CRITICAL SECTION VISIBILITY FIX
+   ──────────────────────────────────────────────────────────────────────
+   The sections (#teamUpdates, #announcements, #holidays, #positions) each
+   have "display: flex !important" from TV mode rules.  CSS !important in
+   a stylesheet beats jQuery's .hide() (inline display:none without
+   !important), so sections can never be truly hidden by JS alone.
+
+   The fix: add .tv-hidden-section with HIGHER SPECIFICITY (id + class beats
+   id alone) so the class applied by JS actually works.
+   ═══════════════════════════════════════════════════════════════════════ */
+body.tv-mode #teamUpdates.tv-hidden-section,
+body.tv-mode #announcements.tv-hidden-section,
+body.tv-mode #holidays.tv-hidden-section,
+body.tv-mode #positions.tv-hidden-section,
+body.tv-mode #celebrations.tv-hidden-section,
+body.tv-mode #countdownBanner.tv-hidden-section,
+body.tv-mode #joiners.tv-hidden-section {
+    display: none !important;
+}
+
+/* Ensure main in TV mode uses display:block so sections inside can be flex */
+body.tv-mode main {
+    display: block !important;
+}
