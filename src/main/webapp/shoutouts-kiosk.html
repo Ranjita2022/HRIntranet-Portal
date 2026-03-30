@@ -8,153 +8,189 @@
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <style>
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             overflow: hidden;
+            height: 100vh;
+            width: 100vw;
         }
+
+        /* ── Full-viewport container ───────────────────── */
         .kiosk-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 2rem;
+            height: 100vh;
+            width: 100vw;
+            padding: 1.5rem;
         }
+
+        /* ── Card fills most of the screen ─────────────── */
         .shoutout-display {
             background: white;
-            border-radius: 30px;
-            box-shadow: 0 30px 90px rgba(0,0,0,0.4);
-            padding: 4rem;
-            max-width: 900px;
+            border-radius: 24px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+            padding: 2.5rem 3rem 4.5rem;   /* bottom pad for progress bar */
             width: 100%;
-            min-height: 500px;
+            max-width: 1100px;
+            max-height: calc(100vh - 3rem);
+            display: flex;
+            flex-direction: column;
             position: relative;
-            animation: fadeIn 1s ease-in;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: scale(0.97); }
+            to   { opacity: 1; transform: scale(1); }
         }
+
+        /* ── Header ────────────────────────────────────── */
         .header {
             text-align: center;
-            margin-bottom: 3rem;
             border-bottom: 3px solid #667eea;
-            padding-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            flex-shrink: 0;
         }
         .header h1 {
             color: #667eea;
-            font-size: 3rem;
+            font-size: clamp(1.6rem, 3.5vw, 2.6rem);
             font-weight: 700;
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
         .header .icon {
-            font-size: 3.5rem;
+            font-size: clamp(1.8rem, 3.8vw, 2.8rem);
         }
+
+        /* ── Counter badge ──────────────────────────────── */
+        .counter {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.5rem;
+            background: rgba(102,126,234,0.12);
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* ── Scrollable content area ────────────────────── */
         .shoutout-content {
-            text-align: center;
-            min-height: 300px;
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            min-height: 0;
         }
+
+        /* ── Category badge ─────────────────────────────── */
         .category-badge {
             display: inline-block;
-            padding: 0.75rem 2rem;
+            padding: 0.55rem 1.75rem;
             border-radius: 30px;
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
+            font-size: clamp(0.9rem, 1.8vw, 1.25rem);
+            font-weight: 700;
+            margin-bottom: 1.25rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            flex-shrink: 0;
         }
-        .category-teamwork {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        .category-innovation {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-        }
-        .category-excellence {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            color: white;
-        }
-        .category-appreciation {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: white;
-        }
-        .category-leadership {
-            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-            color: white;
-        }
+        .category-teamwork     { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+        .category-innovation   { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+        .category-excellence   { background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; }
+        .category-appreciation { background: linear-gradient(135deg, #fa709a, #fee140); color: white; }
+        .category-leadership   { background: linear-gradient(135deg, #30cfd0, #330867); color: white; }
+
+        /* ── Recognition line ───────────────────────────── */
         .recognition {
-            font-size: 2.5rem;
+            font-size: clamp(1.2rem, 2.8vw, 2.2rem);
             font-weight: 700;
             color: #333;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
         }
-        .from-name {
-            color: #667eea;
-        }
-        .to-name {
-            color: #764ba2;
-        }
+        .from-name { color: #667eea; }
+        .to-name   { color: #764ba2; }
+
+        /* ── Quote message ──────────────────────────────── */
         .message {
-            font-size: 1.8rem;
-            line-height: 1.8;
+            font-size: clamp(1rem, 2.2vw, 1.65rem);
+            line-height: 1.7;
             color: #555;
             font-style: italic;
-            margin: 2rem 0;
-            padding: 2rem;
+            margin: 0.75rem 0;
+            padding: 1.25rem 1.75rem;
             background: #f8f9fa;
-            border-radius: 20px;
+            border-radius: 16px;
             border-left: 5px solid #667eea;
+            max-height: 35vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
         }
+
+        /* ── Date stamp ─────────────────────────────────── */
         .timestamp {
-            font-size: 1.2rem;
+            font-size: clamp(0.8rem, 1.5vw, 1.1rem);
             color: #999;
-            margin-top: 2rem;
+            margin-top: 0.75rem;
+            flex-shrink: 0;
         }
-        .progress-bar {
+
+        /* ── Progress bar at card bottom ────────────────── */
+        .progress-bar-wrap {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 5px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            width: 0;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            animation: progress 10s linear infinite;
+            right: 0;
+            height: 6px;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            background: rgba(102,126,234,0.15);
+            overflow: hidden;
         }
-        @keyframes progress {
-            from { width: 0%; }
-            to { width: 100%; }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            border-bottom-left-radius: 24px;
         }
+
+        /* ── Navigation buttons ─────────────────────────── */
         .navigation {
             position: absolute;
-            bottom: 2rem;
-            right: 2rem;
+            bottom: 1.25rem;
+            right: 1.5rem;
             display: flex;
-            gap: 1rem;
+            gap: 0.6rem;
         }
         .nav-btn {
-            background: rgba(102, 126, 234, 0.2);
+            background: rgba(102,126,234,0.15);
             border: 2px solid #667eea;
             color: #667eea;
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             transition: all 0.3s;
         }
         .nav-btn:hover {
@@ -162,26 +198,22 @@
             color: white;
             transform: scale(1.1);
         }
-        .counter {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(102, 126, 234, 0.1);
-            padding: 0.5rem 1.5rem;
-            border-radius: 20px;
-            font-size: 1.2rem;
-            color: #667eea;
-            font-weight: 600;
-        }
+
+        /* ── Empty / loading state ──────────────────────── */
         .no-shoutouts {
             text-align: center;
-            padding: 4rem;
-            color: #999;
+            padding: 3rem;
+            color: #aaa;
         }
         .no-shoutouts i {
-            font-size: 5rem;
-            margin-bottom: 2rem;
+            font-size: clamp(3rem, 6vw, 5rem);
+            margin-bottom: 1.5rem;
             color: #ccc;
+            display: block;
+        }
+        .no-shoutouts h2 {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            color: #999;
         }
     </style>
 </head>
@@ -216,7 +248,9 @@
                 </button>
             </div>
 
-            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
         </div>
     </div>
 
@@ -226,21 +260,27 @@
         let shoutouts = [];
         let currentIndex = 0;
         let autoPlayInterval = null;
+        let progressTimer = null;
         let isPaused = false;
         const DISPLAY_DURATION = 10000; // 10 seconds per shoutout
 
-        // Load shoutouts on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        // ── Signal the parent kiosk that one full cycle is done ──────────────
+        function notifyKioskCycleComplete() {
+            if (window.parent && window.parent !== window) {
+                console.log('[Shoutouts] ✅ Cycle complete — notifying kiosk parent');
+                window.parent.postMessage({ type: 'shoutouts-cycle-complete' }, '*');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
             loadShoutouts();
             setupNavigation();
         });
 
-        // Load approved shoutouts
         async function loadShoutouts() {
             try {
                 const response = await fetch(`${CONFIG.API_BASE_URL}/public/shoutouts`);
                 const result = await response.json();
-                
                 if (result.success && result.data && result.data.length > 0) {
                     shoutouts = result.data;
                     displayShoutout(0);
@@ -254,108 +294,81 @@
             }
         }
 
-        // Display a specific shoutout
         function displayShoutout(index) {
             if (shoutouts.length === 0) return;
-            
             currentIndex = index;
-            const shoutout = shoutouts[currentIndex];
-            
-            const categoryClass = `category-${shoutout.category.toLowerCase()}`;
-            const categoryEmoji = getCategoryEmoji(shoutout.category);
-            const date = new Date(shoutout.createdAt);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            const content = `
-                <div class="category-badge ${categoryClass}">
-                    ${categoryEmoji} ${shoutout.category}
-                </div>
+            const s = shoutouts[currentIndex];
+            const catClass = `category-${(s.category || 'appreciation').toLowerCase()}`;
+            const catEmoji = getCategoryEmoji(s.category);
+            const date = new Date(s.createdAt);
+            const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            document.getElementById('shoutoutContent').innerHTML = `
+                <span class="category-badge ${catClass}">${catEmoji} ${escapeHtml(s.category)}</span>
                 <div class="recognition">
-                    <span class="from-name">${escapeHtml(shoutout.fromName)}</span>
-                    <span style="color: #999;"> recognizes </span>
-                    <span class="to-name">${escapeHtml(shoutout.toName)}</span>
+                    <span class="from-name">${escapeHtml(s.fromName)}</span>
+                    <span style="color:#999;"> recognizes </span>
+                    <span class="to-name">${escapeHtml(s.toName)}</span>
                 </div>
-                <div class="message">
-                    "${escapeHtml(shoutout.message)}"
-                </div>
-                <div class="timestamp">
-                    <i class="bi bi-calendar-check"></i> ${formattedDate}
-                </div>
+                <div class="message">&ldquo;${escapeHtml(s.message)}&rdquo;</div>
+                <div class="timestamp"><i class="bi bi-calendar-check me-1"></i>${formattedDate}</div>
             `;
-            
-            document.getElementById('shoutoutContent').innerHTML = content;
             document.getElementById('counter').textContent = `${currentIndex + 1} / ${shoutouts.length}`;
-            
-            // Restart progress bar animation
-            const progressBar = document.getElementById('progressBar');
-            progressBar.style.animation = 'none';
-            setTimeout(() => {
-                progressBar.style.animation = `progress ${DISPLAY_DURATION}ms linear`;
-            }, 10);
+            animateProgressBar();
         }
 
-        // Show when no shoutouts available
+        function animateProgressBar() {
+            const bar = document.getElementById('progressBar');
+            if (progressTimer) clearTimeout(progressTimer);
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            // Force reflow then animate
+            void bar.offsetWidth;
+            bar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
+            bar.style.width = '100%';
+        }
+
         function showNoShoutouts() {
             document.getElementById('shoutoutContent').innerHTML = `
                 <div class="no-shoutouts">
                     <i class="bi bi-inbox"></i>
                     <h2>No Shoutouts Yet</h2>
-                    <p>Be the first to recognize a colleague!</p>
-                </div>
-            `;
+                    <p style="font-size:clamp(0.9rem,1.8vw,1.3rem);color:#bbb;">Be the first to recognize a colleague!</p>
+                </div>`;
             document.getElementById('counter').textContent = '0 / 0';
+            // Nothing to cycle through — signal parent immediately
+            notifyKioskCycleComplete();
         }
 
-        // Get emoji for category
-        function getCategoryEmoji(category) {
-            const emojis = {
-                'Teamwork': '🤝',
-                'Innovation': '💡',
-                'Excellence': '⭐',
-                'Appreciation': '❤️',
-                'Leadership': '👑'
-            };
-            return emojis[category] || '✨';
+        function getCategoryEmoji(cat) {
+            const map = { Teamwork:'🤝', Innovation:'💡', Excellence:'⭐', Appreciation:'❤️', Leadership:'👑' };
+            return map[cat] || '✨';
         }
 
-        // Escape HTML to prevent XSS
         function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
         }
 
-        // Auto-play functionality
         function startAutoPlay() {
             if (autoPlayInterval) clearInterval(autoPlayInterval);
-            
-            autoPlayInterval = setInterval(() => {
-                if (!isPaused) {
-                    nextShoutout();
-                }
-            }, DISPLAY_DURATION);
+            autoPlayInterval = setInterval(() => { if (!isPaused) nextShoutout(); }, DISPLAY_DURATION);
         }
 
-        function stopAutoPlay() {
-            if (autoPlayInterval) {
-                clearInterval(autoPlayInterval);
-                autoPlayInterval = null;
-            }
-        }
-
-        // Navigation functions
         function nextShoutout() {
-            if (shoutouts.length === 0) return;
+            if (!shoutouts.length) return;
+            // If we just finished the LAST shoutout, notify the parent kiosk
+            if (currentIndex === shoutouts.length - 1) {
+                notifyKioskCycleComplete();
+            }
             currentIndex = (currentIndex + 1) % shoutouts.length;
             displayShoutout(currentIndex);
         }
 
         function previousShoutout() {
-            if (shoutouts.length === 0) return;
+            if (!shoutouts.length) return;
             currentIndex = (currentIndex - 1 + shoutouts.length) % shoutouts.length;
             displayShoutout(currentIndex);
         }
@@ -363,28 +376,17 @@
         function togglePause() {
             isPaused = !isPaused;
             const icon = document.querySelector('#pauseBtn i');
-            if (isPaused) {
-                icon.classList.remove('bi-pause-fill');
-                icon.classList.add('bi-play-fill');
-            } else {
-                icon.classList.remove('bi-play-fill');
-                icon.classList.add('bi-pause-fill');
-            }
+            icon.className = isPaused ? 'bi bi-play-fill' : 'bi bi-pause-fill';
         }
 
-        // Setup navigation buttons
         function setupNavigation() {
             document.getElementById('nextBtn').addEventListener('click', nextShoutout);
             document.getElementById('prevBtn').addEventListener('click', previousShoutout);
             document.getElementById('pauseBtn').addEventListener('click', togglePause);
         }
 
-        // Reload shoutouts every 5 minutes to get new ones
-        setInterval(() => {
-            if (!isPaused) {
-                loadShoutouts();
-            }
-        }, 300000); // 5 minutes
+        // Refresh every 5 minutes
+        setInterval(() => { if (!isPaused) loadShoutouts(); }, 300000);
     </script>
 </body>
 </html>

@@ -5,22 +5,11 @@ let emergencyContactModal = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication
     if (!AdminAPI.isAuthenticated()) {
         window.location.href = 'admin-login.html';
         return;
     }
-    
-    // Set admin name
-    const adminName = AdminAPI.getAdminName();
-    if (adminName) {
-        document.getElementById('adminNameDisplay').textContent = adminName;
-    }
-    
-    // Initialize modal
     emergencyContactModal = new bootstrap.Modal(document.getElementById('emergencyContactModal'));
-    
-    // Load emergency contacts
     loadEmergencyContacts();
 });
 
@@ -29,7 +18,6 @@ async function loadEmergencyContacts() {
     try {
         showLoadingTable('emergencyContactsTableBody', 9);
         const response = await AdminAPI.fetch('/admin/emergency-contacts');
-        
         if (Array.isArray(response)) {
             emergencyContactsData = response;
             renderEmergencyContactsTable();
@@ -39,69 +27,96 @@ async function loadEmergencyContacts() {
     } catch (error) {
         console.error('Error loading emergency contacts:', error);
         showError('Failed to load emergency contacts: ' + error.message);
-        document.getElementById('emergencyContactsTableBody').innerHTML = 
+        document.getElementById('emergencyContactsTableBody').innerHTML =
             '<tr><td colspan="9" class="text-center text-danger">Failed to load contacts</td></tr>';
     }
 }
 
+// Type label map
+const TYPE_LABELS = {
+    'SECURITY':   'Security',
+    'IT_SUPPORT': 'IT Support',
+    'HR':         'HR',
+    'MEDICAL':    'Medical',
+    'FACILITY':   'Facility',
+    'GENERAL':    'General',
+    'OTHER':      'Other'
+};
+
+// Type CSS class map (matches admin-emergency.html style block)
+const TYPE_CSS = {
+    'SECURITY':   'type-security',
+    'IT_SUPPORT': 'type-it',
+    'HR':         'type-hr',
+    'MEDICAL':    'type-medical',
+    'FACILITY':   'type-facility',
+    'GENERAL':    'type-general',
+    'OTHER':      'type-other'
+};
+
 // Render emergency contacts table
 function renderEmergencyContactsTable() {
     const tbody = document.getElementById('emergencyContactsTableBody');
-    
+
+    // Stats
+    const emergencyList = emergencyContactsData.filter(c => c.isEmergency);
+    const activeList    = emergencyContactsData.filter(c => c.isActive);
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('statTotal',     emergencyContactsData.length);
+    set('statEmergency', emergencyList.length);
+    set('statActive',    activeList.length);
+    const countEl = document.getElementById('recordCount');
+    if (countEl) countEl.textContent = emergencyContactsData.length + ' record' + (emergencyContactsData.length !== 1 ? 's' : '');
+
     if (emergencyContactsData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No emergency contacts found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No emergency contacts found</td></tr>';
         return;
     }
-    
-    // Sort by isEmergency first (emergency contacts first), then displayOrder, then createdAt
+
     const sortedData = [...emergencyContactsData].sort((a, b) => {
-        if (a.isEmergency !== b.isEmergency) {
-            return b.isEmergency ? 1 : -1;
-        }
-        if (a.displayOrder !== b.displayOrder) {
-            return a.displayOrder - b.displayOrder;
-        }
+        if (a.isEmergency !== b.isEmergency) return b.isEmergency ? 1 : -1;
+        if (a.displayOrder !== b.displayOrder) return a.displayOrder - b.displayOrder;
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
-    
+
     tbody.innerHTML = sortedData.map(contact => `
-        <tr ${contact.isEmergency ? 'style="background-color: #fff3cd;"' : ''}>
-            <td>${contact.id}</td>
+        <tr>
+            <td class="text-muted">${contact.id}</td>
             <td>
-                ${contact.isEmergency 
-                    ? '<i class="fas fa-exclamation-triangle text-danger me-1"></i>' 
-                    : ''}
-                ${escapeHtml(contact.title)}
+                ${contact.isEmergency ? '<i class="bi bi-exclamation-triangle-fill emergency-flag me-1"></i>' : ''}
+                <span class="fw-semibold">${escapeHtml(contact.title)}</span>
             </td>
             <td>${escapeHtml(contact.contactName)}</td>
             <td>
                 <a href="tel:${escapeHtml(contact.phoneNumber)}" class="text-decoration-none">
-                    <i class="fas fa-phone me-1"></i>${escapeHtml(contact.phoneNumber)}
+                    <i class="bi bi-telephone me-1"></i>${escapeHtml(contact.phoneNumber)}
                 </a>
             </td>
-            <td>
-                ${contact.email 
-                    ? `<a href="mailto:${escapeHtml(contact.email)}">${escapeHtml(contact.email)}</a>` 
-                    : '<span class="text-muted">-</span>'}
+            <td class="small">
+                ${contact.email
+                    ? `<a href="mailto:${escapeHtml(contact.email)}" class="text-decoration-none">${escapeHtml(contact.email)}</a>`
+                    : '<span class="text-muted">—</span>'}
             </td>
             <td>
-                <span class="badge bg-${getContactTypeBadgeColor(contact.type)}">
-                    ${formatContactType(contact.type)}
+                <span class="badge ${TYPE_CSS[contact.type] || 'type-other'}">
+                    ${TYPE_LABELS[contact.type] || contact.type}
                 </span>
             </td>
-            <td><span class="badge bg-secondary">${contact.displayOrder}</span></td>
+            <td class="text-center"><span class="order-badge">${contact.displayOrder}</span></td>
             <td>
                 <span class="badge ${contact.isActive ? 'bg-success' : 'bg-secondary'}">
                     ${contact.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editEmergencyContact(${contact.id})" title="Edit">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteEmergencyContact(${contact.id})" title="Delete">
-                    <i class="bi bi-trash"></i>
-                </button>
+            <td class="text-center">
+                <div class="d-flex gap-1 justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editEmergencyContact(${contact.id})" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEmergencyContact(${contact.id})" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');

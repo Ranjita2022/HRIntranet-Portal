@@ -5,22 +5,11 @@ let carouselModal = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication
     if (!AdminAPI.isAuthenticated()) {
         window.location.href = 'admin-login.html';
         return;
     }
-    
-    // Set admin name
-    const adminName = AdminAPI.getAdminName();
-    if (adminName) {
-        document.getElementById('adminNameDisplay').textContent = adminName;
-    }
-    
-    // Initialize modal
     carouselModal = new bootstrap.Modal(document.getElementById('carouselModal'));
-    
-    // Load carousel slides
     loadCarouselSlides();
 });
 
@@ -47,44 +36,53 @@ async function loadCarouselSlides() {
 // Render carousel table
 function renderCarouselTable() {
     const tbody = document.getElementById('carouselTableBody');
-    
+
+    // Stats
+    const active   = carouselData.filter(s => s.isActive);
+    const inactive = carouselData.filter(s => !s.isActive);
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('statTotal',    carouselData.length);
+    set('statActive',   active.length);
+    set('statInactive', inactive.length);
+    const countEl = document.getElementById('recordCount');
+    if (countEl) countEl.textContent = carouselData.length + ' record' + (carouselData.length !== 1 ? 's' : '');
+
     if (carouselData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No carousel slides found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No carousel slides found</td></tr>';
         return;
     }
-    
-    // Sort by display order, then by createdAt
+
     const sortedData = [...carouselData].sort((a, b) => {
-        if (a.displayOrder !== b.displayOrder) {
-            return a.displayOrder - b.displayOrder;
-        }
+        if (a.displayOrder !== b.displayOrder) return a.displayOrder - b.displayOrder;
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
-    
+
     tbody.innerHTML = sortedData.map(slide => `
         <tr>
-            <td>${slide.id}</td>
+            <td class="text-muted">${slide.id}</td>
             <td>
-                ${slide.image && slide.image.imageUrl 
-                    ? `<img src="${slide.image.imageUrl}" alt="Preview" style="width: 80px; height: 40px; object-fit: cover; border-radius: 4px;">` 
-                    : '<span class="text-muted">No image</span>'}
+                ${slide.image && slide.image.imageUrl
+                    ? `<img src="${slide.image.imageUrl}" alt="Preview" class="slide-thumb">`
+                    : '<span class="slide-thumb-placeholder"><i class="bi bi-image"></i></span>'}
             </td>
-            <td>${escapeHtml(slide.title || '-')}</td>
-            <td>${escapeHtml(slide.subtitle || '-')}</td>
-            <td><span class="badge bg-secondary">${slide.displayOrder}</span></td>
+            <td><span class="fw-semibold">${escapeHtml(slide.title || '—')}</span></td>
+            <td class="text-muted small">${escapeHtml(slide.subtitle || '—')}</td>
+            <td class="text-center"><span class="order-badge">${slide.displayOrder}</span></td>
             <td>
                 <span class="badge ${slide.isActive ? 'bg-success' : 'bg-secondary'}">
                     ${slide.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td>${escapeHtml(slide.createdBy || '-')}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editCarouselSlide(${slide.id})" title="Edit">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteSlide(${slide.id})" title="Delete">
-                    <i class="bi bi-trash"></i>
-                </button>
+            <td class="text-muted small">${escapeHtml(slide.createdBy || '—')}</td>
+            <td class="text-center">
+                <div class="d-flex gap-1 justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editCarouselSlide(${slide.id})" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSlide(${slide.id})" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');

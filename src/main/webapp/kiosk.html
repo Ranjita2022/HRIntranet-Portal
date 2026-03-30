@@ -80,12 +80,13 @@
     <script>
         // Kiosk Configuration
         const KIOSK_CONFIG = {
-            PORTAL_DURATION: 1.5 * 60 * 1000, // 1.5 minutes
-            // PORTAL_DURATION: 0.5 * 60 * 1000,  // 30 seconds 
-            GALLERY_DURATION: 0.5 * 60 * 1000,  // 5 minutes
-            SHOUTOUTS_DURATION: 0.5 * 60 * 1000, // 2 minutes
-            ENABLE_INDICATOR: true,           // Show progress indicator
-            AUTO_START: true                  // Start rotation immediately
+            // Portal & Shoutouts switch when they signal completion via postMessage.
+            // These values are safety fallbacks only — normally switched by events.
+            PORTAL_DURATION:   30 * 60 * 1000, // 30 min fallback (event-driven in practice)
+            SHOUTOUTS_DURATION: 30 * 60 * 1000, // 30 min fallback (event-driven in practice)
+            GALLERY_DURATION:  0.5 * 60 * 1000, // 30 seconds
+            ENABLE_INDICATOR: true,
+            AUTO_START: true
         };
 
         const MODES = {
@@ -133,6 +134,18 @@
         }
 
         function updateProgress() {
+            // Portal and Shoutouts are event-driven — show a live pulse instead of a
+            // meaningless countdown.
+            if (currentMode === 'PORTAL' || currentMode === 'SHOUTOUTS') {
+                timerLabel.textContent = 'LIVE';
+                // Gently animate progress bar back and forth to show activity
+                const elapsed = (Date.now() - startTime) / 1000;
+                const pulse = (Math.sin(elapsed * 0.4) + 1) / 2; // 0 → 1 → 0 …
+                progressFill.style.width = `${Math.round(pulse * 100)}%`;
+                progressTimer = setTimeout(updateProgress, 500);
+                return;
+            }
+
             const elapsed = Date.now() - startTime;
             const duration = MODES[currentMode].duration;
             const remaining = Math.max(0, duration - elapsed);
@@ -173,18 +186,42 @@
             // Start progress update
             updateProgress();
             
-            // Schedule next switch
+            // Schedule next switch (for non-portal modes uses fixed timer;
+            // portal mode relies on postMessage but keeps a long safety fallback)
             rotationTimer = setTimeout(switchMode, mode.duration);
             
-            console.log(`[Kiosk] Switched to ${mode.label} for ${mode.duration / 60000} minutes`);
+            console.log(`[Kiosk] Switched to ${mode.label}${currentMode === 'PORTAL' ? ' (event-driven, no fixed timer)' : ' for ' + mode.duration / 60000 + ' min'}`);
         }
 
         function startKiosk() {
             console.log('[Kiosk] Starting auto-rotation...');
             startTime = Date.now();
             updateProgress();
+            // Portal mode: safety fallback timer only — switch is normally triggered
+            // by tv-cycle-complete postMessage from the portal iframe.
             rotationTimer = setTimeout(switchMode, MODES[currentMode].duration);
         }
+
+        // ── Listen for completion signals from child iframes ─────────────────
+        // Portal sends 'tv-cycle-complete' after all TV sections are shown once.
+        // Shoutouts sends 'shoutouts-cycle-complete' after all shoutouts are shown once.
+        window.addEventListener('message', function (e) {
+            if (!e.data || !e.data.type) return;
+
+            if (e.data.type === 'tv-cycle-complete' && currentMode === 'PORTAL') {
+                console.log('[Kiosk] ✅ Portal cycle complete — switching to Shoutouts now');
+                if (rotationTimer) clearTimeout(rotationTimer);
+                if (progressTimer) clearTimeout(progressTimer);
+                switchMode();
+            }
+
+            if (e.data.type === 'shoutouts-cycle-complete' && currentMode === 'SHOUTOUTS') {
+                console.log('[Kiosk] ✅ Shoutouts cycle complete — switching to Gallery now');
+                if (rotationTimer) clearTimeout(rotationTimer);
+                if (progressTimer) clearTimeout(progressTimer);
+                switchMode();
+            }
+        });
 
         // Keyboard shortcuts (for admin control)
         document.addEventListener('keydown', (e) => {
@@ -223,27 +260,37 @@
         // Handle visibility change (pause when tab is hidden)
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                // Pause timers when tab is hidden
                 if (rotationTimer) clearTimeout(rotationTimer);
                 if (progressTimer) clearTimeout(progressTimer);
             } else {
-                // Resume when tab is visible again
-                const elapsed = Date.now() - startTime;
-                const remaining = MODES[currentMode].duration - elapsed;
-                
-                if (remaining > 0) {
+                // Event-driven modes: restart pulse + restore safety fallback timer
+                if (currentMode === 'PORTAL' || currentMode === 'SHOUTOUTS') {
+                    startTime = startTime || Date.now();
                     updateProgress();
-                    rotationTimer = setTimeout(switchMode, remaining);
+                    const elapsed = Date.now() - startTime;
+                    const remaining = MODES[currentMode].duration - elapsed;
+                    if (remaining > 0) {
+                        rotationTimer = setTimeout(switchMode, remaining);
+                    } else {
+                        switchMode();
+                    }
                 } else {
-                    switchMode();
+                    const elapsed = Date.now() - startTime;
+                    const remaining = MODES[currentMode].duration - elapsed;
+                    if (remaining > 0) {
+                        updateProgress();
+                        rotationTimer = setTimeout(switchMode, remaining);
+                    } else {
+                        switchMode();
+                    }
                 }
             }
         });
 
         console.log('[Kiosk] Initialized');
-        console.log('[Kiosk] Portal: ' + KIOSK_CONFIG.PORTAL_DURATION / 60000 + ' min');
-        console.log('[Kiosk] Shoutouts: ' + KIOSK_CONFIG.SHOUTOUTS_DURATION / 60000 + ' min');
-        console.log('[Kiosk] Gallery: ' + KIOSK_CONFIG.GALLERY_DURATION / 60000 + ' min');
+        console.log('[Kiosk] Portal:    event-driven (30 min safety fallback)');
+        console.log('[Kiosk] Shoutouts: event-driven (30 min safety fallback)');
+        console.log('[Kiosk] Gallery:   ' + KIOSK_CONFIG.GALLERY_DURATION / 60000 + ' min fixed timer');
         console.log('[Kiosk] Shortcuts: Ctrl+K (toggle indicator), Ctrl+N (next), Ctrl+R (restart)');
     </script>
 </body>

@@ -70,7 +70,7 @@ const CONFIG = {
     
     // Maximum number of items to display in each section
     MAX_JOINERS: 6,           // Max new joiners to display
-    MAX_HOLIDAYS: 5,          // Max holidays to display
+    MAX_HOLIDAYS: 50,         // Show ALL upcoming holidays (large cap)
     MAX_ANNOUNCEMENTS: 10,    // Max announcements to display
     MAX_CAROUSEL_SLIDES: 2000,  // Max carousel slides (supports up to 2000 photos)
     

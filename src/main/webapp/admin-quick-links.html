@@ -8,84 +8,57 @@
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        .link-url {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+            color: #0084CA;
+            font-size: 0.85rem;
+        }
+        .category-badge {
+            background: #e7f3ff;
+            color: #00629B;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+        .order-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: #f0f2f5; color: #495057;
+            border-radius: 50%; font-weight: 700; font-size: 0.8rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <img src="images/ieee.png" alt="IEEE Logo" style="width: 70%; margin-bottom: 0.5rem;">
-            <h3><i class="bi bi-shield-check"></i>Admin</h3>
+            <h3><i class="bi bi-shield-check"></i> Admin</h3>
             <p>HR Portal Management</p>
         </div>
         <div class="sidebar-menu">
-            <a href="admin-panel.html" class="menu-item">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-            
+            <a href="admin-panel.html" class="menu-item"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
             <div class="menu-section">Content Management</div>
-            
-            <a href="admin-employees.html" class="menu-item">
-                <i class="bi bi-people-fill"></i>
-                <span>Employees</span>
-            </a>
-            
-            <a href="admin-announcements.html" class="menu-item">
-                <i class="bi bi-megaphone-fill"></i>
-                <span>Announcements</span>
-            </a>
-            
-            <a href="admin-holidays.html" class="menu-item">
-                <i class="bi bi-calendar-event-fill"></i>
-                <span>Holidays</span>
-            </a>
-            
-            <a href="admin-carousel.html" class="menu-item">
-                <i class="bi bi-images"></i>
-                <span>Carousel Slides</span>
-            </a>
-            
-            <a href="admin-gallery.html" class="menu-item">
-                <i class="bi bi-folder2-open"></i>
-                <span>Gallery</span>
-            </a>
-            
-            <a href="admin-quick-links.html" class="menu-item">
-                <i class="bi bi-link-45deg"></i>
-                <span>Quick Links</span>
-            </a>
-            
-            <a href="admin-emergency.html" class="menu-item">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span>Emergency Contacts</span>
-            </a>
-            
-            <a href="admin-work-anniversaries.html" class="menu-item">
-                <i class="bi bi-award-fill"></i>
-                <span>Work Anniversaries</span>
-            </a>
-            
-            <a href="admin-open-positions.html" class="menu-item">
-                <i class="bi bi-briefcase-fill"></i>
-                <span>Open Positions</span>
-            </a>
-            
+            <a href="admin-employees.html" class="menu-item"><i class="bi bi-people-fill"></i><span>Employees</span></a>
+            <a href="admin-announcements.html" class="menu-item"><i class="bi bi-megaphone-fill"></i><span>Announcements</span></a>
+            <a href="admin-holidays.html" class="menu-item"><i class="bi bi-calendar-event-fill"></i><span>Holidays</span></a>
+            <a href="admin-carousel.html" class="menu-item"><i class="bi bi-images"></i><span>Carousel Slides</span></a>
+            <a href="admin-gallery.html" class="menu-item"><i class="bi bi-folder2-open"></i><span>Gallery</span></a>
+            <a href="admin-quick-links.html" class="menu-item active"><i class="bi bi-link-45deg"></i><span>Quick Links</span></a>
+            <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
+            <a href="admin-work-anniversaries.html" class="menu-item"><i class="bi bi-award-fill"></i><span>Work Anniversaries</span></a>
+            <a href="admin-open-positions.html" class="menu-item"><i class="bi bi-briefcase-fill"></i><span>Open Positions</span></a>
             <div class="menu-section">System</div>
-            
-            <a href="admin-audit.html" class="menu-item">
-                <i class="bi bi-journal-text"></i>
-                <span>Audit Logs</span>
-            </a>
-            
-            <div class="menu-item" onclick="window.open('index.html', '_blank')">
-                <i class="bi bi-eye-fill"></i>
-                <span>View Portal</span>
-            </div>
-            
-            <div class="menu-item" onclick="handleLogout()">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Logout</span>
-            </div>
+            <a href="admin-audit.html" class="menu-item"><i class="bi bi-journal-text"></i><span>Audit Logs</span></a>
+            <div class="menu-item" onclick="window.open('index.html','_blank')"><i class="bi bi-eye-fill"></i><span>View Portal</span></div>
+            <div class="menu-item" onclick="handleLogout()"><i class="bi bi-box-arrow-right"></i><span>Logout</span></div>
         </div>
     </div>
 
@@ -93,50 +66,79 @@
     <div class="main-content">
         <div class="content-header">
             <div>
-                <h2>Quick Links Management</h2>
-                <p class="text-muted mb-0">Manage quick access links</p>
+                <h1>Quick Links</h1>
+                <p class="text-muted mb-0">Manage quick access links displayed on the portal</p>
             </div>
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-primary" onclick="showQuickLinkModal()">
+                    <i class="bi bi-plus-circle me-1"></i> Add Quick Link
+                </button>
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">Admin</span>
                 </div>
-                <span id="adminNameDisplay">Admin</span>
             </div>
         </div>
 
         <div class="content-body">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Quick Links</h5>
-                    <button class="btn btn-primary" onclick="showQuickLinkModal()">
-                        <i class="fas fa-plus me-2"></i>Add Quick Link
-                    </button>
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3 id="statTotal">—</h3>
+                    <p><i class="bi bi-link-45deg me-1"></i>Total</p>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Icon</th>
-                                    <th>Title</th>
-                                    <th>URL</th>
-                                    <th>Category</th>
-                                    <th>Display Order</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="quickLinksTableBody">
-                                <tr>
-                                    <td colspan="8" class="text-center">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="stat-card">
+                    <h3 id="statActive" style="color:#198754;">—</h3>
+                    <p><i class="bi bi-check-circle me-1"></i>Active</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="statCategories" style="color:#0084CA;">—</h3>
+                    <p><i class="bi bi-tags me-1"></i>Categories</p>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h5><i class="bi bi-list-ul me-2 text-primary"></i>Quick Links</h5>
+                    <span class="record-count" id="recordCount">Loading…</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="55">#</th>
+                                <th width="55" class="text-center">Icon</th>
+                                <th>Title</th>
+                                <th>URL</th>
+                                <th width="120">Category</th>
+                                <th width="75" class="text-center">Order</th>
+                                <th width="100">Status</th>
+                                <th width="100" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quickLinksTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                    Loading quick links…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start"><small>&copy; 2026 IEEE. All Rights Reserved.</small></div>
+                    <div class="col-md-6 text-center text-md-end"><small class="text-muted">Institute of Electrical and Electronics Engineers</small></div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Quick Link Modal -->
@@ -150,61 +152,42 @@
                 <div class="modal-body">
                     <form id="quickLinkForm">
                         <input type="hidden" id="quickLinkId">
-                        
                         <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <label for="quickLinkTitle" class="form-label">Title <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="quickLinkTitle" 
-                                           placeholder="Enter link title" maxlength="200" required>
-                                </div>
+                            <div class="col-md-8 mb-3">
+                                <label for="quickLinkTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="quickLinkTitle" placeholder="Enter link title" maxlength="200" required>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="quickLinkIcon" class="form-label">Icon</label>
-                                    <select class="form-select" id="quickLinkIcon">
-                                        <option value="">Default Link Icon</option>
-                                    </select>
-                                    <small class="text-muted">Choose a common icon (Bootstrap Icons)</small>
-                                </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="quickLinkIcon" class="form-label">Icon</label>
+                                <select class="form-select" id="quickLinkIcon">
+                                    <option value="">Default Link Icon</option>
+                                </select>
+                                <small class="text-muted">Bootstrap Icons</small>
                             </div>
                         </div>
-                        
                         <div class="mb-3">
                             <label for="quickLinkUrl" class="form-label">URL <span class="text-danger">*</span></label>
-                            <input type="url" class="form-control" id="quickLinkUrl" 
-                                   placeholder="https://example.com" maxlength="1000" required>
+                            <input type="url" class="form-control" id="quickLinkUrl" placeholder="https://example.com" maxlength="1000" required>
                         </div>
-                        
                         <div class="mb-3">
                             <label for="quickLinkDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="quickLinkDescription" rows="2" 
-                                      placeholder="Enter link description" maxlength="500"></textarea>
+                            <textarea class="form-control" id="quickLinkDescription" rows="2" placeholder="Enter link description" maxlength="500"></textarea>
                         </div>
-                        
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="quickLinkCategory" class="form-label">Category</label>
-                                    <input type="text" class="form-control" id="quickLinkCategory" 
-                                           placeholder="e.g., HR, IT, Training" maxlength="50">
-                                </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="quickLinkCategory" class="form-label">Category</label>
+                                <input type="text" class="form-control" id="quickLinkCategory" placeholder="e.g., HR, IT, Training" maxlength="50">
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="quickLinkDisplayOrder" class="form-label">Display Order</label>
-                                    <input type="number" class="form-control" id="quickLinkDisplayOrder" 
-                                           value="0" min="0" max="999">
-                                </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="quickLinkDisplayOrder" class="form-label">Display Order</label>
+                                <input type="number" class="form-control" id="quickLinkDisplayOrder" value="0" min="0" max="999">
                             </div>
                         </div>
-                        
-                        <div class="mb-3 form-check">
+                        <div class="form-check mb-2">
                             <input type="checkbox" class="form-check-input" id="quickLinkOpenInNewTab" checked>
                             <label class="form-check-label" for="quickLinkOpenInNewTab">Open in new tab</label>
                         </div>
-                        
-                        <div class="mb-3 form-check">
+                        <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="quickLinkIsActive" checked>
                             <label class="form-check-label" for="quickLinkIsActive">Active</label>
                         </div>
@@ -213,31 +196,9 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" onclick="saveQuickLink()">
-                        <i class="fas fa-save me-2"></i>Save
+                        <i class="bi bi-save me-1"></i> Save
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-check-circle me-2"></i>
-                    <span id="successMessage">Success!</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <span id="errorMessage">Error occurred</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
@@ -246,20 +207,21 @@
     <script src="js/config.js"></script>
     <script src="js/admin-utils.js"></script>
     <script src="js/admin-quick-links.js"></script>
-        
-        <!-- Footer -->
-        <footer class="admin-footer">
-            <div class="container-fluid">
-                <div class="row align-items-center">
-                    <div class="col-md-6 text-center text-md-start">
-                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
-                    </div>
-                    <div class="col-md-6 text-center text-md-end">
-                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
+    <script>
+        AdminAPI.init();
+        if (!AdminAPI.isAuthenticated()) {
+            window.location.href = 'admin-login.html';
+        } else {
+            const user = AdminAPI.getCurrentUser();
+            document.getElementById('userAvatar').textContent = (user.fullName || user.username || 'A').charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = user.fullName || user.username;
+        }
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>
 </body>
 </html>

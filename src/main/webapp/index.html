@@ -14,36 +14,30 @@
     <link href="css/styles.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Top accent bar -->
+    <div style="height:3px;background:linear-gradient(90deg,#ffc107 0%,#ff9800 40%,#ffc107 100%);"></div>
+
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="images/ieee.png" alt="IEEE Logo" height="35" class="me-2">
-                <span class="fw-bold">HR Portal</span>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="images/ieee.png" alt="IEEE Logo" height="32" style="filter:brightness(0) invert(1);">
+                <span style="width:1px;height:28px;background:rgba(255,255,255,0.3);display:inline-block;"></span>
+                <span class="fw-semibold" style="font-size:1.05rem;letter-spacing:0.2px;">HR Intranet Portal</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="darkModeBtn" title="Toggle Dark Mode">
-                            <i class="bi bi-moon-fill"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="tvModeBtn" title="TV/Kiosk Mode">
-                            <i class="bi bi-tv me-1"></i>TV Mode
-                        </a>
-                    </li>
+                <ul class="navbar-nav ms-auto align-items-center gap-1">
                     <li class="nav-item">
                         <a class="nav-link active" href="#home">
                             <i class="bi bi-house-door me-1"></i>Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#joiners">
-                            <i class="bi bi-person-plus me-1"></i>New Joiners
+                        <a class="nav-link" href="#teamUpdates">
+                            <i class="bi bi-people me-1"></i>Team
                         </a>
                     </li>
                     <li class="nav-item">
@@ -58,13 +52,47 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#positions">
-                            <i class="bi bi-briefcase me-1"></i>Open Positions
+                            <i class="bi bi-briefcase me-1"></i>Positions
+                        </a>
+                    </li>
+                    <li class="nav-item ms-1">
+                        <span style="width:1px;height:20px;background:rgba(255,255,255,0.25);display:inline-block;vertical-align:middle;"></span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="darkModeBtn" title="Toggle Dark Mode">
+                            <i class="bi bi-moon-fill"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="tvModeBtn" title="TV/Kiosk Mode">
+                            <i class="bi bi-tv me-1"></i><span class="d-none d-xl-inline">TV Mode</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin-login.html" title="Admin Panel" style="background:rgba(255,255,255,0.12);border-radius:6px;padding-left:0.75rem !important;padding-right:0.75rem !important;">
+                            <i class="bi bi-shield-check me-1"></i><span class="d-none d-xl-inline">Admin</span>
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- TV Mode Header Bar (hidden in normal mode) -->
+    <div id="tvHeader" style="display:none;">
+        <div class="tv-header-brand">
+            <img src="images/ieee.png" alt="IEEE" height="28" style="filter:brightness(0) invert(1); opacity:0.9;">
+            <span class="tv-header-org">IEEE HR Portal</span>
+        </div>
+        <div class="tv-header-section-pill" id="tvSectionPill">
+            <i class="bi bi-display me-2" id="tvSectionIcon"></i>
+            <span id="tvSectionName">Welcome</span>
+        </div>
+        <div class="tv-header-datetime">
+            <div class="tv-header-time" id="tvHeaderTime">--:--</div>
+            <div class="tv-header-date" id="tvHeaderDate">---</div>
+        </div>
+    </div>
 
     <!-- Breaking News Ticker -->
     <div class="breaking-news-bar" id="breakingNewsBar" style="display: none;">
@@ -114,40 +142,40 @@
     </section>
 
     <!-- Quick Stats Bar -->
-    <section class="stats-bar bg-light py-3">
-        <div class="container">
-            <div class="row text-center">
-                <div class="col-6 col-md-3">
+    <section class="stats-bar py-0">
+        <div class="container-fluid px-0">
+            <div class="row g-0 text-center">
+                <div class="col">
                     <div class="stat-item">
-                        <i class="bi bi-person-plus-fill text-success fs-3"></i>
+                        <i class="bi bi-person-plus-fill text-success"></i>
                         <span class="stat-number" id="joinerCount">0</span>
                         <span class="stat-label">New Joiners</span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col">
                     <div class="stat-item">
-                        <i class="bi bi-calendar-check-fill text-warning fs-3"></i>
+                        <i class="bi bi-calendar-check-fill text-warning"></i>
                         <span class="stat-number" id="holidayCount">0</span>
                         <span class="stat-label">Upcoming Holidays</span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col">
                     <div class="stat-item">
-                        <i class="bi bi-cake-fill text-danger fs-3"></i>
+                        <i class="bi bi-cake2-fill text-danger"></i>
                         <span class="stat-number" id="birthdayCount">0</span>
                         <span class="stat-label">Birthdays This Month</span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col">
                     <div class="stat-item">
-                        <i class="bi bi-megaphone-fill text-info fs-3"></i>
+                        <i class="bi bi-megaphone-fill" style="color:#0d6efd;"></i>
                         <span class="stat-number" id="announcementCount">0</span>
                         <span class="stat-label">Announcements</span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-item">
-                        <i class="bi bi-briefcase-fill text-success fs-3"></i>
+                <div class="col">
+                    <div class="stat-item" style="border-right:none;">
+                        <i class="bi bi-briefcase-fill text-success"></i>
                         <span class="stat-number" id="positionCount">0</span>
                         <span class="stat-label">Open Positions</span>
                     </div>
@@ -190,98 +218,94 @@
     </section>
 
     <!-- Main Content -->
-    <main class="py-5">
-        <div class="container">
-            <div class="row">
+    <main class="py-4" style="background:#f4f6f9; min-height:60vh;">
+        <div class="container-fluid px-4">
+            <div class="row g-4">
                 <!-- Left Column - Team Updates -->
                 <div class="col-lg-8">
                     <!-- Team Updates Section (Joiners + Celebrations Combined) -->
-                    <section id="teamUpdates" class="mb-5">
-                        <div class="section-header d-flex align-items-center mb-4">
-                            <div class="section-icon bg-primary text-white">
-                                <i class="bi bi-people-fill"></i>
-                            </div>
-                            <h2 class="section-title mb-0 ms-3">Team Updates</h2>
-                            <button class="btn btn-sm btn-outline-secondary ms-auto" id="toggleTeamScroll" title="Toggle auto-scroll">
-                                <i class="bi bi-pause-fill"></i>
-                            </button>
-                        </div>
-                        <div class="team-updates-scroll-wrapper">
-                        <div class="team-updates-scroll-track" id="teamUpdatesContainer">
-                            <!-- Loading placeholder -->
-                            <div class="col-12 text-center py-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                    <section id="teamUpdates" class="mb-4">
+                        <div class="section-card">
+                            <div class="section-header d-flex align-items-center mb-3">
+                                <div class="section-icon bg-primary text-white">
+                                    <i class="bi bi-people-fill"></i>
                                 </div>
-                                <p class="mt-3 text-muted">Loading team updates...</p>
+                                <h2 class="section-title mb-0 ms-3">Team Updates</h2>
+                                <button class="btn btn-sm btn-light ms-auto border" id="toggleTeamScroll" title="Toggle auto-scroll">
+                                    <i class="bi bi-pause-fill"></i>
+                                </button>
                             </div>
-                        </div>
+                            <div class="team-updates-scroll-wrapper">
+                                <div class="team-updates-scroll-track" id="teamUpdatesContainer">
+                                    <div class="col-12 text-center py-5">
+                                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                                        <p class="mt-3 text-muted small">Loading team updates...</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
                     <!-- Announcements Section -->
-                    <section id="announcements" class="mb-5">
-                        <div class="section-header d-flex align-items-center mb-4">
-                            <div class="section-icon bg-info text-white">
-                                <i class="bi bi-megaphone"></i>
-                            </div>
-                            <h2 class="section-title mb-0 ms-3">Announcements</h2>
-                        </div>
-                        <div class="announcements-scroll-wrapper">
-                        <div id="announcementsContainer">
-                            <!-- Loading placeholder -->
-                            <div class="text-center py-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                    <section id="announcements" class="mb-4">
+                        <div class="section-card">
+                            <div class="section-header d-flex align-items-center mb-3">
+                                <div class="section-icon bg-info text-white">
+                                    <i class="bi bi-megaphone-fill"></i>
                                 </div>
-                                <p class="mt-3 text-muted">Loading announcements...</p>
+                                <h2 class="section-title mb-0 ms-3">Announcements</h2>
                             </div>
-                        </div>
+                            <div class="announcements-scroll-wrapper">
+                                <div id="announcementsContainer">
+                                    <div class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                                        <p class="mt-3 text-muted small">Loading announcements...</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
                     <!-- Positions Section -->
-                    <section id="positions" class="mb-5">
-                        <div class="section-header d-flex align-items-center mb-4">
-                            <div class="section-icon bg-success text-white">
-                                <i class="bi bi-briefcase-fill"></i>
+                    <section id="positions" class="mb-4">
+                        <div class="section-card">
+                            <div class="section-header d-flex align-items-center mb-3">
+                                <div class="section-icon bg-success text-white">
+                                    <i class="bi bi-briefcase-fill"></i>
+                                </div>
+                                <h2 class="section-title mb-0 ms-3">Open Positions</h2>
+                                <button class="btn btn-sm btn-light ms-auto border" id="togglePositionsScroll" title="Toggle auto-scroll">
+                                    <i class="bi bi-pause-fill"></i>
+                                </button>
                             </div>
-                            <h2 class="section-title mb-0 ms-3">Open Positions</h2>
-                            <button class="btn btn-sm btn-outline-secondary ms-auto" id="togglePositionsScroll"
-                                title="Toggle auto-scroll">
-                                <i class="bi bi-pause-fill"></i>
-                            </button>
-                        </div>
-                        <div class="positions-scroll-wrapper">
-                            <div class="positions-scroll-track" id="positionsContainer">
-                                <!-- Loading placeholder -->
-                                <div class="text-center py-5">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                            <div class="positions-scroll-wrapper">
+                                <div class="positions-scroll-track" id="positionsContainer">
+                                    <div class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                                        <p class="mt-3 text-muted small">Loading open positions...</p>
                                     </div>
-                                    <p class="mt-3 text-muted">Loading open positions...</p>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Celebrations Section (Birthdays & Anniversaries) -->
-                    <section id="celebrations" class="mb-5" style="display: none;">
-                        <div class="section-header d-flex align-items-center mb-4">
-                            <div class="section-icon bg-danger text-white">
-                                <i class="bi bi-cake-fill"></i>
-                            </div>
-                            <h2 class="section-title mb-0 ms-3">Birthdays &amp; Celebrations</h2>
-                        </div>
-                        <div class="celebrations-scroll-wrapper">
-                        <div class="celebrations-scroll-track" id="celebrationsContainer">
-                            <div class="col-12 text-center py-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                    <section id="celebrations" class="mb-4" style="display: none;">
+                        <div class="section-card">
+                            <div class="section-header d-flex align-items-center mb-3">
+                                <div class="section-icon bg-danger text-white">
+                                    <i class="bi bi-cake-fill"></i>
                                 </div>
-                                <p class="mt-3 text-muted">Loading celebrations...</p>
+                                <h2 class="section-title mb-0 ms-3">Birthdays &amp; Celebrations</h2>
                             </div>
-                        </div>
+                            <div class="celebrations-scroll-wrapper">
+                                <div class="celebrations-scroll-track" id="celebrationsContainer">
+                                    <div class="col-12 text-center py-5">
+                                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                                        <p class="mt-3 text-muted small">Loading celebrations...</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -290,56 +314,39 @@
                 <div class="col-lg-4">
                     <!-- Upcoming Holidays Section -->
                     <section id="holidays" class="mb-4">
-                        <div class="section-header d-flex align-items-center mb-3">
-                            <div class="section-icon bg-warning text-white">
-                                <i class="bi bi-calendar-event"></i>
-                            </div>
-                            <h2 class="section-title mb-0 ms-3" fs-4>Upcoming Holidays</h2>
-                        </div>
-                        <div class="holiday-list" id="holidaysContainer">
-                            <!-- Loading placeholder -->
-                            <div class="text-center py-3">
-                                <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                        <div class="section-card">
+                            <div class="section-header d-flex align-items-center mb-3">
+                                <div class="section-icon bg-warning text-white">
+                                    <i class="bi bi-calendar-event-fill"></i>
                                 </div>
-                                <p class="mt-2 text-muted">Loading holidays...</p>
+                                <h2 class="section-title mb-0 ms-3" style="font-size:1.2rem;">Upcoming Holidays</h2>
+                            </div>
+                            <div class="holiday-list" id="holidaysContainer">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                                    <p class="mt-2 text-muted small">Loading holidays...</p>
+                                </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Quick Links Panel -->
                     <section id="quicklinks" class="mb-4">
-                        <div class="section-header d-flex align-items-center mb-3">
-                            <div class="section-icon bg-secondary text-white" style="width: 40px; height: 40px; font-size: 1.2rem;">
-                                <i class="bi bi-link-45deg"></i>
+                        <div class="section-card">
+                            <div class="section-header d-flex align-items-center mb-3">
+                                <div class="section-icon text-white" style="background:#6c757d; width:40px; height:40px; font-size:1.1rem;">
+                                    <i class="bi bi-grid-fill"></i>
+                                </div>
+                                <h5 class="section-title mb-0 ms-3" style="font-size:1.1rem;">Quick Links</h5>
                             </div>
-                            <h5 class="section-title mb-0 ms-3" style="font-size: 1.1rem;">Quick Links</h5>
-                        </div>
-                        <div class="quick-links-grid" id="quickLinksContainer">
-                            <a href="#" class="quick-link-item">
-                                <i class="bi bi-file-earmark-text"></i>
-                                <span>HR Policies</span>
-                            </a>
-                            <a href="#" class="quick-link-item">
-                                <i class="bi bi-calendar3"></i>
-                                <span>Leave Request</span>
-                            </a>
-                            <a href="#" class="quick-link-item">
-                                <i class="bi bi-person-badge"></i>
-                                <span>Employee Directory</span>
-                            </a>
-                            <a href="#" class="quick-link-item">
-                                <i class="bi bi-cash-stack"></i>
-                                <span>Payroll Info</span>
-                            </a>
-                            <a href="#" class="quick-link-item">
-                                <i class="bi bi-heart-pulse"></i>
-                                <span>Benefits</span>
-                            </a>
-                            <a href="#" class="quick-link-item">
-                                <i class="bi bi-headset"></i>
-                                <span>IT Support</span>
-                            </a>
+                            <div class="quick-links-grid" id="quickLinksContainer">
+                                <a href="#" class="quick-link-item"><i class="bi bi-file-earmark-text"></i><span>HR Policies</span></a>
+                                <a href="#" class="quick-link-item"><i class="bi bi-calendar3"></i><span>Leave Request</span></a>
+                                <a href="#" class="quick-link-item"><i class="bi bi-person-badge"></i><span>Employee Directory</span></a>
+                                <a href="#" class="quick-link-item"><i class="bi bi-cash-stack"></i><span>Payroll Info</span></a>
+                                <a href="#" class="quick-link-item"><i class="bi bi-heart-pulse"></i><span>Benefits</span></a>
+                                <a href="#" class="quick-link-item"><i class="bi bi-headset"></i><span>IT Support</span></a>
+                            </div>
                         </div>
                     </section>
 
@@ -393,20 +400,28 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer bg-dark text-light py-4">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <img src="images/ieee.png" alt="IEEE Logo" height="28" class="mb-2">
-                    <p class="mb-0">&copy; <span id="currentYear"></span> IEEE. All rights reserved.</p>
-                    <p class="mb-0 small">Institute of Electrical and Electronics Engineers</p>
+    <footer class="footer" style="background:#1a2332; color:#c8d3e0; border-top:3px solid #ffc107;">
+        <div class="container-fluid px-4 py-4">
+            <div class="row align-items-center gy-3">
+                <div class="col-md-5 d-flex align-items-center gap-3">
+                    <img src="images/ieee.png" alt="IEEE Logo" height="30" style="filter:brightness(0) invert(1);opacity:0.85;">
+                    <div>
+                        <p class="mb-0 fw-semibold" style="color:#ffffff;font-size:0.95rem;">IEEE HR Intranet Portal</p>
+                        <p class="mb-0" style="font-size:0.8rem;color:#8fa3b8;">&copy; <span id="currentYear"></span> IEEE. All rights reserved.</p>
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="mb-0">
-                        <i class="bi bi-clock me-1"></i>
-                        Last updated: <span id="lastUpdated">--</span>
+                <div class="col-md-4 text-md-center">
+                    <span style="font-size:0.8rem;color:#8fa3b8;">
+                        <i class="bi bi-shield-check me-1 text-success"></i>Secure Intranet &nbsp;|&nbsp;
+                        <i class="bi bi-wifi me-1 text-info"></i>Live Data
+                    </span>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <p class="mb-0" style="font-size:0.82rem;">
+                        <i class="bi bi-clock me-1" style="color:#ffc107;"></i>
+                        Last updated: <span id="lastUpdated" style="color:#ffffff;">--</span>
                     </p>
-                    <p class="mb-0 small mt-1">IEEE HR Intranet Portal</p>
+                    <p class="mb-0 mt-1" style="font-size:0.76rem;color:#8fa3b8;">Institute of Electrical and Electronics Engineers</p>
                 </div>
             </div>
         </div>

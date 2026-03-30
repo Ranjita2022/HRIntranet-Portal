@@ -10,8 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,15 +29,50 @@ public class EmployeeController {
     private final org.ieee.hrintranet.service.AuditService auditService;
     
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(employeeRepository.findAll());
+    public ResponseEntity<List<Map<String, Object>>> getAllEmployees() {
+        List<Employee> employees = employeeRepository.findAll();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Employee emp : employees) {
+            result.add(toResponseMap(emp));
+        }
+        return ResponseEntity.ok(result);
     }
-    
+
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployee(@PathVariable int id) {
+    public ResponseEntity<Map<String, Object>> getEmployee(@PathVariable int id) {
         return employeeRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(emp -> ResponseEntity.ok(toResponseMap(emp)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Build a response map that includes computed profileImageUrl */
+    private Map<String, Object> toResponseMap(Employee emp) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", emp.getId());
+        map.put("employeeId", emp.getEmployeeId());
+        map.put("firstName", emp.getFirstName());
+        map.put("lastName", emp.getLastName());
+        map.put("fullName", emp.getFullName());
+        map.put("email", emp.getEmail());
+        map.put("position", emp.getPosition());
+        map.put("department", emp.getDepartment());
+        map.put("startDate", emp.getStartDate());
+        map.put("birthDate", emp.getBirthDate());
+        map.put("status", emp.getStatus());
+        map.put("createdAt", emp.getCreatedAt());
+        map.put("updatedAt", emp.getUpdatedAt());
+        map.put("profileImage", emp.getProfileImage());
+
+        // Compute profileImageUrl for frontend use
+        String profileImageUrl = null;
+        if (emp.getProfileImage() != null && emp.getProfileImage().getFilename() != null) {
+            profileImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/uploads/")
+                    .path(emp.getProfileImage().getFilename())
+                    .toUriString();
+        }
+        map.put("profileImageUrl", profileImageUrl);
+        return map;
     }
     
     @PostMapping
@@ -120,8 +158,12 @@ public class EmployeeController {
     }
     
     @GetMapping("/recent-joiners")
-    public ResponseEntity<List<Employee>> getRecentJoiners(@RequestParam(defaultValue = "90") int days) {
+    public ResponseEntity<List<Map<String, Object>>> getRecentJoiners(@RequestParam(defaultValue = "90") int days) {
         LocalDate fromDate = LocalDate.now().minusDays(days);
-        return ResponseEntity.ok(employeeRepository.findRecentJoiners(fromDate));
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Employee emp : employeeRepository.findRecentJoiners(fromDate)) {
+            result.add(toResponseMap(emp));
+        }
+        return ResponseEntity.ok(result);
     }
 }

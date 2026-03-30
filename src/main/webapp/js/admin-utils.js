@@ -568,20 +568,43 @@ function previewImage(file, imgElement) {
 }
 
 /**
- * Activate sidebar menu item based on current page URL
+ * Activate sidebar menu item based on current page URL.
+ * Runs automatically on every admin page — no need to hardcode active class.
  */
 function activateCurrentMenu() {
-    const currentPage = window.location.pathname.split('/').pop();
+    // Extract just the filename (e.g. "admin-employees.html")
+    let currentPage = window.location.pathname.split('/').pop();
+
+    // Fallback: treat root / empty as the dashboard
+    if (!currentPage || currentPage === '') {
+        currentPage = 'admin-panel.html';
+    }
+
+    // Remove query string if present
+    currentPage = currentPage.split('?')[0];
+
     const menuItems = document.querySelectorAll('.sidebar-menu a.menu-item');
-    
+    let matched = false;
+
     menuItems.forEach(item => {
-        const href = item.getAttribute('href');
+        const href = (item.getAttribute('href') || '').split('?')[0];
         if (href === currentPage) {
             item.classList.add('active');
+            matched = true;
         } else {
             item.classList.remove('active');
         }
     });
+
+    // If no exact match (e.g. deployed under a context path), try ends-with
+    if (!matched) {
+        menuItems.forEach(item => {
+            const href = (item.getAttribute('href') || '');
+            if (href && window.location.pathname.endsWith(href)) {
+                item.classList.add('active');
+            }
+        });
+    }
 }
 
 // Initialize API on load
