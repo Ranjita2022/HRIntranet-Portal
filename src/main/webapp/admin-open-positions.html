@@ -39,23 +39,6 @@
             font-size: 0.95rem;
         }
         
-        .apply-btn {
-            background: #ffc107;
-            color: #000;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .apply-btn:hover {
-            background: #ffb300;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
-        }
-        
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -170,7 +153,7 @@
                 <span>Work Anniversaries</span>
             </a>
             
-            <a href="admin-open-positions.html" class="menu-item">
+            <a href="admin-open-positions.html" class="menu-item active">
                 <i class="bi bi-briefcase-fill"></i>
                 <span>Open Positions</span>
             </a>
@@ -202,7 +185,10 @@
                 <h1 id="pageTitle">Open Positions</h1>
                 <p class="text-muted mb-0">Manage IEEE job requisitions and openings</p>
             </div>
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-primary btn-sm" onclick="showAddPositionModal()">
+                    <i class="bi bi-plus-circle me-1"></i> Add Position
+                </button>
                 <div class="user-info">
                     <span class="user-avatar" id="userAvatar">A</span>
                     <span class="user-name" id="userName">Admin User</span>
@@ -243,41 +229,58 @@
                 <button class="btn btn-secondary btn-sm" onclick="exportToCSV()">
                     <i class="bi bi-download"></i> Export CSV
                 </button>
-                <button class="btn btn-primary btn-sm" onclick="showAddPositionModal()">
-                    <i class="bi bi-plus-circle"></i> Add Position
-                </button>
             </div>
 
             <!-- Empty State -->
             <div id="emptyState" class="empty-state" style="display: none;">
                 <i class="bi bi-briefcase"></i>
                 <h4 class="mt-3">No Open Positions Found</h4>
-                <p class="text-muted">Add a new position to get started</p>
+                <p class="text-muted">Click "Add Position" to get started</p>
             </div>
 
-            <!-- Positions Table -->
-            <div class="table-responsive" id="tableContainer">
-                <table id="positionsTable" class="table table-hover position-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="40">#</th>
-                            <th>Requisition Title</th>
-                            <th width="200">Location</th>
-                            <th width="120">Posting Date</th>
-                            <th width="100">Status</th>
-                            <th width="150">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="positionsTableBody">
-                        <tr>
-                            <td colspan="6" class="text-center">
-                                <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Positions Table Card -->
+            <div class="table-card" id="tableContainer">
+                <div class="table-card-header">
+                    <h5><i class="bi bi-list-ul me-2 text-primary"></i>Positions List</h5>
+                    <span class="record-count" id="positionsRecordCount">Loading…</span>
+                </div>
+                <div class="table-responsive">
+                    <table id="positionsTable" class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="40">#</th>
+                                <th>Requisition Title</th>
+                                <th width="200">Location</th>
+                                <th width="120">Posting Date</th>
+                                <th width="100">Status</th>
+                                <th width="120" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positionsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Add Position Modal -->
@@ -427,6 +430,10 @@
             $('#emptyState').hide();
             $('#tableContainer').show();
 
+            // Record count badge
+            const countEl = document.getElementById('positionsRecordCount');
+            if (countEl) countEl.textContent = allPositions.length + ' record' + (allPositions.length !== 1 ? 's' : '');
+
             // Apply status filter
             const selectedStatus = $('#statusFilter').val();
             let filtered = allPositions;
@@ -435,14 +442,14 @@
             }
 
             if (filtered.length === 0) {
-                $tbody.html('<tr><td colspan="6" class="text-center">No positions match the selected filter</td></tr>');
+                $tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No positions match the selected filter</td></tr>');
                 return;
             }
 
             filtered.forEach((position, index) => {
                 const row = `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td class="text-muted">${index + 1}</td>
                         <td>
                             <a href="#" class="requisition-title" onclick="return false;">
                                 ${escapeHtml(position.requisitionTitle)}
@@ -451,18 +458,19 @@
                         <td><span class="location-badge">${escapeHtml(position.location)}</span></td>
                         <td class="posting-date">${formatDate(position.postingDate)}</td>
                         <td>
-                            <span class="badge ${position.status === 'OPEN' ? 'bg-success' : position.status === 'ON_HOLD' ? 'bg-warning' : 'bg-secondary'}">
+                            <span class="badge ${position.status === 'OPEN' ? 'bg-success' : position.status === 'ON_HOLD' ? 'bg-warning text-dark' : 'bg-secondary'}">
                                 ${position.status === 'OPEN' ? 'Open' : position.status === 'CLOSED' ? 'Closed' : position.status === 'ON_HOLD' ? 'On Hold' : position.status}
                             </span>
                         </td>
-                        <td>
-                            <button class="apply-btn" onclick="handleApply(${position.id})">Apply</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="editPosition(${position.id})">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deletePosition(${position.id})">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editPosition(${position.id})" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deletePosition(${position.id})" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -491,8 +499,7 @@
         function showAddPositionModal() {
             document.getElementById('positionForm').reset();
             delete document.getElementById('positionForm').dataset.positionId;
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('postingDate').value = today;
+            document.getElementById('postingDate').value = new Date().toISOString().split('T')[0];
             new bootstrap.Modal(document.getElementById('addPositionModal')).show();
         }
 
@@ -595,12 +602,6 @@
             });
         }
 
-        function handleApply(id) {
-            const position = allPositions.find(p => p.id === id);
-            if (position) {
-                window.open('https://ieee.taleo.net/careersection/1/jobsearch.ftl', '_blank');
-            }
-        }
 
         function formatDate(dateString) {
             if (!dateString) return '-';

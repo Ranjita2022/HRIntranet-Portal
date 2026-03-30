@@ -38,57 +38,76 @@ async function loadHolidays() {
  * Render holidays table
  */
 function renderHolidaysTable() {
-    const tbody = document.getElementById('holidaysTableBody');
+    const tbody     = document.getElementById('holidaysTableBody');
     const emptyState = document.getElementById('holidaysEmptyState');
-    
+    const tableCard  = document.getElementById('tableCard');
+    const now        = new Date();
+
     if (!holidaysData || holidaysData.length === 0) {
         tbody.innerHTML = '';
-        emptyState.style.display = 'block';
-        document.getElementById('holidaysTable').style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        if (tableCard)  tableCard.style.display  = 'none';
+        updateHolidayStats([], [], []);
         return;
     }
-    
-    emptyState.style.display = 'none';
-    document.getElementById('holidaysTable').style.display = 'table';
-    
-    // Sort by date (newest first)
-    const sortedHolidays = [...holidaysData].sort((a, b) => {
-        return new Date(b.holidayDate) - new Date(a.holidayDate);
-    });
-    
-    tbody.innerHTML = sortedHolidays.map(holiday => {
-        const date = formatDate(holiday.holidayDate);
-        const isPast = new Date(holiday.holidayDate) < new Date();
-        const statusBadge = holiday.isActive 
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (tableCard)  tableCard.style.display  = '';
+
+    // Stats
+    const active   = holidaysData.filter(h => h.isActive);
+    const upcoming = holidaysData.filter(h => new Date(h.holidayDate) >= now);
+    const past     = holidaysData.filter(h => new Date(h.holidayDate) < now);
+    updateHolidayStats(active, upcoming, past);
+
+    // Record count
+    const countEl = document.getElementById('recordCount');
+    if (countEl) countEl.textContent = holidaysData.length + ' record' + (holidaysData.length !== 1 ? 's' : '');
+
+    // Sort by date (ascending — upcoming first)
+    const sorted = [...holidaysData].sort((a, b) => new Date(a.holidayDate) - new Date(b.holidayDate));
+
+    tbody.innerHTML = sorted.map(holiday => {
+        const date    = formatDate(holiday.holidayDate);
+        const isPast  = new Date(holiday.holidayDate) < now;
+        const statusBadge  = holiday.isActive
             ? '<span class="badge bg-success">Active</span>'
             : '<span class="badge bg-secondary">Inactive</span>';
-        const pastBadge = isPast 
+        const timingBadge  = isPast
             ? '<span class="badge bg-secondary ms-1">Past</span>'
             : '<span class="badge bg-primary ms-1">Upcoming</span>';
-        
+        const descText = holiday.description
+            ? escapeHtml(holiday.description.substring(0, 80)) + (holiday.description.length > 80 ? '…' : '')
+            : '<span class="text-muted fst-italic">—</span>';
+
         return `
             <tr>
-                <td>${holiday.id}</td>
-                <td>
-                    <strong>${escapeHtml(holiday.title)}</strong>
-                </td>
-                <td>${date}</td>
-                <td>${holiday.description ? escapeHtml(holiday.description.substring(0, 100)) + (holiday.description.length > 100 ? '...' : '') : '-'}</td>
-                <td>
-                    ${statusBadge}
-                    ${pastBadge}
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="showEditHolidayModal(${holiday.id})" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger ms-1" onclick="deleteHoliday(${holiday.id})" title="Delete">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                <td class="text-muted">${holiday.id}</td>
+                <td><span class="holiday-name">${escapeHtml(holiday.title)}</span></td>
+                <td class="date-cell">${date}</td>
+                <td class="text-muted small" title="${holiday.description ? escapeHtml(holiday.description) : ''}">${descText}</td>
+                <td>${statusBadge}${timingBadge}</td>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditHolidayModal(${holiday.id})" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteHoliday(${holiday.id})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+function updateHolidayStats(active, upcoming, past) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('statTotal',    holidaysData.length);
+    set('statActive',   active.length);
+    set('statUpcoming', upcoming.length);
+    set('statPast',     past.length);
 }
 
 /**

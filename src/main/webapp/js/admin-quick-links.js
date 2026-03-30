@@ -25,23 +25,12 @@ const QUICK_LINK_ICON_OPTIONS = [
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication
     if (!AdminAPI.isAuthenticated()) {
         window.location.href = 'admin-login.html';
         return;
     }
-    
-    // Set admin name
-    const adminName = AdminAPI.getAdminName();
-    if (adminName) {
-        document.getElementById('adminNameDisplay').textContent = adminName;
-    }
-    
-    // Initialize modal
     quickLinkModal = new bootstrap.Modal(document.getElementById('quickLinkModal'));
     populateQuickLinkIconDropdown();
-    
-    // Load quick links
     loadQuickLinks();
 });
 
@@ -107,52 +96,61 @@ async function loadQuickLinks() {
 // Render quick links table
 function renderQuickLinksTable() {
     const tbody = document.getElementById('quickLinksTableBody');
-    
+
+    // Stats
+    const active     = quickLinksData.filter(l => l.isActive);
+    const categories = new Set(quickLinksData.map(l => l.category).filter(Boolean));
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('statTotal',      quickLinksData.length);
+    set('statActive',     active.length);
+    set('statCategories', categories.size);
+    const countEl = document.getElementById('recordCount');
+    if (countEl) countEl.textContent = quickLinksData.length + ' record' + (quickLinksData.length !== 1 ? 's' : '');
+
     if (quickLinksData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No quick links found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No quick links found</td></tr>';
         return;
     }
-    
-    // Sort by display order, then by createdAt
+
     const sortedData = [...quickLinksData].sort((a, b) => {
-        if (a.displayOrder !== b.displayOrder) {
-            return a.displayOrder - b.displayOrder;
-        }
+        if (a.displayOrder !== b.displayOrder) return a.displayOrder - b.displayOrder;
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
-    
+
     tbody.innerHTML = sortedData.map(link => `
         <tr>
-            <td>${link.id}</td>
-            <td>
-                ${link.icon 
-                    ? `<i class="bi ${link.icon} fs-4 text-primary"></i>` 
+            <td class="text-muted">${link.id}</td>
+            <td class="text-center">
+                ${link.icon
+                    ? `<i class="bi ${link.icon} fs-5 text-primary"></i>`
                     : '<i class="bi bi-link text-muted"></i>'}
             </td>
-            <td>${escapeHtml(link.title)}</td>
+            <td><span class="fw-semibold">${escapeHtml(link.title)}</span></td>
             <td>
-                <a href="${escapeHtml(link.url)}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">
+                <a href="${escapeHtml(link.url)}" target="_blank" class="link-url" title="${escapeHtml(link.url)}">
                     ${escapeHtml(link.url)}
                 </a>
             </td>
             <td>
-                ${link.category 
-                    ? `<span class="badge bg-info">${escapeHtml(link.category)}</span>` 
-                    : '<span class="text-muted">-</span>'}
+                ${link.category
+                    ? `<span class="category-badge">${escapeHtml(link.category)}</span>`
+                    : '<span class="text-muted">—</span>'}
             </td>
-            <td><span class="badge bg-secondary">${link.displayOrder}</span></td>
+            <td class="text-center"><span class="order-badge">${link.displayOrder}</span></td>
             <td>
                 <span class="badge ${link.isActive ? 'bg-success' : 'bg-secondary'}">
                     ${link.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editQuickLink(${link.id})" title="Edit">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteQuickLink(${link.id})" title="Delete">
-                    <i class="bi bi-trash"></i>
-                </button>
+            <td class="text-center">
+                <div class="d-flex gap-1 justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editQuickLink(${link.id})" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteQuickLink(${link.id})" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');

@@ -8,6 +8,31 @@
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        .slide-thumb {
+            width: 72px; height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .slide-thumb-placeholder {
+            width: 72px; height: 45px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 1.2rem;
+            border: 1px solid #dee2e6;
+        }
+        .order-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: #e7f3ff; color: #00629B;
+            border-radius: 50%; font-weight: 700; font-size: 0.8rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Sidebar -->
@@ -18,74 +43,21 @@
             <p>HR Portal Management</p>
         </div>
         <div class="sidebar-menu">
-            <a href="admin-panel.html" class="menu-item">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-            
+            <a href="admin-panel.html" class="menu-item"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
             <div class="menu-section">Content Management</div>
-            
-            <a href="admin-employees.html" class="menu-item">
-                <i class="bi bi-people-fill"></i>
-                <span>Employees</span>
-            </a>
-            
-            <a href="admin-announcements.html" class="menu-item">
-                <i class="bi bi-megaphone-fill"></i>
-                <span>Announcements</span>
-            </a>
-            
-            <a href="admin-holidays.html" class="menu-item">
-                <i class="bi bi-calendar-event-fill"></i>
-                <span>Holidays</span>
-            </a>
-            
-            <a href="admin-carousel.html" class="menu-item">
-                <i class="bi bi-images"></i>
-                <span>Carousel Slides</span>
-            </a>
-            
-            <a href="admin-gallery.html" class="menu-item">
-                <i class="bi bi-folder2-open"></i>
-                <span>Gallery</span>
-            </a>
-            
-            <a href="admin-quick-links.html" class="menu-item">
-                <i class="bi bi-link-45deg"></i>
-                <span>Quick Links</span>
-            </a>
-            
-            <a href="admin-emergency.html" class="menu-item">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span>Emergency Contacts</span>
-            </a>
-            
-            <a href="admin-work-anniversaries.html" class="menu-item">
-                <i class="bi bi-award-fill"></i>
-                <span>Work Anniversaries</span>
-            </a>
-            
-            <a href="admin-open-positions.html" class="menu-item">
-                <i class="bi bi-briefcase-fill"></i>
-                <span>Open Positions</span>
-            </a>
-            
+            <a href="admin-employees.html" class="menu-item"><i class="bi bi-people-fill"></i><span>Employees</span></a>
+            <a href="admin-announcements.html" class="menu-item"><i class="bi bi-megaphone-fill"></i><span>Announcements</span></a>
+            <a href="admin-holidays.html" class="menu-item"><i class="bi bi-calendar-event-fill"></i><span>Holidays</span></a>
+            <a href="admin-carousel.html" class="menu-item active"><i class="bi bi-images"></i><span>Carousel Slides</span></a>
+            <a href="admin-gallery.html" class="menu-item"><i class="bi bi-folder2-open"></i><span>Gallery</span></a>
+            <a href="admin-quick-links.html" class="menu-item"><i class="bi bi-link-45deg"></i><span>Quick Links</span></a>
+            <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
+            <a href="admin-work-anniversaries.html" class="menu-item"><i class="bi bi-award-fill"></i><span>Work Anniversaries</span></a>
+            <a href="admin-open-positions.html" class="menu-item"><i class="bi bi-briefcase-fill"></i><span>Open Positions</span></a>
             <div class="menu-section">System</div>
-            
-            <a href="admin-audit.html" class="menu-item">
-                <i class="bi bi-journal-text"></i>
-                <span>Audit Logs</span>
-            </a>
-            
-            <div class="menu-item" onclick="window.open('index.html', '_blank')">
-                <i class="bi bi-eye-fill"></i>
-                <span>View Portal</span>
-            </div>
-            
-            <div class="menu-item" onclick="handleLogout()">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Logout</span>
-            </div>
+            <a href="admin-audit.html" class="menu-item"><i class="bi bi-journal-text"></i><span>Audit Logs</span></a>
+            <div class="menu-item" onclick="window.open('index.html','_blank')"><i class="bi bi-eye-fill"></i><span>View Portal</span></div>
+            <div class="menu-item" onclick="handleLogout()"><i class="bi bi-box-arrow-right"></i><span>Logout</span></div>
         </div>
     </div>
 
@@ -93,50 +65,79 @@
     <div class="main-content">
         <div class="content-header">
             <div>
-                <h2>Carousel Management</h2>
+                <h1>Carousel Management</h1>
                 <p class="text-muted mb-0">Manage homepage carousel slides</p>
             </div>
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-primary" onclick="showCarouselModal()">
+                    <i class="bi bi-plus-circle me-1"></i> Add Slide
+                </button>
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">Admin</span>
                 </div>
-                <span id="adminNameDisplay">Admin</span>
             </div>
         </div>
 
         <div class="content-body">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Carousel Slides</h5>
-                    <button class="btn btn-primary" onclick="showCarouselModal()">
-                        <i class="fas fa-plus me-2"></i>Add Slide
-                    </button>
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3 id="statTotal">—</h3>
+                    <p><i class="bi bi-images me-1"></i>Total Slides</p>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Preview</th>
-                                    <th>Title</th>
-                                    <th>Subtitle</th>
-                                    <th>Display Order</th>
-                                    <th>Status</th>
-                                    <th>Created By</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="carouselTableBody">
-                                <tr>
-                                    <td colspan="8" class="text-center">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="stat-card">
+                    <h3 id="statActive" style="color:#198754;">—</h3>
+                    <p><i class="bi bi-check-circle me-1"></i>Active</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="statInactive" style="color:#6c757d;">—</h3>
+                    <p><i class="bi bi-eye-slash me-1"></i>Inactive</p>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h5><i class="bi bi-list-ul me-2 text-primary"></i>Carousel Slides</h5>
+                    <span class="record-count" id="recordCount">Loading…</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="55">#</th>
+                                <th width="90">Preview</th>
+                                <th>Title</th>
+                                <th>Subtitle</th>
+                                <th width="90" class="text-center">Order</th>
+                                <th width="100">Status</th>
+                                <th width="110">Created By</th>
+                                <th width="100" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carouselTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                    Loading slides…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start"><small>&copy; 2026 IEEE. All Rights Reserved.</small></div>
+                    <div class="col-md-6 text-center text-md-end"><small class="text-muted">Institute of Electrical and Electronics Engineers</small></div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Carousel Modal -->
@@ -150,37 +151,28 @@
                 <div class="modal-body">
                     <form id="carouselForm">
                         <input type="hidden" id="carouselId">
-                        
                         <div class="mb-3">
                             <label for="carouselTitle" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="carouselTitle" 
-                                   placeholder="Enter slide title" maxlength="200">
+                            <input type="text" class="form-control" id="carouselTitle" placeholder="Enter slide title" maxlength="200">
                         </div>
-                        
                         <div class="mb-3">
                             <label for="carouselSubtitle" class="form-label">Subtitle</label>
-                            <input type="text" class="form-control" id="carouselSubtitle" 
-                                   placeholder="Enter slide subtitle" maxlength="500">
+                            <input type="text" class="form-control" id="carouselSubtitle" placeholder="Enter slide subtitle" maxlength="500">
                         </div>
-                        
                         <div class="mb-3">
                             <label for="carouselImage" class="form-label">Image <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control" id="carouselImage" 
-                                   accept="image/*" onchange="handleCarouselImageSelect(event)">
-                            <small class="text-muted">Max file size: 5MB. Recommended: 1920x800px</small>
-                            <div id="imagePreviewContainer" class="mt-3" style="display: none;">
-                                <img id="imagePreview" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+                            <input type="file" class="form-control" id="carouselImage" accept="image/*" onchange="handleCarouselImageSelect(event)">
+                            <small class="text-muted">Max 5 MB. Recommended: 1920×800 px</small>
+                            <div id="imagePreviewContainer" class="mt-3" style="display:none;">
+                                <img id="imagePreview" src="" alt="Preview" style="max-width:100%;max-height:300px;border-radius:8px;">
                             </div>
                         </div>
-                        
                         <div class="mb-3">
                             <label for="carouselDisplayOrder" class="form-label">Display Order</label>
-                            <input type="number" class="form-control" id="carouselDisplayOrder" 
-                                   value="0" min="0" max="999">
+                            <input type="number" class="form-control" id="carouselDisplayOrder" value="0" min="0" max="999">
                             <small class="text-muted">Lower numbers appear first</small>
                         </div>
-                        
-                        <div class="mb-3 form-check">
+                        <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="carouselIsActive" checked>
                             <label class="form-check-label" for="carouselIsActive">Active</label>
                         </div>
@@ -189,31 +181,9 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" onclick="saveCarouselSlide()">
-                        <i class="fas fa-save me-2"></i>Save
+                        <i class="bi bi-save me-1"></i> Save
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-check-circle me-2"></i>
-                    <span id="successMessage">Success!</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <span id="errorMessage">Error occurred</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
@@ -222,20 +192,21 @@
     <script src="js/config.js"></script>
     <script src="js/admin-utils.js"></script>
     <script src="js/admin-carousel.js"></script>
-        
-        <!-- Footer -->
-        <footer class="admin-footer">
-            <div class="container-fluid">
-                <div class="row align-items-center">
-                    <div class="col-md-6 text-center text-md-start">
-                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
-                    </div>
-                    <div class="col-md-6 text-center text-md-end">
-                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
+    <script>
+        AdminAPI.init();
+        if (!AdminAPI.isAuthenticated()) {
+            window.location.href = 'admin-login.html';
+        } else {
+            const user = AdminAPI.getCurrentUser();
+            document.getElementById('userAvatar').textContent = (user.fullName || user.username || 'A').charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = user.fullName || user.username;
+        }
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>
 </body>
 </html>

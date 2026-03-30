@@ -38,69 +38,91 @@ async function loadEmployees() {
  * Render employees table
  */
 function renderEmployeesTable() {
-    const tbody = document.getElementById('employeesTableBody');
+    const tbody      = document.getElementById('employeesTableBody');
     const emptyState = document.getElementById('employeesEmptyState');
-    
+    const tableCard  = document.getElementById('tableCard');
+
     if (!employeesData || employeesData.length === 0) {
         tbody.innerHTML = '';
-        emptyState.style.display = 'block';
-        document.getElementById('employeesTable').style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        if (tableCard)  tableCard.style.display  = 'none';
+        updateEmployeeStats([], [], []);
         return;
     }
-    
-    emptyState.style.display = 'none';
-    document.getElementById('employeesTable').style.display = 'table';
-    
-    // Sort by employee_id
-    const sortedEmployees = [...employeesData].sort((a, b) => {
-        return a.employeeId.localeCompare(b.employeeId);
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (tableCard)  tableCard.style.display  = '';
+
+    // Stats
+    const active     = employeesData.filter(e => e.status === 'ACTIVE');
+    const inactive   = employeesData.filter(e => e.status === 'INACTIVE' || e.status === 'TERMINATED');
+    const newJoiners = employeesData.filter(e => {
+        const days = Math.floor((new Date() - new Date(e.startDate)) / 86400000);
+        return days >= 0 && days <= 30;
     });
-    
-    tbody.innerHTML = sortedEmployees.map(employee => {
+    updateEmployeeStats(active, inactive, newJoiners);
+
+    // Record count
+    const countEl = document.getElementById('recordCount');
+    if (countEl) countEl.textContent = employeesData.length + ' record' + (employeesData.length !== 1 ? 's' : '');
+
+    // Sort by employee_id
+    const sorted = [...employeesData].sort((a, b) => a.employeeId.localeCompare(b.employeeId));
+
+    tbody.innerHTML = sorted.map(employee => {
         const startDate = formatDate(employee.startDate);
-        const profileImage = employee.profileImageUrl 
-            ? `<img src="${employee.profileImageUrl}" alt="${escapeHtml(employee.fullName)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">`
-            : `<span class="user-avatar" style="width: 32px; height: 32px; font-size: 0.875rem;">${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}</span>`;
-        
+        const days      = Math.floor((new Date() - new Date(employee.startDate)) / 86400000);
+        const isNewJoiner = days >= 0 && days <= 30;
+
+        const profileImage = employee.profileImageUrl
+            ? `<img src="${employee.profileImageUrl}" alt="${escapeHtml(employee.fullName)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`
+            : `<span class="user-avatar" style="width:32px;height:32px;font-size:0.875rem;">${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}</span>`;
+
         const statusBadges = {
-            'ACTIVE': '<span class="badge bg-success">Active</span>',
-            'INACTIVE': '<span class="badge bg-warning text-dark">Inactive</span>',
+            'ACTIVE':     '<span class="badge bg-success">Active</span>',
+            'INACTIVE':   '<span class="badge bg-warning text-dark">Inactive</span>',
             'TERMINATED': '<span class="badge bg-danger">Terminated</span>'
         };
-        
-        // Check if new joiner (within last 30 days)
-        const daysSinceJoining = Math.floor((new Date() - new Date(employee.startDate)) / (1000 * 60 * 60 * 24));
-        const isNewJoiner = daysSinceJoining >= 0 && daysSinceJoining <= 30;
-        
+
         return `
             <tr>
-                <td>${employee.id}</td>
-                <td>${employee.employeeId}</td>
+                <td class="text-muted">${employee.id}</td>
+                <td class="fw-500">${escapeHtml(employee.employeeId)}</td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
                         ${profileImage}
                         <div>
-                            <strong>${escapeHtml(employee.fullName)}</strong>
-                            ${isNewJoiner ? '<span class="badge bg-info ms-2">New Joiner</span>' : ''}
+                            <span class="fw-semibold">${escapeHtml(employee.fullName)}</span>
+                            ${isNewJoiner ? '<span class="badge bg-info text-white ms-1">New</span>' : ''}
                         </div>
                     </div>
                 </td>
-                <td>${escapeHtml(employee.email)}</td>
+                <td class="text-muted small">${escapeHtml(employee.email)}</td>
                 <td>${escapeHtml(employee.position)}</td>
                 <td>${escapeHtml(employee.department)}</td>
-                <td>${startDate}</td>
+                <td class="text-muted small">${startDate}</td>
                 <td>${statusBadges[employee.status] || employee.status}</td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="showEditEmployeeModal(${employee.id})" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger ms-1" onclick="deleteEmployee(${employee.id})" title="Delete">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditEmployeeModal(${employee.id})" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(${employee.id})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+function updateEmployeeStats(active, inactive, newJoiners) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('statTotal',      employeesData.length);
+    set('statActive',     active.length);
+    set('statNewJoiners', newJoiners.length);
+    set('statInactive',   inactive.length);
 }
 
 /**

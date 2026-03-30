@@ -64,7 +64,7 @@ body {
 .menu-item.active {
     background: rgba(255, 255, 255, 0.15);
     color: white;
-    border-left-color: #0084CA;
+    border-left-color: #ffc107;
     font-weight: 600;
 }
 
@@ -98,7 +98,7 @@ body {
 
 .content-header {
     background: white;
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 2rem;
     border-bottom: 1px solid #e9ecef;
     display: flex;
     justify-content: space-between;
@@ -109,11 +109,24 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 
-.content-header h1 {
-    font-size: 1.75rem;
+.content-header h1,
+.content-header .page-title {
+    font-size: 1.6rem;
     font-weight: 600;
     color: #2c3e50;
     margin: 0;
+}
+
+.content-header p {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin: 0.2rem 0 0 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .user-info {
@@ -122,22 +135,26 @@ body {
     gap: 0.75rem;
 }
 
+/* Works for both <div> and <span> */
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: #00629B;
     color: white;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 1rem;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 .user-name {
     font-weight: 500;
     color: #2c3e50;
+    font-size: 0.9rem;
 }
 
 .content-body {
@@ -145,12 +162,58 @@ body {
     flex: 1;
 }
 
+/* Content Card — white panel used on dashboard and other pages */
+.content-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #edf0f4;
+}
+
+.content-card h4,
+.content-card h5 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.content-card h4 i,
+.content-card h5 i {
+    color: #00629B;
+    margin-right: 0.5rem;
+}
+
+/* Logout Button */
+.logout-btn {
+    padding: 0.45rem 1rem;
+    background: #00629B;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.logout-btn:hover {
+    background: #003C71;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 98, 155, 0.3);
+}
+
 /* Admin Footer - Sticky at Bottom */
 .admin-footer {
     background: white;
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 2rem;
     border-top: 1px solid #e9ecef;
-    color: #495057;
+    color: #6c757d;
+    font-size: 0.85rem;
     margin-top: auto;
 }
 
@@ -172,6 +235,7 @@ body {
     letter-spacing: 0.5px;
     color: #6c757d;
     border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
 }
 
 /* Badges */
@@ -184,14 +248,21 @@ body {
 /* Buttons - IEEE Blue */
 .btn-primary {
     background: #00629B;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 98, 155, 0.3);
-    transition: all 0.3s ease;
+    border-color: #00629B;
+    box-shadow: 0 2px 4px rgba(0, 98, 155, 0.25);
+    transition: all 0.25s ease;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus {
     background: #0084CA;
-    box-shadow: 0 4px 8px rgba(0, 98, 155, 0.4);
+    border-color: #0084CA;
+    box-shadow: 0 4px 8px rgba(0, 98, 155, 0.35);
+}
+
+.btn-primary:active {
+    background: #003C71;
+    border-color: #003C71;
 }
 
 /* Modals - IEEE Theme */
@@ -210,8 +281,17 @@ body {
 }
 
 /* Empty State */
-.text-center i {
-    opacity: 0.5;
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 1rem;
 }
 
 /* Responsive */
@@ -220,18 +300,125 @@ body {
         width: 0;
         overflow: hidden;
     }
-    
+
     .main-content {
         margin-left: 0;
     }
-    
+
     .content-header {
         padding: 1rem;
     }
-    
+
     .content-body {
         padding: 1rem;
     }
+}
+
+/* ── Shared Stats Row ── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #00629B;
+    margin: 0 0 0.25rem 0;
+}
+
+.stat-card p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ── Shared Table Card ── */
+.table-card {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #edf0f4;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+
+.table-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafbfc;
+}
+
+.table-card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.table-card-header .record-count {
+    font-size: 0.8rem;
+    color: #6c757d;
+    background: #e9ecef;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* ── Table inside table-card ── */
+.table-card .table {
+    margin: 0;
+}
+
+.table-card .table thead th {
+    background: #f8f9fa;
+    padding: 0.75rem 1rem;
+}
+
+.table-card .table tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+}
+
+/* ── Filter Bar ── */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-bar label {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* ── Empty State (shared) ── */
+.empty-state-icon {
+    font-size: 4rem;
+    color: #dee2e6;
 }
 
 /* Toast Container */

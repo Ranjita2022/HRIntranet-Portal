@@ -96,14 +96,19 @@
                 </h1>
                 <p class="text-muted">Manage photo gallery folders for kiosk display</p>
             </div>
-            <div class="header-actions">
-                <a href="gallery.html" target="_blank" class="btn btn-outline-primary">
-                    <i class="bi bi-display me-2"></i>Preview Gallery
+            <div class="d-flex align-items-center gap-3">
+                <a href="gallery.html" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-display me-1"></i> Preview Gallery
                 </a>
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">Admin</span>
+                </div>
             </div>
         </div>
 
         <!-- Scan Section -->
+        <div class="content-body">
         <div class="scan-section">
             <div class="row align-items-center">
                 <div class="col-md-6">
@@ -122,51 +127,18 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="text-muted mb-2">Total Folders</h6>
-                                <h2 class="mb-0" id="totalFolders">0</h2>
-                            </div>
-                            <div class="text-primary">
-                                <i class="bi bi-folder fs-1"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stats-row mb-4">
+            <div class="stat-card">
+                <h3 id="totalFolders">0</h3>
+                <p><i class="bi bi-folder me-1"></i>Total Folders</p>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="text-muted mb-2">Active Folders</h6>
-                                <h2 class="mb-0" id="activeFolders">0</h2>
-                            </div>
-                            <div class="text-success">
-                                <i class="bi bi-check-circle fs-1"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="stat-card">
+                <h3 id="activeFolders" style="color:#198754;">0</h3>
+                <p><i class="bi bi-check-circle me-1"></i>Active Folders</p>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="text-muted mb-2">Total Photos</h6>
-                                <h2 class="mb-0" id="totalPhotos">0</h2>
-                            </div>
-                            <div class="text-info">
-                                <i class="bi bi-images fs-1"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="stat-card">
+                <h3 id="totalPhotos" style="color:#0084CA;">0</h3>
+                <p><i class="bi bi-images me-1"></i>Total Photos</p>
             </div>
         </div>
 
@@ -185,7 +157,22 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div><!-- /card (folders list) -->
+        </div><!-- /content-body -->
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <small>&copy; 2026 IEEE. All Rights Reserved.</small>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Institute of Electrical and Electronics Engineers</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Edit Folder Modal -->
@@ -307,15 +294,57 @@
     <script src="js/config.js"></script>
     <script src="js/admin-utils.js"></script>
     <script src="js/admin-gallery.js"></script>
-    
+
     <script>
-        // Load sidebar
-        fetch('admin-sidebar-template.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('sidebar-container').innerHTML = html;
-                setActivePage('gallery');
-            });
+        // Mark the active sidebar menu item after the sidebar template loads
+        function setActivePage(pageKey) {
+            const linkMap = {
+                'dashboard':     'admin-panel.html',
+                'employees':     'admin-employees.html',
+                'announcements': 'admin-announcements.html',
+                'holidays':      'admin-holidays.html',
+                'carousel':      'admin-carousel.html',
+                'gallery':       'admin-gallery.html',
+                'quick-links':   'admin-quick-links.html',
+                'emergency':     'admin-emergency.html',
+                'anniversaries': 'admin-work-anniversaries.html',
+                'positions':     'admin-open-positions.html',
+                'audit':         'admin-audit.html'
+            };
+            const href = linkMap[pageKey];
+            if (href) {
+                document.querySelectorAll('.sidebar .menu-item').forEach(function(el) {
+                    if (el.getAttribute('href') === href) {
+                        el.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // Load sidebar, then check auth and init
+        AdminAPI.init();
+        if (!AdminAPI.isAuthenticated()) {
+            window.location.href = 'admin-login.html';
+        } else {
+            const user = AdminAPI.getCurrentUser();
+            if (user) {
+                document.getElementById('userAvatar').textContent = (user.fullName || user.username || 'A').charAt(0).toUpperCase();
+                document.getElementById('userName').textContent = user.fullName || user.username;
+            }
+            fetch('admin-sidebar-template.html')
+                .then(function(response) { return response.text(); })
+                .then(function(html) {
+                    document.getElementById('sidebar-container').innerHTML = html;
+                    setActivePage('gallery');
+                });
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                AdminAPI.logout();
+                window.location.href = 'admin-login.html';
+            }
+        }
     </script>
 </body>
 </html>

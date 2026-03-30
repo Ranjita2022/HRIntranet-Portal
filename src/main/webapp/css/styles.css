@@ -26,10 +26,19 @@
     --bs-primary-rgb: 0, 98, 155;
 }
 
+/* Section Card Wrapper - white card for each section */
+.section-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+    border: 1px solid #edf0f4;
+}
+
 /* Base Styles - IEEE Typography */
 body {
     font-family: 'Roboto', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    background-color: #FFFFFF;
+    background-color: #f4f6f9;
     color: #263238;
     line-height: 1.6;
 }
@@ -62,66 +71,107 @@ html {
 
 /* Navigation */
 .navbar {
-    padding: 0.75rem 0;
+    padding: 0.6rem 0;
+    border-bottom: 3px solid rgba(255,255,255,0.12);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
 }
 
 .navbar-brand {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.navbar-brand img {
+    filter: brightness(0) invert(1);
 }
 
 .nav-link {
-    padding: 0.5rem 1rem !important;
+    padding: 0.45rem 0.9rem !important;
     transition: var(--transition);
     border-radius: var(--border-radius);
-    margin: 0 0.25rem;
+    margin: 0 0.1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+.nav-link.active {
+    background-color: rgba(255,255,255,0.18) !important;
 }
 
 /* Hero Carousel */
 .carousel-section {
     background-color: var(--dark-color);
+    position: relative;
 }
 
 .carousel-placeholder {
-    height: 450px;
-    background: linear-gradient(135deg, #003C71 0%, #00629B 100%);
+    height: clamp(480px, 68vh, 680px);
+    background: linear-gradient(135deg, #003C71 0%, #00629B 60%, #0084CA 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .carousel-item img {
-    height: 450px;
+    height: clamp(480px, 68vh, 680px);
     object-fit: cover;
     width: 100%;
+    filter: brightness(0.88);
 }
 
 .carousel-caption {
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    background: linear-gradient(transparent 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.78) 100%);
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 2rem;
+    padding: 3.5rem 4rem 2.5rem;
     text-align: left;
 }
 
 .carousel-caption h3 {
-    font-size: 2rem;
+    font-size: 2.6rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.6rem;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    letter-spacing: -0.3px;
+    line-height: 1.15;
 }
 
 .carousel-caption p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    max-width: 600px;
+    font-size: 1.15rem;
+    opacity: 0.92;
+    max-width: 620px;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    line-height: 1.55;
+    margin-bottom: 0;
+}
+
+/* Decorative accent line on carousel caption */
+.carousel-caption::before {
+    content: '';
+    display: block;
+    width: 52px;
+    height: 4px;
+    background: #ffc107;
+    border-radius: 2px;
+    margin-bottom: 1rem;
 }
 
 .carousel-control-prev,
 .carousel-control-next {
-    width: 5%;
-    opacity: 0.8;
+    width: 4%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-section:hover .carousel-control-prev,
+.carousel-section:hover .carousel-control-next {
+    opacity: 0.85;
 }
 
 .carousel-control-prev:hover,
@@ -129,73 +179,130 @@ html {
     opacity: 1;
 }
 
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-size: 60%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.carousel-indicators {
+    margin-bottom: 1rem;
+}
+
 .carousel-indicators [data-bs-target] {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    margin: 0 6px;
+    margin: 0 5px;
+    border: 2px solid rgba(255,255,255,0.6);
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.carousel-indicators .active {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    width: 28px;
+    border-radius: 5px;
 }
 
 /* Quick Stats Bar */
 .stats-bar {
-    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.stats-bar .container {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.stats-bar .row {
+    margin: 0;
 }
 
 .stat-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    padding: 0.2rem;
+    gap: 0.1rem;
+    padding: 1.25rem 0.5rem;
+    position: relative;
+    border-right: 1px solid #e9ecef;
+    transition: background 0.2s ease;
+}
+
+.stat-item:last-child {
+    border-right: none;
+}
+
+.stat-item:hover {
+    background: #f8f9fa;
+}
+
+.stat-item i {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.15rem;
 }
 
 .stat-number {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--dark-color);
+    line-height: 1.1;
 }
 
 .stat-label {
-    font-size: 0.9rem;
-    color: #0c0c0c;
+    font-size: 0.78rem;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 /* Section Styles */
 .section-header {
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 1.1rem;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 1.5rem !important;
 }
 
 .section-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 
 .section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.35rem;
+    font-weight: 700;
     color: var(--dark-color);
+    letter-spacing: -0.2px;
 }
 
 /* New Joiner Cards */
 .joiner-card {
     background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
     overflow: hidden;
     transition: var(--transition);
     height: 100%;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #eef0f3;
 }
 
 .joiner-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+    transform: translateY(-4px);
 }
 
 .joiner-image {
@@ -262,29 +369,33 @@ html {
 /* Holiday Cards */
 .holiday-card {
     background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    padding: 1.1rem;
-    margin-bottom: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    padding: 1rem;
+    margin-bottom: 0.85rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     transition: var(--transition);
     border-left: 4px solid var(--warning-color);
+    border-top: 1px solid #f5f5f5;
+    border-right: 1px solid #f5f5f5;
+    border-bottom: 1px solid #f5f5f5;
 }
 
 .holiday-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateX(5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    transform: translateX(4px);
 }
 
 .holiday-date-box {
-    min-width: 70px;
+    min-width: 68px;
     text-align: center;
-    padding: 0.75rem;
+    padding: 0.6rem 0.75rem;
     background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-    border-radius: var(--border-radius);
+    border-radius: 10px;
     color: white;
+    flex-shrink: 0;
 }
 
 .holiday-day {
@@ -326,16 +437,20 @@ html {
 /* Announcement Cards */
 .announcement-card {
     background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     padding: 1.25rem;
     margin-bottom: 1rem;
     transition: var(--transition);
     border-left: 4px solid var(--info-color);
+    border-top: 1px solid #f0f2f5;
+    border-right: 1px solid #f0f2f5;
+    border-bottom: 1px solid #f0f2f5;
 }
 
 .announcement-card:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    transform: translateX(2px);
 }
 
 .announcement-header {
@@ -481,11 +596,15 @@ html {
 @media (max-width: 991.98px) {
     .carousel-item img,
     .carousel-placeholder {
-        height: 350px;
+        height: clamp(380px, 55vh, 520px);
+    }
+
+    .carousel-caption {
+        padding: 2.5rem 2rem 2rem;
     }
     
     .carousel-caption h3 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
     }
     
     .carousel-caption p {
@@ -493,9 +612,9 @@ html {
     }
     
     .stat-item {
-        flex-direction: column;
-        gap: 0.25rem;
-        padding: 0.75rem 0;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+        padding: 0.9rem 0.25rem;
     }
     
     .stat-number {
@@ -510,23 +629,30 @@ html {
 @media (max-width: 767.98px) {
     .carousel-item img,
     .carousel-placeholder {
-        height: 250px;
+        height: clamp(260px, 45vh, 380px);
     }
     
     .carousel-caption {
-        padding: 1rem;
+        padding: 1.5rem 1.25rem 1.25rem;
     }
     
     .carousel-caption h3 {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
     }
     
     .carousel-caption p {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
+        display: none;
+    }
+
+    .carousel-caption::before {
+        width: 36px;
+        height: 3px;
+        margin-bottom: 0.6rem;
     }
     
     .section-title {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
     }
     
     .holiday-card {
@@ -747,7 +873,7 @@ html {
 .quick-links-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
 
 .quick-link-item {
@@ -755,31 +881,33 @@ html {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1rem 0.5rem;
-    background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    padding: 0.9rem 0.5rem;
+    background: #f8f9fb;
+    border-radius: 10px;
+    box-shadow: none;
     text-decoration: none;
     color: var(--dark-color);
     transition: var(--transition);
     text-align: center;
+    border: 1px solid #edf0f4;
 }
 
 .quick-link-item:hover {
     background: var(--primary-color);
     color: white;
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,98,155,0.25);
+    border-color: transparent;
 }
 
 .quick-link-item i {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+    margin-bottom: 0.4rem;
 }
 
 .quick-link-item span {
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-size: 0.78rem;
+    font-weight: 600;
 }
 
 .quick-link-hidden {
@@ -968,19 +1096,20 @@ html {
 /* Team Card Base Styles */
 .team-card {
     background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
     min-height: 450px;
     height: 100%;
+    border: 1px solid #edf0f4;
 }
 
 .team-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.13);
 }
 
 /* Team Card Image */
@@ -1405,124 +1534,78 @@ body.tv-mode .team-card-description {
    EMERGENCY CONTACTS
    ============================================= */
 
-/* Announcements and Holidays - vertical scroll wrappers */
+/* ── Announcements: show ~4 cards, manual scroll for more ── */
 .announcements-scroll-wrapper {
-    /* fixed height so scrollbar is consistently positioned in the layout */
-    height: 420px;
-    overflow-y: scroll; /* always show scrollbar (even when not overflowing on some platforms) */
-    overflow-x: hidden;
-    padding-right: 8px; /* keep content clear of scrollbar */
-}
-
-.announcements-scroll-wrapper::-webkit-scrollbar {
-    width: 12px;
-}
-.announcements-scroll-wrapper::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.06);
-}
-.announcements-scroll-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.35);
-    border-radius: 5px;
-}
-
-/* Firefox scrollbar styles and cross-browser hints */
-.announcements-scroll-wrapper {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.06);
-    -ms-overflow-style: auto;
-}
-
-/* If you prefer the scrollbar to appear as a colored persistent bar on the left,
-   uncomment the block below and adjust the color as needed.
-
-.announcements-scroll-wrapper::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 12px;
-    bottom: 12px;
-    width: 6px;
-    background: linear-gradient(180deg, #0dcaf0, #0d6efd);
-    border-radius: 4px;
-}
-*/
-
-.holiday-list {
-    max-height: 380px;
+    max-height: 560px;          /* ~4 announcement cards */
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 8px;
-    position: relative;
     scroll-behavior: smooth;
+    position: relative;
+    padding-right: 2px;
+    /* Subtle bottom-fade hint that more content exists */
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
 }
 
-/* Note: Holiday auto-scroll requires JavaScript implementation 
-   due to lack of wrapper container in HTML structure */
+/* When fully scrolled to bottom, remove the fade */
+.announcements-scroll-wrapper.scrolled-to-bottom {
+    -webkit-mask-image: none;
+    mask-image: none;
+}
 
-.holiday-list::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.06);
+/* Clean thin scrollbar */
+.announcements-scroll-wrapper::-webkit-scrollbar { width: 4px; }
+.announcements-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+.announcements-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0,98,155,0.3);
+    border-radius: 4px;
+}
+.announcements-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,98,155,0.55);
+}
+.announcements-scroll-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,98,155,0.3) transparent;
+}
+
+/* ── Holidays: show ~4 cards, manual scroll for more ── */
+.holiday-list {
+    max-height: 440px;          /* ~4 holiday cards */
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    position: relative;
+    padding-right: 2px;
+    /* Subtle bottom-fade hint */
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+}
+
+.holiday-list.scrolled-to-bottom {
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+/* Clean thin scrollbar */
+.holiday-list::-webkit-scrollbar { width: 4px; }
+.holiday-list::-webkit-scrollbar-track { background: transparent; }
+.holiday-list::-webkit-scrollbar-thumb {
+    background: rgba(255,152,0,0.45);
+    border-radius: 4px;
+}
+.holiday-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,152,0,0.7);
+}
+.holiday-list {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,152,0,0.45) transparent;
 }
 
 @media (max-width: 991.98px) {
-    .announcements-scroll-wrapper {
-        max-height: 300px;
-    }
-    .holiday-list {
-        max-height: 260px;
-    }
+    .announcements-scroll-wrapper { max-height: 400px; }
+    .holiday-list { max-height: 320px; }
 }
 
-/* Visual mask to shorten the visible scrollbar thumb length
-   so it matches the compact appearance of the team-updates scrollbar. */
-.announcements-scroll-wrapper,
-.holiday-list {
-    position: relative; /* ensure pseudo elements align to wrapper */
-}
-.announcements-scroll-wrapper::before,
-.announcements-scroll-wrapper::after,
-.holiday-list::before,
-.holiday-list::after {
-    content: '';
-    position: absolute;
-    right: 0; /* cover the scrollbar area on the right */
-    width: 18px; /* slightly wider than scrollbar to fully mask */
-    background: #ffffff; /* matches page background; change for dark modes if needed */
-    z-index: 10;
-    pointer-events: none;
-}
-.announcements-scroll-wrapper::before,
-.holiday-list::before {
-    top: 0;
-    height: 40%; /* larger masks -> much smaller visible thumb */
-    border-bottom-left-radius: 4px;
-}
-.announcements-scroll-wrapper::after,
-.holiday-list::after {
-    bottom: 0;
-    height: 40%; /* larger masks -> much smaller visible thumb */
-    border-top-left-radius: 4px;
-}
-
-/* Ensure the visible scrollbar track in the middle remains the same width as team updates */
-.announcements-scroll-wrapper::-webkit-scrollbar,
-.holiday-list::-webkit-scrollbar {
-    width: 10px;
-}
-.announcements-scroll-wrapper::-webkit-scrollbar-thumb,
-.holiday-list::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.4);
-    border-radius: 10px;
-    border: 3px solid var(--light-color); /* pill look against masked edges */
-    min-height: 24px; /* ensure thumb is always draggable */
-}
-
-/* Use page background for masks so they blend in (works for default light theme) */
-.announcements-scroll-wrapper::before,
-.announcements-scroll-wrapper::after,
-.holiday-list::before,
-.holiday-list::after {
-    background: var(--light-color);
-}
 
 .emergency-card {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
@@ -1614,12 +1697,22 @@ body.tv-mode .team-card-description {
    ============================================= */
 
 body.dark-mode {
-    background-color: #1a1a2e;
+    background-color: #0f1623;
     color: #e0e0e0;
 }
 
+body.dark-mode .section-card {
+    background: #16213e;
+    border-color: #2a2a4a;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+body.dark-mode main {
+    background: #0f1623 !important;
+}
+
 body.dark-mode .navbar {
-    background: #16213e !important;
+    background: #0a0f1e !important;
 }
 
 body.dark-mode .stats-bar {
@@ -1637,6 +1730,24 @@ body.dark-mode .stat-label {
 
 body.dark-mode .section-title {
     color: #fff;
+}
+
+/* Dark-mode: adjust scroll fade and scrollbar thumb for holiday + announcement wrappers */
+body.dark-mode .holiday-list,
+body.dark-mode .announcements-scroll-wrapper {
+    -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+}
+body.dark-mode .holiday-list.scrolled-to-bottom,
+body.dark-mode .announcements-scroll-wrapper.scrolled-to-bottom {
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+body.dark-mode .holiday-list::-webkit-scrollbar-thumb {
+    background: rgba(255,152,0,0.5);
+}
+body.dark-mode .announcements-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(100,160,255,0.4);
 }
 
 body.dark-mode .joiner-card,
@@ -1696,13 +1807,703 @@ body.dark-mode .scroll-wrapper::after {
 }
 
 /* =============================================
-   TV / KIOSK MODE STYLES
+   OPEN POSITIONS — NORMAL MODE CARD STYLES
+   (renderPositions uses these classes for both
+    normal and TV mode; TV mode overrides below)
    ============================================= */
 
-/* TV Mode layout - single screen view */
+/* Horizontal scroll wrapper */
+.positions-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,98,155,0.35) transparent;
+    min-height: 200px;
+}
+
+.positions-scroll-wrapper::-webkit-scrollbar {
+    height: 6px;
+    display: block;
+}
+
+.positions-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0,98,155,0.4);
+    border-radius: 3px;
+}
+
+/* Flex track — cards lay out side-by-side */
+.positions-scroll-track {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    width: max-content;
+    min-width: 100%;
+}
+
+/* Fixed-width outer wrapper keeps each card at 320 px */
+.position-card-wrapper {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+/* ── Main card ─────────────────────────────── */
+.position-card-tv {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e8ecf1;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 340px;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.position-card-tv:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+}
+
+/* ── Card header — IEEE-blue gradient ──────── */
+.position-card-header-tv {
+    background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
+    border-bottom: 3px solid #ffc107;
+    padding: 1.1rem 1.25rem 1rem;
+}
+
+/* Position title */
+.position-title-tv {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 0.35rem;
+    line-height: 1.35;
+    word-wrap: break-word;
+}
+
+/* Requisition ID */
+.requisition-id-tv {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.82);
+    margin: 0;
+    font-weight: 400;
+}
+
+/* ── Card body ─────────────────────────────── */
+.position-card-body-tv {
+    padding: 1rem 1.1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+/* Each field row */
+.position-field-tv {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Field label */
+.position-field-label-tv {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #00629B;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Location badge */
+.location-badge-tv {
+    display: block;
+    background: #e8f2fa;
+    color: #00629B;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+/* Posting date */
+.posting-date-tv {
+    font-size: 0.88rem;
+    color: #555;
+    font-weight: 500;
+    padding: 0.25rem 0;
+}
+
+/* Status badge */
+.status-badge-tv {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.status-badge-tv.open     { background: #d1e7dd; color: #0f5132; }
+.status-badge-tv.closed   { background: #f8d7da; color: #842029; }
+.status-badge-tv.on-hold  { background: #fff3cd; color: #664d03; }
+
+/* ── Action buttons ────────────────────────── */
+.card-actions {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.85rem 1.1rem 1.1rem;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: auto;
+    border-top: 1px solid #f0f2f5;
+}
+
+/* "Learn More" link-style button */
+.learn-more-btn {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #00629B;
+    text-decoration: none;
+    border: 1px solid rgba(0,98,155,0.25);
+    padding: 0.45rem 0.85rem;
+    border-radius: 7px;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.learn-more-btn:hover {
+    background: rgba(0,98,155,0.06);
+    box-shadow: 0 2px 6px rgba(0,98,155,0.12);
+    color: #00629B;
+}
+
+/* "Apply" primary button */
+.apply-button-tv {
+    background: #ffc107;
+    color: #000;
+    border: none;
+    padding: 0.45rem 1rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.apply-button-tv:hover {
+    background: #ffb300;
+    transform: translateY(-1px);
+}
+
+/* ── "No Positions" empty state ─────────────── */
+#positions .positions-scroll-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,98,155,0.4) transparent;
+    -ms-overflow-style: auto;
+    overflow-x: auto;
+}
+
+/* =============================================
+   TV / KIOSK MODE — INDUSTRY STANDARD DIGITAL SIGNAGE
+   ============================================= */
+
+/* ── Base TV body ────────────────────────────── */
 body.tv-mode {
     overflow: hidden !important;
     height: 100vh;
+    background: #07111e !important;
+    color: #e8f0fe;
+}
+
+body.tv-mode .navbar  { display: none !important; }
+body.tv-mode .footer  { display: none !important; }
+body.tv-mode #breakingNewsBar { display: none !important; }
+
+/* ── Fixed TV Header Bar ─────────────────────── */
+#tvHeader {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(90deg, #003C71 0%, #00629B 60%, #0084CA 100%);
+    border-bottom: 3px solid #ffc107;
+    z-index: 9000;
+    padding: 0 2rem;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+body.tv-mode #tvHeader { display: flex; }
+
+.tv-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 220px;
+}
+
+.tv-header-org {
+    color: white;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.tv-header-section-pill {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 0.4rem 1.4rem;
+    border-radius: 30px;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+    transition: all 0.4s ease;
+}
+
+.tv-header-datetime {
+    text-align: right;
+    min-width: 150px;
+}
+
+.tv-header-time {
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.tv-header-date {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.78rem;
+    margin-top: 0.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Main content area in TV ─────────────────── */
+body.tv-mode main {
+    padding: 68px 2rem 1rem !important;
+    background: #07111e !important;
+    height: 100vh;
+    overflow: hidden;
+    display: block !important;
+    box-sizing: border-box;
+}
+
+body.tv-mode main .container-fluid,
+body.tv-mode main .container {
+    max-width: 100%;
+    padding: 0 !important;
+    height: 100%;
+}
+
+body.tv-mode main .row {
+    display: block !important;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.tv-mode .col-lg-8,
+body.tv-mode .col-lg-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    width: 100%;
+    display: block !important;
+    padding: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* ── Each content section fills the available height ── */
+body.tv-mode #teamUpdates,
+body.tv-mode #announcements,
+body.tv-mode #holidays,
+body.tv-mode #positions {
+    height: calc(100vh - 68px);
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+}
+
+body.tv-mode #teamUpdates .section-card,
+body.tv-mode #announcements .section-card,
+body.tv-mode #holidays .section-card,
+body.tv-mode #positions .section-card {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Content scroll areas fill remaining space below section header */
+body.tv-mode .team-updates-scroll-wrapper,
+body.tv-mode .announcements-scroll-wrapper,
+body.tv-mode .positions-scroll-wrapper {
+    flex: 1 !important;
+    overflow: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* ── Celebration items are now shown in TV mode (birthday & anniversary) ── */
+/* body.tv-mode .tv-celebration-item { display: none !important; } */
+
+/* ── Section cards — remove white box in TV ──── */
+body.tv-mode .section-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+}
+
+/* ── Section header in TV ─────────────────────── */
+body.tv-mode .section-header {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1.25rem;
+    background: linear-gradient(135deg, rgba(0,60,113,0.8) 0%, rgba(0,98,155,0.8) 100%);
+    border-radius: 12px;
+    margin-bottom: 1.25rem !important;
+    border-bottom: none !important;
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
+}
+
+body.tv-mode .section-title {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+}
+
+body.tv-mode .section-icon {
+    background: rgba(255,255,255,0.18) !important;
+    color: #ffc107 !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.3rem !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+}
+
+/* ── Stats bar in TV ──────────────────────────── */
+body.tv-mode .stats-bar {
+    background: rgba(255,255,255,0.04) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    padding: 0 !important;
+}
+
+body.tv-mode .stat-item {
+    border-right: 1px solid rgba(255,255,255,0.1) !important;
+    padding: 1rem 0.5rem !important;
+}
+
+body.tv-mode .stat-item:last-child { border-right: none !important; }
+
+body.tv-mode .stat-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+body.tv-mode .stat-label {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.65);
+}
+
+body.tv-mode .stat-item i { font-size: 1.5rem !important; }
+
+/* ── Carousel in TV ───────────────────────────── */
+body.tv-mode .carousel-item img,
+body.tv-mode .carousel-placeholder {
+    height: calc(100vh - 135px);
+}
+
+body.tv-mode .carousel-caption h3 {
+    font-size: 2.4rem;
+    font-weight: 700;
+}
+
+body.tv-mode .carousel-caption p { font-size: 1.2rem; }
+
+/* ── Announcements in TV — 2-column grid fills height ── */
+body.tv-mode .announcements-scroll-wrapper {
+    flex: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+
+body.tv-mode #announcementsContainer {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.1rem !important;
+    align-content: start;
+    animation: none !important;
+}
+
+body.tv-mode .announcement-card {
+    background: rgba(255,255,255,0.055) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-left-width: 4px !important;
+    border-radius: 12px !important;
+    padding: 1.2rem !important;
+    margin-bottom: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    backdrop-filter: blur(6px);
+    transition: none !important;
+}
+
+body.tv-mode .announcement-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+body.tv-mode .announcement-title {
+    color: #ffffff !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+}
+
+body.tv-mode .announcement-description {
+    color: rgba(220,235,255,0.82) !important;
+    font-size: 0.98rem !important;
+    line-height: 1.55 !important;
+}
+
+body.tv-mode .announcement-icon {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 1.2rem !important;
+    border-radius: 10px !important;
+}
+
+body.tv-mode .ann-type-badge {
+    font-size: 0.72rem !important;
+    opacity: 0.9;
+}
+
+/* ── Holidays in TV — vertical 2-column grid ──── */
+body.tv-mode #holidays {
+    height: calc(100vh - 68px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+body.tv-mode #holidays .section-card {
+    flex: 1 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+body.tv-mode #holidaysContainer {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-auto-rows: 1fr !important;
+    gap: 1.1rem !important;
+    width: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    align-content: stretch !important;
+    padding: 0 !important;
+    flex: 1 !important;
+    animation: none !important;
+}
+
+/* Show ALL holidays in TV mode */
+body.tv-mode .holiday-list .holiday-card:nth-child(n+6) {
+    display: flex !important;
+}
+
+body.tv-mode .holiday-card {
+    width: auto !important;
+    flex-shrink: unset !important;
+    flex: none !important;
+    min-height: auto !important;
+    margin-bottom: 0 !important;
+    background: rgba(255,255,255,0.055) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-left: 4px solid #ffc107 !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(6px);
+    padding: 1.1rem 1rem !important;
+}
+
+body.tv-mode .holiday-date-box {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+    min-width: 72px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0;
+}
+
+body.tv-mode .holiday-day   { font-size: 2.2rem !important; font-weight: 700; color: #fff; }
+body.tv-mode .holiday-month { font-size: 0.85rem !important; font-weight: 700; text-transform: uppercase; color: #fff; }
+body.tv-mode .holiday-title { color: #ffffff !important; font-size: 1.35rem !important; font-weight: 700 !important; }
+body.tv-mode .holiday-description { color: rgba(220,235,255,0.78) !important; font-size: 0.95rem !important; }
+
+/* ── Team Updates in TV ───────────────────────── */
+body.tv-mode .team-updates-scroll-wrapper {
+    max-height: none !important;
+    overflow: hidden !important;
+    height: auto !important;
+}
+
+body.tv-mode .team-updates-scroll-track {
+    animation-name: scrollTeamUpdates;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    padding: 1rem 0;
+}
+
+body.tv-mode .team-card {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 14px !important;
+    min-height: 380px !important;
+}
+
+body.tv-mode .team-card-wrapper { min-width: 380px !important; }
+
+body.tv-mode .team-card-name     { font-size: 1.4rem !important; color: #fff !important; font-weight: 700 !important; }
+body.tv-mode .team-card-position { font-size: 1.05rem !important; }
+body.tv-mode .team-card-department {
+    background: rgba(255,193,7,0.2) !important;
+    color: #ffc107 !important;
+    font-size: 0.9rem !important;
+}
+body.tv-mode .team-card-date { color: rgba(255,255,255,0.6) !important; font-size: 0.9rem !important; }
+body.tv-mode .team-card-description { color: rgba(220,235,255,0.75) !important; font-size: 0.95rem !important; }
+
+body.tv-mode .team-card-image-placeholder.joiner     { background: linear-gradient(135deg, #1a4f7a 0%, #00629B 100%) !important; }
+body.tv-mode .team-card-image-placeholder.birthday   { background: linear-gradient(135deg, #7a1a1a 0%, #dc3545 100%) !important; }
+body.tv-mode .team-card-image-placeholder.anniversary { background: linear-gradient(135deg, #4a1a7a 0%, #6f42c1 100%) !important; }
+
+/* ── Open Positions in TV ─────────────────────── */
+body.tv-mode .positions-scroll-wrapper { overflow: hidden; }
+
+body.tv-mode .positions-scroll-track {
+    animation: scrollPositions 20s linear infinite;
+}
+
+body.tv-mode .position-card-tv {
+    background: rgba(255,255,255,0.055) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 14px !important;
+}
+
+body.tv-mode .position-card-header-tv {
+    background: linear-gradient(135deg, #00629B 0%, #003C71 100%) !important;
+    border-bottom: 3px solid #ffc107 !important;
+}
+
+body.tv-mode .position-title-tv { font-size: 1.25rem !important; color: #ffffff !important; }
+body.tv-mode .requisition-id-tv { color: rgba(255,255,255,0.75) !important; }
+body.tv-mode .location-badge-tv  { background: rgba(255,255,255,0.1) !important; color: #a8d8ff !important; }
+body.tv-mode .posting-date-tv    { color: rgba(220,235,255,0.8) !important; }
+body.tv-mode .position-field-label-tv { color: #ffc107 !important; }
+
+/* ── Countdown / Breaking ─────────────────────── */
+body.tv-mode .countdown-banner {
+    padding: 0.5rem 0;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+body.tv-mode .breaking-news-bar { font-size: 1.1rem; }
+
+/* ── Section rotation hidden sections ────────── */
+#celebrations { display: none !important; }
+
+body.tv-mode #quicklinks,
+body.tv-mode #emergency,
+body.tv-mode #joiners { display: none !important; }
+
+body.tv-mode #teamUpdates,
+body.tv-mode #announcements,
+body.tv-mode #celebrations { margin-bottom: 0 !important; }
+
+/* ── TV Exit Button ───────────────────────────── */
+.tv-exit-btn {
+    position: fixed;
+    top: 68px;
+    right: 20px;
+    z-index: 9999;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+}
+
+body.tv-mode .tv-exit-btn { display: block; }
+.tv-exit-btn:hover,
+body.tv-mode:hover .tv-exit-btn { opacity: 1; }
+
+/* ── TV Info Badge ────────────────────────────── */
+.tv-info-badge {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: 9999;
+    background: rgba(0,0,0,0.5);
+    color: rgba(255,255,255,0.75);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    display: none;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+body.tv-mode .tv-info-badge { display: block; }
+
+/* ── TV scroll utilities ──────────────────────── */
+body.tv-mode .tv-infinite-scrolling { overflow: hidden !important; }
+body.tv-mode .tv-scroll-track { will-change: transform; }
+body.tv-mode .tv-section-scroll-active { display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+
+/* Hide scrollbars + fade hint in TV mode */
+body.tv-mode .holiday-list,
+body.tv-mode .announcements-scroll-wrapper {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+}
+body.tv-mode .holiday-list::-webkit-scrollbar,
+body.tv-mode .announcements-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+body.tv-mode .holiday-list::before, body.tv-mode .holiday-list::after,
+body.tv-mode .announcements-scroll-wrapper::before, body.tv-mode .announcements-scroll-wrapper::after {
+    display: none !important;
 }
 
 body.tv-mode .navbar {
@@ -1732,7 +2533,7 @@ body.tv-mode .stat-item i {
 
 body.tv-mode .carousel-item img,
 body.tv-mode .carousel-placeholder {
-    height: 60vh;
+    height: calc(100vh - 135px);
 }
 
 body.tv-mode .carousel-caption h3 {
@@ -1881,22 +2682,11 @@ body.tv-mode .countdown-unit-label {
     font-size: 1rem;
 }
 
-body.tv-mode main {
-    padding: 0.5rem 0;
-    overflow: visible;
-    display: block !important;
-    height: auto;
-}
-
-body.tv-mode main .container {
-    max-width: 100%;
-    padding: 0 2rem;
-    height: auto;
-    overflow: visible;
-}
+/* duplicate body.tv-mode main removed — FINAL OVERRIDES at end of file apply */
 
 body.tv-mode main .container > .row {
     display: block !important;
+    margin: 0;
 }
 
 body.tv-mode .col-lg-8,
@@ -1905,75 +2695,25 @@ body.tv-mode .col-lg-4 {
     max-width: 100%;
     width: 100%;
     display: block !important;
+    padding: 0;
+    margin-top: 0;
 }
 
-#celebrations {
-    display: none !important;
+/* ── Dummy celebration card styling ─────────────────────────────────── */
+body.tv-mode .tv-dummy-card {
+    opacity: 0.8;
+    border: 2px dashed rgba(255,255,255,0.25) !important;
 }
-
-body.tv-mode #quicklinks,
-body.tv-mode #emergency,
-body.tv-mode #joiners {
-    display: none !important;
+body.tv-mode .tv-dummy-card .team-card-name {
+    color: rgba(255,255,255,0.65) !important;
 }
-
-body.tv-mode #teamUpdates {
-    margin-bottom: 1rem !important;
+body.tv-mode .tv-dummy-card .team-card-department {
+    background: rgba(255,255,255,0.08) !important;
+    color: rgba(255,255,255,0.55) !important;
 }
-
-body.tv-mode #announcements {
-    margin-bottom: 1rem !important;
-}
-
-body.tv-mode #celebrations {
-    margin-bottom: 1rem !important;
-}
-
-body.tv-mode .celebrations-scroll-wrapper {
-    max-height: none !important;
-    overflow: visible !important;
-    height: auto !important;
-}
-
-body.tv-mode .celebrations-scroll-track {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-/* TV mode: scale up celebration list cards */
-body.tv-mode .cel-list-card {
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-    border-left-width: 4px;
-}
-
-body.tv-mode .cel-list-avatar,
-body.tv-mode .cel-list-avatar-placeholder {
-    width: 64px;
-    height: 64px;
-    font-size: 1.75rem;
-}
-
-body.tv-mode .cel-list-name {
-    font-size: 1.3rem;
-}
-
-body.tv-mode .cel-list-dept {
-    font-size: 1.05rem;
-}
-
-body.tv-mode .cel-list-badge {
-    font-size: 0.95rem;
-    padding: 0.35rem 0.85rem;
-}
-
-body.tv-mode .cel-list-date {
-    font-size: 1rem;
-}
-
-body.tv-mode .carousel-section {
-    margin-bottom: 0.5rem !important;
+body.tv-mode .tv-dummy-card .team-card-description {
+    color: rgba(200,220,255,0.55) !important;
+    font-style: italic;
 }
 
 /* TV mode: stretch holidays to fill the screen with 5 static cards */
@@ -2054,511 +2794,261 @@ body.tv-mode .announcements-scroll-wrapper::after {
     display: none !important;
 }
 
-body.tv-mode .team-updates-scroll-wrapper {
-    max-height: none !important;
-    overflow: hidden !important;
-    height: auto !important;
-}
-
-body.tv-mode .team-updates-scroll-track {
-    animation-name: scrollTeamUpdates;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    /* animation-duration is set dynamically by JS based on content width */
-    padding: 2rem 0;
-}
-
-body.tv-mode .announcements-scroll-wrapper {
-    max-height: none !important;
-    overflow: visible !important;
-}
-
-body.tv-mode #announcementsContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    animation: none;
-}
-
-@keyframes slowScrollContent {
-    0% {
-        transform: translateY(0);
-    }
-    100% {
-        transform: translateY(-50%);
-    }
-}
-
-@keyframes scrollAnnouncementsTV {
-    0%, 15% {
-        transform: translateY(0);
-    }
-    40%, 60% {
-        transform: translateY(calc(-50% + 150px));
-    }
-    85%, 100% {
-        transform: translateY(0);
-    }
-}
-
-body.tv-mode .stats-bar {
-    padding: 0.5rem 0;
-}
-
-body.tv-mode .countdown-banner {
-    padding: 0.5rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* Infinite upward scroll animation for TV mode content */
-@keyframes tvInfiniteScrollUp {
-    0% {
-        transform: translateY(0);
-    }
-    100% {
-        transform: translateY(-50%);
-    }
-}
-
-body.tv-mode .tv-infinite-scrolling {
-    overflow: hidden !important;
-}
-
-/* Inner track that actually moves via translateY animation */
-body.tv-mode .tv-scroll-track {
-    will-change: transform;
-}
-
-/* When a section is actively scrolling, enforce clipping on all child wrappers */
-body.tv-mode .tv-section-scroll-active {
+/* ── Upcoming Event — full-screen TV overlay ─────────────────────────
+   #countdownBanner fills the viewport below the TV header (60px).
+   Everything is stacked in a single centered column.                 */
+body.tv-mode #countdownBanner.tv-event-active {
     display: flex !important;
+    position: fixed !important;
+    inset: 60px 0 0 0 !important;      /* top=60px, rest=0 */
+    z-index: 8500 !important;
+    background: radial-gradient(ellipse at 50% 40%, #0f2d6b 0%, #07111e 65%) !important;
     flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 3vh 4vw !important;
     overflow: hidden !important;
+    /* reset any stray margin/border from the .countdown-banner base class */
+    margin: 0 !important;
+    border: none !important;
 }
 
-body.tv-mode .tv-section-scroll-active > .announcements-scroll-wrapper,
-body.tv-mode .tv-section-scroll-active > .celebrations-scroll-wrapper,
-body.tv-mode .tv-section-scroll-active > .holiday-list {
-    flex: 1 !important;
-    overflow: hidden !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    height: auto !important;
-}
-
-body.tv-mode .countdown-icon {
-    font-size: 1.5rem;
-}
-
-body.tv-mode .countdown-title {
-    font-size: 1rem;
-}
-
-body.tv-mode .countdown-unit {
-    padding: 0.5rem 0.75rem;
-    min-width: 55px;
-}
-
-body.tv-mode .countdown-value {
-    font-size: 1.25rem;
-}
-
-body.tv-mode .countdown-unit-label {
-    font-size: 0.65rem;
-}
-
-/* TV Mode Exit Button */
-.tv-exit-btn {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-size: 1rem;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    display: none;
-}
-
-body.tv-mode .tv-exit-btn {
-    display: block;
-}
-
-.tv-exit-btn:hover,
-body.tv-mode:hover .tv-exit-btn {
-    opacity: 1;
-}
-
-/* TV Mode Info Badge */
-.tv-info-badge {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    display: none;
-}
-
-body.tv-mode .tv-info-badge {
-    display: block;
-}
-
-/* Auto-scroll containers */
-.scroll-wrapper {
-    overflow: hidden;
-    position: relative;
-}
-
-.scroll-wrapper::before,
-.scroll-wrapper::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 30px;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.scroll-wrapper::before {
-    top: 0;
-    background: linear-gradient(to bottom, #f5f7fa, transparent);
-}
-
-.scroll-wrapper::after {
-    bottom: 0;
-    background: linear-gradient(to top, #f5f7fa, transparent);
-}
-
-/* Horizontal scroll for joiners */
-.joiners-scroll-wrapper {
-    overflow: hidden;
-    position: relative;
-}
-
-.joiners-scroll-track {
-    display: flex;
-    gap: 1.5rem;
-    width: max-content;
-    animation: scrollJoiners 60s linear infinite;
-}
-
-.joiners-scroll-track:hover {
-    animation-play-state: paused;
-}
-
-.joiners-scroll-track .joiner-card-wrapper {
-    width: 320px;
-    flex-shrink: 0;
-}
-
-@keyframes scrollJoiners {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}
-
-/* TV Mode specific scroll adjustments */
-body.tv-mode .joiners-scroll-track {
-    animation-duration: 20s;
-}
-
-/* TV Mode - larger cards */
-body.tv-mode .joiner-card {
-    margin-bottom: 1.5rem;
-}
-
-/* Fullscreen API styles */
-:-webkit-full-screen {
-    background: #f5f7fa;
-}
-
-:-moz-full-screen {
-    background: #f5f7fa;
-}
-
-:fullscreen {
-    background: #f5f7fa;
-}
-
-/* Sections with no data - hidden in all modes */
-.no-data,
-body.tv-mode .no-data {
-    display: none !important;
-}
-
-body.tv-mode .tv-hidden {
-    display: none !important;
-}
-
-body.tv-mode .tv-active {
-    display: block !important;
-    animation: fadeIn 0.5s ease-in;
+/* Container spans full width, full height, centres the content card */
+body.tv-mode #countdownBanner.tv-event-active .container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     width: 100% !important;
     max-width: 100% !important;
-    flex: 0 0 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Content card: single vertical column, centred */
+body.tv-mode #countdownBanner.tv-event-active .countdown-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: clamp(1.5rem, 3vh, 3rem) !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+    text-align: center !important;
+    flex-wrap: nowrap !important;
 }
 
-/* =============================================
-   Open Positions Section Styles
-   ============================================= */
-
-/* Positions are visible by default; TV mode hides via tv-hidden-section */
-#positions {
-    display: block;
+/* Info block: icon + label + title stacked vertically */
+body.tv-mode #countdownBanner.tv-event-active .countdown-info {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: clamp(0.5rem, 1.5vh, 1.25rem) !important;
+    width: 100% !important;
 }
 
-.tv-position-visible {
+/* Calendar icon */
+body.tv-mode #countdownBanner.tv-event-active .countdown-icon {
+    font-size: clamp(2.5rem, 7vh, 5rem) !important;
+    color: #ffc107 !important;
+    opacity: 1 !important;
+    animation: pulse 2s ease-in-out infinite !important;
+    line-height: 1 !important;
+}
+
+/* "UPCOMING EVENT" label */
+body.tv-mode #countdownBanner.tv-event-active .countdown-label {
     display: block !important;
+    font-size: clamp(0.7rem, 1.5vw, 1.1rem) !important;
+    letter-spacing: clamp(3px, 0.5vw, 6px) !important;
+    color: rgba(255,255,255,0.5) !important;
+    text-transform: uppercase !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    margin: 0 !important;
 }
 
-/* Utility to force-hide sections during TV rotation */
-.tv-hidden-section {
-    display: none !important;
+/* Event title */
+body.tv-mode #countdownBanner.tv-event-active .countdown-title {
+    display: block !important;
+    font-size: clamp(1.8rem, 5vw, 4rem) !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    line-height: 1.15 !important;
+    text-shadow: 0 2px 32px rgba(255,193,7,0.2) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    word-break: break-word;
 }
 
-/* Horizontal scrolling wrapper for positions (Home shows scrollbar; TV animates) */
-.positions-scroll-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    position: relative;
-    padding-bottom: 0.5rem;
+/* Also target .countdown-text wrapper in case it has its own styles */
+body.tv-mode #countdownBanner.tv-event-active .countdown-text {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
 }
 
-.positions-scroll-track {
-    display: flex;
-    gap: 2rem;
-    padding: 2rem 0 1rem 0;
-    animation: scrollPositions 20s linear infinite;
+/* Timer row: four boxes side-by-side, wrap on very small screens */
+body.tv-mode #countdownBanner.tv-event-active .countdown-timer {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: clamp(0.75rem, 2vw, 2rem) !important;
+    width: 100% !important;
 }
 
-body.tv-mode .positions-scroll-wrapper {
-    overflow: hidden;
+/* Individual time box */
+body.tv-mode #countdownBanner.tv-event-active .countdown-unit {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: clamp(90px, 14vw, 160px) !important;
+    padding: clamp(1rem, 2.5vh, 2rem) clamp(1rem, 2vw, 2rem) !important;
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+    border-radius: clamp(12px, 1.5vw, 20px) !important;
+    backdrop-filter: blur(10px) !important;
+    min-height: 0 !important;
 }
 
-.positions-scroll-track:hover {
-    animation-play-state: paused;
+/* The big number */
+body.tv-mode #countdownBanner.tv-event-active .countdown-value {
+    display: block !important;
+    font-size: clamp(2.2rem, 7vw, 5.5rem) !important;
+    font-weight: 900 !important;
+    color: #ffc107 !important;
+    line-height: 1 !important;
+    letter-spacing: -1px;
+    margin: 0 !important;
 }
 
-.position-card-wrapper {
-    width: 350px;
-    flex-shrink: 0;
+/* Days / Hours / Mins / Secs label */
+body.tv-mode #countdownBanner.tv-event-active .countdown-unit-label {
+    display: block !important;
+    font-size: clamp(0.65rem, 1.4vw, 1rem) !important;
+    color: rgba(255,255,255,0.55) !important;
+    text-transform: uppercase !important;
+    letter-spacing: clamp(1px, 0.3vw, 3px) !important;
+    margin-top: clamp(0.3rem, 1vh, 0.75rem) !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
 }
 
-.position-card-tv {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    background: white;
-    height: 100%;
-    min-height: 480px;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+/* =====================================================================
+   TV MODE — FINAL OVERRIDES
+   Must appear LAST in the file so these win any earlier duplicate rules.
+   ===================================================================== */
+
+/* ── Main content area: enforce correct height/overflow ───────────────
+   main starts at y=0 in the content phase (all preceding elements are
+   hidden).  padding-top: 68px (set above) pushes content below the
+   60px fixed TV header.  Sections use height: calc(100vh - 68px)
+   so they fill from y=68px → y=100vh with zero cut-off.
+   height: 100vh (not calc(100vh - 60px)) ensures sections are never
+   clipped at the bottom.                                             */
+body.tv-mode main {
+    height: 100vh !important;
+    overflow: hidden !important;
 }
 
-.position-card-tv:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+body.tv-mode main .container-fluid,
+body.tv-mode main .container {
+    height: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    max-width: 100% !important;
 }
 
-.position-card-header-tv {
-    background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
-    color: white;
-    padding: 1.8rem 1.5rem;
-    border-bottom: 4px solid #ffc107;
-    margin-bottom: 0;
+/* ── Remove Bootstrap g-4 gutters so sections start at y=68px exactly */
+body.tv-mode main .row {
+    display: block !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-.position-title-tv {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 0.6rem 0;
-    line-height: 1.4;
-    word-wrap: break-word;
+body.tv-mode .col-lg-8,
+body.tv-mode .col-lg-4 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    display: block !important;
+    padding: 0 !important;
+    margin-top: 0 !important;
 }
 
-.requisition-id-tv {
-    font-size: 0.9rem;
-    opacity: 0.95;
-    margin: 0;
-    color: #e0e0e0;
-    font-weight: 500;
+/* ── Stats bar: compact strip that fits below the carousel ────────────
+   The default TV mode stat-item padding (1rem) + large font sizes
+   give ~118 px of height but only ~72 px of viewport space remains
+   below the carousel image.  These rules shrink it to ~80 px so the
+   full stats bar is always visible.                                   */
+body.tv-mode .stats-bar {
+    padding: 0 !important;
+    height: 80px !important;
+    overflow: hidden !important;
+    background: linear-gradient(90deg, #002d5a 0%, #003f7f 50%, #002d5a 100%) !important;
+    border-top: 2px solid rgba(255, 193, 7, 0.4) !important;
+    border-bottom: none !important;
+    box-sizing: border-box !important;
 }
 
-.position-card-body-tv {
-    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+body.tv-mode .stats-bar .container-fluid,
+body.tv-mode .stats-bar .container {
+    height: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
 }
 
-.card-actions {
-    margin-top: auto;
-    display: flex;
-    gap: 0.75rem;
-    padding: 1rem 1.2rem 1.4rem 1.2rem;
-    align-items: center;
-    justify-content: flex-end;
+body.tv-mode .stats-bar .row,
+body.tv-mode .stats-bar > .container-fluid > .row {
+    height: 100% !important;
+    margin: 0 !important;
 }
 
-.apply-button-tv {
-    color: #000;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    background: rgb(255, 193, 7);
-    border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+body.tv-mode .stat-item {
+    padding: 0.55rem 0.5rem !important;
+    gap: 0.08rem !important;
+    height: 100% !important;
+    justify-content: center !important;
 }
 
-.apply-button-tv:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+body.tv-mode .stat-item i {
+    font-size: 1.15rem !important;
+    margin-bottom: 0 !important;
 }
 
-.learn-more-btn {
-    background: transparent;
-    color: #263238;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    padding: 0.7rem 1rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.2s, box-shadow 0.2s;
+body.tv-mode .stat-number {
+    font-size: 1.55rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    line-height: 1 !important;
 }
 
-.learn-more-btn:hover {
-    background: rgba(0, 0, 0, 0.04);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+body.tv-mode .stat-label {
+    font-size: 0.68rem !important;
+    color: rgba(255, 255, 255, 0.72) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.35px !important;
+    line-height: 1.1 !important;
 }
 
-.position-field-tv {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    margin-bottom: 0.2rem;
+body.tv-mode .stat-item:last-child {
+    border-right: none !important;
 }
 
-.position-field-label-tv {
-    font-weight: 600;
-    color: #00629B;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    margin-bottom: 0.1rem;
+/* ── Carousel image: fill remaining viewport (100vh - header 60px
+   - accent-bar 3px - carousel margin-top 60px - stats-bar 80px)
+   = calc(100vh - 143px).  Round up to 145px for a small safety gap. */
+body.tv-mode .carousel-item img,
+body.tv-mode .carousel-placeholder {
+    height: calc(100vh - 145px) !important;
+    object-fit: cover !important;
 }
 
-.location-badge-tv {
-    display: block;
-    background: #e7f3ff;
-    color: #0066cc;
-    padding: 0.7rem 1rem;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    width: 100%;
-    text-align: left;
-    box-sizing: border-box;
-}
-
-.posting-date-tv {
-    color: #555;
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.status-badge-tv {
-    display: block;
-    padding: 0.7rem 1rem;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    width: 100%;
-    text-align: left;
-    box-sizing: border-box;
-}
-
-.status-badge-tv.open {
-    background: #d1e7dd;
-    color: #0f5132;
-}
-
-.status-badge-tv.closed {
-    background: #f8d7da;
-    color: #842029;
-}
-
-.status-badge-tv.on-hold {
-    background: #fff3cd;
-    color: #664d03;
-}
-
-.position-description-tv {
-    flex: 1;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #555;
-    margin: 0;
-}
-
-.apply-button-tv {
-    margin-top: auto;
-    background: #ffc107;
-    color: #000;
-    border: none;
-    padding:1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    /* box-sizing: border-box; */
-}
-
-.apply-button-tv:hover {
-    background: #ffb300;
-}
-
-@keyframes scrollPositions {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}

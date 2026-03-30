@@ -31,7 +31,7 @@ public class PublicController {
     @GetMapping("/portal-data")
     public ResponseEntity<Map<String, Object>> getPortalData(
             @RequestParam(defaultValue = "6") int maxJoiners,
-            @RequestParam(defaultValue = "5") int maxHolidays,
+            @RequestParam(defaultValue = "50") int maxHolidays,
             @RequestParam(defaultValue = "10") int maxAnnouncements,
             @RequestParam(defaultValue = "2000") int maxCarousel) {
         
@@ -74,9 +74,8 @@ public class PublicController {
             return joiner;
         }).collect(Collectors.toList());
         
-        // Get upcoming holidays
-        LocalDate sixMonthsLater = today.plusDays(180);
-        List<Holiday> upcomingHolidays = holidayRepository.findUpcomingHolidays(today, sixMonthsLater)
+        // Get ALL upcoming holidays — no upper date limit
+        List<Holiday> upcomingHolidays = holidayRepository.findFutureHolidays(today)
                 .stream()
                 .limit(maxHolidays)
                 .collect(Collectors.toList());

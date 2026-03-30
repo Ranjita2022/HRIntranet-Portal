@@ -40,73 +40,102 @@ async function loadAnnouncements() {
 function renderAnnouncementsTable() {
     const tbody = document.getElementById('announcementsTableBody');
     const emptyState = document.getElementById('announcementsEmptyState');
-    
+    const tableCard  = document.getElementById('tableCard');
+
     if (!announcementsData || announcementsData.length === 0) {
         tbody.innerHTML = '';
         emptyState.style.display = 'block';
-        document.getElementById('announcementsTable').style.display = 'none';
+        if (tableCard) tableCard.style.display = 'none';
+        updateStats([], []);
         return;
     }
-    
+
     emptyState.style.display = 'none';
-    document.getElementById('announcementsTable').style.display = 'table';
-    
+    if (tableCard) tableCard.style.display = '';
+
     // Sort by priority (highest first) then by publish date (newest first)
     const sortedAnnouncements = [...announcementsData].sort((a, b) => {
-        if (b.priority !== a.priority) {
-            return b.priority - a.priority;
-        }
+        if (b.priority !== a.priority) return b.priority - a.priority;
         return new Date(b.publishDate) - new Date(a.publishDate);
     });
-    
+
+    // ── Stats ──
+    const now = new Date();
+    const activeList  = announcementsData.filter(a => a.isActive && !(a.expiryDate && new Date(a.expiryDate) < now));
+    const expiredList = announcementsData.filter(a => a.expiryDate && new Date(a.expiryDate) < now);
+    const urgentList  = announcementsData.filter(a => a.type === 'URGENT' || a.type === 'BREAKING');
+    updateStats(activeList, expiredList, urgentList);
+
+    // ── Record count badge ──
+    const countEl = document.getElementById('recordCount');
+    if (countEl) countEl.textContent = announcementsData.length + ' record' + (announcementsData.length !== 1 ? 's' : '');
+
+    // ── Type badge map ──
+    const typeBadges = {
+        'GENERAL': '<span class="badge badge-general">General</span>',
+        'URGENT':  '<span class="badge badge-urgent">Urgent</span>',
+        'BREAKING':'<span class="badge badge-breaking">Breaking</span>',
+        'POLICY':  '<span class="badge badge-policy">Policy</span>',
+        'EVENT':   '<span class="badge badge-event">Event</span>'
+    };
+
     tbody.innerHTML = sortedAnnouncements.map(announcement => {
         const publishDate = formatDate(announcement.publishDate);
-        const expiryDate = announcement.expiryDate ? formatDate(announcement.expiryDate) : '-';
-        const isExpired = announcement.expiryDate && new Date(announcement.expiryDate) < new Date();
-        
-        const typeBadges = {
-            'GENERAL': '<span class="badge bg-secondary">General</span>',
-            'URGENT': '<span class="badge bg-warning text-dark">Urgent</span>',
-            'BREAKING': '<span class="badge bg-danger">Breaking</span>',
-            'POLICY': '<span class="badge bg-info">Policy</span>',
-            'EVENT': '<span class="badge bg-success">Event</span>'
-        };
-        
+        const expiryDate  = announcement.expiryDate ? formatDate(announcement.expiryDate) : '<span class="text-muted">—</span>';
+        const isExpired   = announcement.expiryDate && new Date(announcement.expiryDate) < now;
+
         const statusBadge = announcement.isActive && !isExpired
-            ? '<span class="badge bg-success ms-1">Active</span>'
+            ? '<span class="badge status-active">Active</span>'
             : isExpired
-            ? '<span class="badge bg-secondary ms-1">Expired</span>'
-            : '<span class="badge bg-secondary ms-1">Inactive</span>';
-        
-        const hasImage = announcement.imageId ? '<i class="bi bi-image-fill text-primary"></i>' : '';
-        
+            ? '<span class="badge status-expired">Expired</span>'
+            : '<span class="badge status-inactive">Inactive</span>';
+
+        const hasImage = announcement.imageId
+            ? '<i class="bi bi-image-fill image-indicator ms-1" title="Has image"></i>' : '';
+
+        const priorityBadge = announcement.priority > 0
+            ? `<span class="priority-badge ms-1"><i class="bi bi-arrow-up"></i>P${announcement.priority}</span>` : '';
+
+        const descText = announcement.description
+            ? escapeHtml(announcement.description.substring(0, 55)) + (announcement.description.length > 55 ? '…' : '')
+            : '<span class="text-muted fst-italic">No description</span>';
+
         return `
             <tr>
-                <td>${announcement.id}</td>
+                <td class="text-muted">${announcement.id}</td>
                 <td>
-                    <strong>${escapeHtml(announcement.title)}</strong>
-                    ${hasImage}
-                    ${announcement.priority > 0 ? `<span class="badge bg-primary ms-1">P${announcement.priority}</span>` : ''}
+                    <span class="announcement-title">${escapeHtml(announcement.title)}</span>
+                    ${hasImage}${priorityBadge}
                 </td>
-                <td>${typeBadges[announcement.type] || announcement.type}</td>
-                <td>${announcement.description ? escapeHtml(announcement.description.substring(0, 80)) + (announcement.description.length > 80 ? '...' : '') : '-'}</td>
+                <td>${typeBadges[announcement.type] || `<span class="badge bg-secondary">${announcement.type}</span>`}</td>
+                <td class="text-muted small" title="${announcement.description ? escapeHtml(announcement.description) : ''}">${descText}</td>
                 <td>${publishDate}</td>
                 <td>${expiryDate}</td>
-                <td>
-                    ${typeBadges[announcement.type] || ''}
-                    ${statusBadge}
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="showEditAnnouncementModal(${announcement.id})" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger ms-1" onclick="deleteAnnouncement(${announcement.id})" title="Delete">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                <td>${statusBadge}</td>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditAnnouncementModal(${announcement.id})" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAnnouncement(${announcement.id})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+/**
+ * Update stats cards
+ */
+function updateStats(activeList, expiredList, urgentList) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('statTotal',   announcementsData.length);
+    set('statActive',  activeList.length);
+    set('statExpired', expiredList.length);
+    set('statUrgent',  urgentList ? urgentList.length : 0);
 }
 
 /**
@@ -121,8 +150,7 @@ function showAddAnnouncementModal() {
     document.getElementById('announcementPriority').value = '0';
     
     // Set publish date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('announcementPublishDate').value = today;
+    document.getElementById('announcementPublishDate').value = new Date().toISOString().split('T')[0];
     
     // Clear image preview
     document.getElementById('imagePreviewContainer').style.display = 'none';

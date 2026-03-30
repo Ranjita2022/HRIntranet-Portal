@@ -6,25 +6,16 @@ let detailsModal = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication
     if (!AdminAPI.isAuthenticated()) {
         window.location.href = 'admin-login.html';
         return;
     }
-    
-    // Set admin name
-    const adminName = AdminAPI.getAdminName();
-    if (adminName) {
-        document.getElementById('adminNameDisplay').textContent = adminName;
-    }
-    
+
     // Initialize modal
     detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-    
-    // Load statistics
+
+    // Load statistics and audit logs
     loadAuditStats();
-    
-    // Load audit logs
     loadAuditLogs();
 });
 
@@ -116,8 +107,8 @@ function renderAuditLogsTable(logs) {
                 <td>${log.recordId || '-'}</td>
                 <td>${escapeHtml(userName)}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-info" onclick="showDetails(${log.id})" title="View Details">
-                        <i class="fas fa-eye"></i>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="showDetails(${log.id})" title="View Details">
+                        <i class="bi bi-eye"></i>
                     </button>
                 </td>
             </tr>
@@ -180,7 +171,7 @@ function renderPaginationControls() {
     html += `
         <li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="loadAuditLogs(${currentPage - 1}); return false;">
-                <i class="fas fa-chevron-left"></i>
+                <i class="bi bi-chevron-left"></i>
             </a>
         </li>
     `;
@@ -203,7 +194,7 @@ function renderPaginationControls() {
     html += `
         <li class="page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="loadAuditLogs(${currentPage + 1}); return false;">
-                <i class="fas fa-chevron-right"></i>
+                <i class="bi bi-chevron-right"></i>
             </a>
         </li>
     `;
@@ -305,11 +296,27 @@ function showLoadingTable(elementId, colspan) {
     }
 }
 
-// Show error toast
+// Show error toast (dynamic — no static element required)
 function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-    const toast = new bootstrap.Toast(document.getElementById('errorToast'));
-    toast.show();
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    const id = 'toast-' + Date.now();
+    container.insertAdjacentHTML('beforeend', `
+        <div id="${id}" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body"><i class="bi bi-exclamation-circle-fill me-2"></i>${escapeHtml(message)}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `);
+    const el = document.getElementById(id);
+    new bootstrap.Toast(el, { delay: 4000 }).show();
+    el.addEventListener('hidden.bs.toast', () => el.remove());
 }
 
 // Escape HTML to prevent XSS

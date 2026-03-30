@@ -767,9 +767,32 @@ function renderCarousel(slides) {
         // In TV mode, check if we're in the carousel phase or content phase
         if (tvModeEnabled) {
             if ($('.carousel-section').is(':visible')) {
-                // Carousel phase is active — keep cycling
+                // Carousel phase is active — update slide listener with the real count.
+                // This fixes a race condition where enterTVMode captured totalSlides=1
+                // (the loading placeholder) before the API data had arrived.
+                const newTotalSlides = Math.max(1, maxSlides);
+                tvSlideCounter = 0;
+
+                // Clear any placeholder-stuck fallback timer
+                if (window._tvCarouselFallbackTimer) {
+                    clearTimeout(window._tvCarouselFallbackTimer);
+                    window._tvCarouselFallbackTimer = null;
+                }
+
+                // Re-register listener with the correct, updated slide count
+                $('#heroCarousel').off('slid.bs.carousel.tvmode').on('slid.bs.carousel.tvmode', function () {
+                    if (!tvModeEnabled) return;
+                    tvSlideCounter++;
+                    console.log(`TV Mode: Slide ${tvSlideCounter}/${newTotalSlides}`);
+                    if (tvSlideCounter >= newTotalSlides) {
+                        $('#heroCarousel').off('slid.bs.carousel.tvmode');
+                        console.log('TV Mode: Carousel complete — switching to content sections');
+                        switchToContentSections();
+                    }
+                });
+
                 carousel.cycle();
-                console.log('✅ Carousel initialized and cycling (TV carousel phase)');
+                console.log(`✅ TV Mode: Carousel listener updated — ${newTotalSlides} slides`);
             } else {
                 // Content phase — keep paused
                 carousel.pause();
@@ -874,7 +897,7 @@ function renderTeamUpdates(joiners, celebrations) {
     // Add CELEBRATIONS banner and cards
     if (celebrations.length > 0) {
         cardsHtml += `
-            <div class="team-card-wrapper section-banner-card">
+            <div class="team-card-wrapper section-banner-card tv-celebration-item">
                 <div class="section-banner">
                     <i class="bi bi-cake-fill"></i>
                     <h3>Birthdays & Celebrations</h3>
@@ -889,10 +912,7 @@ function renderTeamUpdates(joiners, celebrations) {
             const yearText = celebration.years === 1 ? 'Year' : 'Years';
             const badgeText = isBirthday ? '🎂 Birthday' : `🎉 ${celebration.years} ${yearText}`;
 
-            // Fix Drive URLs for embedding
             const fixedImageUrl = celebration.imageUrl ? fixDriveImageUrl(celebration.imageUrl) : null;
-
-            // Extract file ID for fallback attempts
             let fileId = null;
             if (celebration.imageUrl) {
                 const match = celebration.imageUrl.match(/[?&/]([a-zA-Z0-9_-]{20,})/);
@@ -907,7 +927,7 @@ function renderTeamUpdates(joiners, celebrations) {
             const dateStr = formatShortDate(celebration.date);
 
             cardsHtml += `
-                <div class="team-card-wrapper">
+                <div class="team-card-wrapper tv-celebration-item">
                     <div class="team-card ${typeClass} position-relative h-100">
                         <span class="celebration-badge-top ${typeClass}">${badgeText}</span>
                         ${imageHtml}
@@ -951,25 +971,23 @@ function renderHolidays(holidays) {
     const $container = $('#holidaysContainer');
     const $section = $('#holidays');
     $container.empty();
+
     const uniqueHolidays = deduplicateItems(holidays, holiday => {
         return `${holiday.id || ''}|${holiday.title || ''}|${holiday.date || ''}`;
     });
 
-    // Keep TV mode in sync with home mode: respect SHOW_ONLY_FUTURE_HOLIDAYS only
-    let filteredHolidays = uniqueHolidays;
-    if (CONFIG.SHOW_ONLY_FUTURE_HOLIDAYS) {
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        filteredHolidays = uniqueHolidays.filter(h => {
-            if (!h.date) return false;
-            const holidayDate = new Date(h.date);
-            return holidayDate >= today;
-        });
-    }
+    // Always filter to upcoming holidays only (today onwards)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const filteredHolidays = uniqueHolidays.filter(h => {
+        if (!h.date) return false;
+        const holidayDate = new Date(h.date);
+        return holidayDate >= today;
+    });
 
-    // Sort by date
+    // Sort ascending by date
     filteredHolidays.sort((a, b) => new Date(a.date) - new Date(b.date));
-    
+
     if (filteredHolidays.length === 0) {
         $section.addClass('no-data');
         return;
@@ -977,16 +995,14 @@ function renderHolidays(holidays) {
 
     $section.removeClass('no-data');
 
-    // Limit to max holidays configuration
-    const maxHolidays = Math.min(filteredHolidays.length, CONFIG.MAX_HOLIDAYS || filteredHolidays.length);
-
+    // Show ALL upcoming holidays — no artificial cap
     let cardsHtml = '';
-    for (let i = 0; i < maxHolidays; i++) {
-        const holiday = filteredHolidays[i];
+    filteredHolidays.forEach((holiday, i) => {
         const dateInfo = getDateParts(holiday.date);
+        const delay = (0.05 + i * 0.08).toFixed(2);
 
         cardsHtml += `
-            <div class="holiday-card fade-in-up" style="animation-delay: ${i * 0.05}s">
+            <div class="holiday-card fade-in-up" style="animation-delay:${delay}s">
                 <div class="holiday-date-box">
                     <div class="holiday-day">${dateInfo.day}</div>
                     <div class="holiday-month">${dateInfo.month}</div>
@@ -1001,17 +1017,19 @@ function renderHolidays(holidays) {
                 ` : ''}
             </div>
         `;
-    }
+    });
 
     $container.html(cardsHtml);
 
-    // Static display: allow manual scroll if overflow; no auto-scroll/duplication
+    // Clear any previous auto-scroll interval (no longer used, but clean up if exists)
     const containerEl = $container.get(0);
-    if (containerEl && containerEl.holidayScrollInterval) {
-        clearInterval(containerEl.holidayScrollInterval);
-        containerEl.holidayScrollInterval = null;
+    if (containerEl && containerEl._holidayScrollInterval) {
+        clearInterval(containerEl._holidayScrollInterval);
+        containerEl._holidayScrollInterval = null;
     }
-    $container.css({ 'overflow-y': 'auto', 'max-height': tvModeEnabled ? '70vh' : 'auto' });
+
+    // No auto-scroll: the holiday-list CSS wrapper has max-height + overflow-y:auto
+    // so users can manually scroll to see more holidays.
 }
 
 /**
@@ -1019,6 +1037,7 @@ function renderHolidays(holidays) {
  */
 function renderAnnouncements(announcements) {
     const $container = $('#announcementsContainer');
+    const $wrapper = $container.closest('.announcements-scroll-wrapper');
     const $section = $('#announcements');
     $container.empty();
 
@@ -1034,33 +1053,49 @@ function renderAnnouncements(announcements) {
     $section.removeClass('no-data');
 
     const maxAnnouncements = Math.min(uniqueAnnouncements.length, CONFIG.MAX_ANNOUNCEMENTS);
+
+    // Badge colours per announcement type
+    const typeMeta = {
+        URGENT:  { icon: 'bi-exclamation-octagon-fill', color: '#dc3545', bg: '#ffeef0', label: 'Urgent' },
+        BREAKING:{ icon: 'bi-lightning-fill',           color: '#fd7e14', bg: '#fff3e0', label: 'Breaking' },
+        POLICY:  { icon: 'bi-file-earmark-text-fill',   color: '#6f42c1', bg: '#f3e8ff', label: 'Policy' },
+        EVENT:   { icon: 'bi-calendar-event-fill',      color: '#0d6efd', bg: '#e8f0fe', label: 'Event' },
+        GENERAL: { icon: 'bi-megaphone-fill',           color: '#0084CA', bg: '#e8f4fd', label: 'General' }
+    };
+
     let cardsHtml = '';
 
     for (let i = 0; i < maxAnnouncements; i++) {
         const announcement = uniqueAnnouncements[i];
+        const typeKey = (announcement.type || 'GENERAL').toUpperCase();
+        const meta = typeMeta[typeKey] || typeMeta.GENERAL;
 
         // Fix Drive URLs for embedding
         const fixedImageUrl = announcement.imageUrl ? fixDriveImageUrl(announcement.imageUrl) : null;
-
-        // Extract file ID for fallback attempts
         let fileId = null;
         if (announcement.imageUrl) {
             const match = announcement.imageUrl.match(/[?&/]([a-zA-Z0-9_-]{20,})/);
             if (match) fileId = match[1];
         }
 
+        // Stagger delay: first card 0.05s, then +0.1s each
+        const delay = (0.05 + i * 0.1).toFixed(2);
+
         cardsHtml += `
-            <div class="announcement-card">
+            <div class="announcement-card ann-animate" style="animation-delay:${delay}s; border-left-color:${meta.color};">
                 ${fixedImageUrl ? `
-                <img src="${escapeHtml(fixedImageUrl)}" class="announcement-image" 
+                <img src="${escapeHtml(fixedImageUrl)}" class="announcement-image"
                      alt="${escapeHtml(announcement.title)}" data-file-id="${fileId || ''}"
-                     onerror="if(this.dataset.fileId) { handleDriveImageError(this, this.dataset.fileId); } else { this.style.display='none'; }">
+                     onerror="if(this.dataset.fileId){handleDriveImageError(this,this.dataset.fileId);}else{this.style.display='none';}">
                 ` : ''}
                 <div class="announcement-header">
-                    <div class="announcement-icon">
-                        <i class="bi bi-megaphone-fill"></i>
+                    <div class="announcement-icon" style="background:${meta.bg}; color:${meta.color};">
+                        <i class="bi ${meta.icon}"></i>
                     </div>
-                    <h5 class="announcement-title">${escapeHtml(announcement.title)}</h5>
+                    <div class="flex-grow-1">
+                        <h5 class="announcement-title">${escapeHtml(announcement.title)}</h5>
+                        <span class="ann-type-badge" style="background:${meta.bg}; color:${meta.color};">${meta.label}</span>
+                    </div>
                 </div>
                 ${announcement.description ? `
                 <p class="announcement-description">${escapeHtml(announcement.description)}</p>
@@ -1070,9 +1105,19 @@ function renderAnnouncements(announcements) {
     }
 
     $container.html(cardsHtml);
-
-    // Static display only; no auto-scroll or duplication.
     $container.css({ 'overflow-y': 'visible', 'max-height': 'none' });
+
+    // Clear any previous auto-scroll interval (no longer used)
+    const wrapperEl = $wrapper.length ? $wrapper[0] : null;
+    if (wrapperEl && wrapperEl._annScrollInterval) {
+        clearInterval(wrapperEl._annScrollInterval);
+        wrapperEl._annScrollInterval = null;
+    }
+    // Remove old scroll event listeners
+    $wrapper.off('mouseenter.annScroll mouseleave.annScroll');
+
+    // No auto-scroll: the announcements-scroll-wrapper CSS has max-height + overflow-y:auto
+    // so users can manually scroll to see more announcements.
 }
 
 /**
@@ -1249,12 +1294,10 @@ function renderEventCountdown(events) {
     $('#countdownTitle').text(nextEvent.title);
     $banner.data('has-event', true);
 
-    // In TV mode, only show during carousel phase (carousel section visible)
+    // In TV mode, always keep the countdown banner hidden during the carousel phase.
+    // It is shown as a full-screen overlay during the content rotation (tv-event-active).
     if (tvModeEnabled) {
-        if ($('.carousel-section').is(':visible')) {
-            $banner.show();
-        }
-        // If content phase, stay hidden — switchToContentSections already hid it
+        // Stay hidden; the content rotation will display it via tv-event-active
     } else {
         $banner.show();
     }
@@ -1630,13 +1673,18 @@ function initTVMode() {
 function enterTVMode() {
     tvModeEnabled = true;
     $('body').addClass('tv-mode');
+    $('body').addClass('tv-carousel-phase'); // hide main during carousel phase
+    $('#tvHeader').show();
+
+    // Update TV header clock immediately and then every second
+    updateTVHeaderClock();
+    if (window._tvHeaderClockInterval) clearInterval(window._tvHeaderClockInterval);
+    window._tvHeaderClockInterval = setInterval(updateTVHeaderClock, 1000);
 
     // Try to enter fullscreen
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(err => {
-            debugLog('Fullscreen not available:', err);
-        });
+        elem.requestFullscreen().catch(err => debugLog('Fullscreen not available:', err));
     } else if (elem.webkitRequestFullscreen) {
         elem.webkitRequestFullscreen();
     } else if (elem.msRequestFullscreen) {
@@ -1668,23 +1716,24 @@ function enterTVMode() {
     carouselCompletedOnce = false;
     carouselCycleCount = 0;
 
-    // Show carousel + stats; hide all content sections
+    // ── CAROUSEL PHASE: show ONLY carousel + stats + countdown ──────────────
+    // Hide main content area entirely during carousel
+    $('main').hide();
+
+    // Hide all content sections
+    $('#teamUpdates, #announcements, #celebrations, #holidays, #positions, #joiners, #quicklinks, #emergency')
+        .hide().addClass('tv-hidden-section');
+
+    // Show carousel elements
     $('.carousel-section').show();
     $('.stats-bar').show();
-    $('#teamUpdates').hide();
-    $('#announcements').hide();
-    $('#celebrations').hide();
-    $('#holidays').hide();
-    $('#positions').hide();
-    $('#joiners').hide();
 
-    // Only show the countdown banner if there is actually an upcoming event.
-    // renderEventCountdown() hides it when no events exist; respect that here.
-    if ($('#countdownBanner').data('has-event') === true) {
-        $('#countdownBanner').show();
-    } else {
-        $('#countdownBanner').hide();
-    }
+    // Update header pill
+    updateTVHeaderSection('Slideshow', 'bi-images');
+
+    // Keep countdown banner hidden during carousel phase — it will be shown as a
+    // full-screen overlay in the content rotation (via the tv-event-active class).
+    $('#countdownBanner').hide();
 
     // Ensure carousel is cycling from slide 0
     const carouselEl = document.getElementById('heroCarousel');
@@ -1717,10 +1766,66 @@ function enterTVMode() {
 
     console.log(`TV Mode: ${totalSlides} slides, waiting for slide events`);
 
+    // If only the loading placeholder is present (totalSlides=1), the carousel can't
+    // advance so the slid event never fires.  renderCarousel() will update the listener
+    // once real data arrives.  As a safety net, add a fallback that switches to content
+    // sections if data still hasn't arrived after 45 seconds.
+    if (window._tvCarouselFallbackTimer) {
+        clearTimeout(window._tvCarouselFallbackTimer);
+        window._tvCarouselFallbackTimer = null;
+    }
+    if (totalSlides <= 1) {
+        console.warn('TV Mode: carousel shows placeholder only — arming 45s fallback timer');
+        window._tvCarouselFallbackTimer = setTimeout(function () {
+            window._tvCarouselFallbackTimer = null;
+            if (tvModeEnabled && $('.carousel-section').is(':visible')) {
+                console.warn('TV Mode: fallback fired — switching to content sections');
+                switchToContentSections();
+            }
+        }, 45000);
+    }
+
     // After all carousel images shown once, switch to content sections
     // (handled by slid.bs.carousel.tvmode event listener — no timer needed)
 
+    // Re-render positions for TV mode (duplicated cards for seamless CSS animation).
+    // Positions may have been loaded and rendered in normal mode before TV mode was
+    // activated; calling renderPositions() again with tvModeEnabled=true ensures the
+    // track has the duplicated layout required by the scrollPositions animation.
+    if (positionsData && positionsData.length > 0) {
+        renderPositions(positionsData);
+    }
+
     debugLog('TV Mode enabled - showing carousel with stats and upcoming event');
+}
+
+/**
+ * Update the TV header clock and date
+ */
+function updateTVHeaderClock() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    $('#tvHeaderTime').text(timeStr);
+    $('#tvHeaderDate').text(dateStr);
+    // Keep legacy clock in sync too
+    $('#tvClock').text(timeStr);
+}
+
+/**
+ * Update the TV header section pill label and icon
+ */
+function updateTVHeaderSection(label, iconClass) {
+    const fallbackIcons = {
+        'New Joiners':       'bi-person-plus-fill',
+        'Upcoming Holidays': 'bi-calendar-event-fill',
+        'Announcements':     'bi-megaphone-fill',
+        'Open Positions':    'bi-briefcase-fill',
+        'Carousel':          'bi-images'
+    };
+    const icon = iconClass || fallbackIcons[label] || 'bi-display';
+    $('#tvSectionName').text(label);
+    $('#tvSectionIcon').attr('class', 'bi ' + icon + ' me-2');
 }
 
 /**
@@ -1728,6 +1833,9 @@ function enterTVMode() {
  */
 function switchToContentSections() {
     debugLog('Starting content section rotation');
+    
+    // Remove carousel-phase class so main content can be shown
+    $('body').removeClass('tv-carousel-phase');
     
     // Ensure positions data is loaded before rotation starts
     console.log('📋 Current positionsData:', positionsData, 'items');
@@ -1749,15 +1857,14 @@ function switchToContentSections() {
         if (bsCarousel) bsCarousel.pause();
     }
 
-    // Hide carousel phase elements.
-    // Use a counter so showNextContentSection fires exactly once after all fades complete.
-    // NOTE: we cannot rely on a single element's fadeOut callback because some elements
-    // (e.g. #countdownBanner) may already be hidden, causing jQuery to never fire the callback.
+    // ── CONTENT PHASE: hide carousel elements, reveal main content area ──────
     let fadesPending = 0;
 
     function onFadeDone() {
         fadesPending--;
         if (fadesPending === 0) {
+            // Show main content area now that carousel is hidden
+            $('main').show();
             waitForPositionsThenStart();
         }
     }
@@ -1767,14 +1874,13 @@ function switchToContentSections() {
     const $countdown = $('#countdownBanner');
     const $breakingNews = $('#breakingNewsBar');
 
-    // Hide carousel, stats, countdown banner, and breaking news during content sections
-    if ($carousel.is(':visible')) { fadesPending++; $carousel.fadeOut(400, onFadeDone); }
-    if ($stats.is(':visible')) { fadesPending++; $stats.fadeOut(400, onFadeDone); }
-    if ($countdown.is(':visible')) { fadesPending++; $countdown.fadeOut(400, onFadeDone); }
-    if ($breakingNews.is(':visible')) { fadesPending++; $breakingNews.fadeOut(400, onFadeDone); }
+    if ($carousel.is(':visible'))    { fadesPending++; $carousel.fadeOut(400, onFadeDone); }
+    if ($stats.is(':visible'))       { fadesPending++; $stats.fadeOut(400, onFadeDone); }
+    if ($countdown.is(':visible'))   { fadesPending++; $countdown.fadeOut(400, onFadeDone); }
+    if ($breakingNews.is(':visible')){ fadesPending++; $breakingNews.fadeOut(400, onFadeDone); }
 
-    // If nothing was visible, just start immediately
     if (fadesPending === 0) {
+        $('main').show();
         waitForPositionsThenStart();
     }
 }
@@ -1835,38 +1941,38 @@ function buildAndStartContentRotation() {
 
 /**
  * Build list of content sections that actually have data.
- * Order: Announcements → Holidays → Team Updates → Open Positions (last)
+ * Order: New Joiners → Upcoming Holidays → Announcements → Open Positions
  */
 function getTVContentSections() {
     console.log('🎯 getTVContentSections() called, positionsData.length:', positionsData.length);
-    
+
     const candidates = [
-        { id: '#announcements', label: 'Announcements' },
-        { id: '#holidays', label: 'Holidays' },
-        { id: '#teamUpdates', label: 'Team Updates' }
+        { id: '#teamUpdates',   label: 'New Joiners',       icon: 'bi-person-plus-fill'     },
+        { id: '#holidays',      label: 'Upcoming Holidays', icon: 'bi-calendar-event-fill'  },
+        { id: '#announcements', label: 'Announcements',     icon: 'bi-megaphone-fill'        },
     ];
-    console.log("Candidates before adding positions:", candidates);
-    // Add positions LAST in rotation if data is available
+
+    // Add Open Positions if data is available
     if (positionsData && positionsData.length > 0) {
-        candidates.push({ id: '#positions', label: 'Open Positions' });
-        console.log('✅ Positions ADDED to rotation (LAST) with', positionsData.length, 'items');
-    } else {
-        console.log('❌ Positions NOT added - positionsData:', positionsData);
+        candidates.push({ id: '#positions', label: 'Open Positions', icon: 'bi-briefcase-fill' });
+        console.log('✅ Positions ADDED to rotation with', positionsData.length, 'items');
     }
-    
-    console.log('📊 Total candidates before filter:', candidates.length);
-    
-    // Only filter out sections that have no-data class AND exist in DOM
+
+    // Add Upcoming Event as a full-screen overlay section if an event exists
+    if ($('#countdownBanner').data('has-event') === true) {
+        candidates.push({ id: '#countdownBanner', label: 'Upcoming Event', icon: 'bi-calendar-event-fill' });
+        console.log('✅ Upcoming Event ADDED to rotation');
+    }
+
     const result = candidates.filter(s => {
         const $el = $(s.id);
         const exists = $el.length > 0;
-        console.log("Candidates el:", $el);
         const hasNoData = exists && $el.hasClass('no-data');
         console.log(`  - ${s.label}: exists=${exists}, hasNoData=${hasNoData}, include=${!hasNoData}`);
-        return !hasNoData;
+        return exists && !hasNoData;
     });
-    
-    console.log('📊 Final sections for rotation: [' + result.map(s => s.label).join(' → ') + ']');
+
+    console.log('📊 Rotation order: Carousel → ' + result.map(s => s.label).join(' → ') + ' → (repeat)');
     return result;
 }
 
@@ -1900,20 +2006,20 @@ function showNextContentSection() {
     const section = sections[currentContentSection];
     console.log(`📺 TV Mode: NOW DISPLAYING "${section.label}" (section ${currentContentSection + 1}/${sections.length})`);
 
-    // Hide every content section completely (including positions with its heading)
-    const $allSections = $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #joiners');
+    // Update TV header pill with current section name + icon
+    updateTVHeaderSection(section.label, section.icon);
+
+    // Hide every content section completely (including countdown banner)
+    const $allSections = $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #joiners, #countdownBanner');
     $allSections.hide().addClass('tv-hidden-section');
     $('#positions').removeClass('tv-position-visible');
-    // Remove any previous scroll wrappers
+    $('#countdownBanner').removeClass('tv-event-active');
     $('.tv-scroll-viewport').remove();
 
     let $section = $(section.id);
-    
-    // For positions section, verify it's already rendered and has content
+
+    // Guard: skip positions if no cards rendered yet
     if (section.id === '#positions') {
-        console.log('🎬 About to display positions section (already rendered)');
-        console.log('✅ Positions section selected:', $section.length > 0);
-        // If somehow no cards exist, skip this slot to avoid blank screen
         if ($section.find('.position-card-wrapper').length === 0) {
             console.warn('⚠️ Positions section has no cards — skipping');
             currentContentSection++;
@@ -1921,74 +2027,155 @@ function showNextContentSection() {
             return;
         }
     }
-    
+
+    // Show this section with the right class
     if (section.id === '#positions') {
         $section.removeClass('tv-hidden-section').addClass('tv-position-visible').show();
+    } else if (section.id === '#countdownBanner') {
+        // Full-screen event countdown overlay
+        $section.removeClass('tv-hidden-section').addClass('tv-event-active').show();
     } else {
         $section.removeClass('tv-hidden-section').show();
     }
-    
+
     window.scrollTo({ top: 0, behavior: 'instant' });
 
-    // Standardized timing for ALL sections (18 seconds minimum for all content types)
-    let sectionDuration = 10000; // 18 seconds default for consistent display
+    // ── Duration calculation ─────────────────────────────────────────────────
+    let sectionDuration = 18000;  // default 18s
 
-    // For horizontal scrolling sections (team updates, open positions), add time based on content
-    if (section.id === '#teamUpdates' || section.id === '#positions') {
-        const trackSelector = section.id === '#teamUpdates' ? '.team-updates-scroll-track' : '.positions-scroll-track';
+    const isHorizontal = (section.id === '#teamUpdates' || section.id === '#positions');
+
+    if (isHorizontal) {
+        const trackSelector = section.id === '#teamUpdates'
+            ? '.team-updates-scroll-track'
+            : '.positions-scroll-track';
+
         const $track = $section.find(trackSelector);
         if ($track.length) {
-            const trackWidth = $track[0].scrollWidth;
-            const originalWidth = trackWidth / 2; // Content is duplicated
-            const pixelsPerSecond = section.id === '#teamUpdates' ? 100 : 100;
-            const animDurationSecs = originalWidth / pixelsPerSecond;
-            $track.css('animation-duration', animDurationSecs + 's');
-            
-            // Use animation duration but ensure minimum 18 seconds for viewing
-            const extraTime = Math.max(2, animDurationSecs) * 1000;
-            sectionDuration = Math.max(18000, extraTime);
+            setTimeout(() => {
+                const trackWidth = $track[0].scrollWidth;
+                const originalWidth = trackWidth / 2;
+                const animSecs = Math.max(10, originalWidth / 90);
+                $track.css('animation-duration', animSecs + 's');
+                console.log(`TV ${section.label}: width=${originalWidth}px, anim=${animSecs.toFixed(1)}s`);
+            }, 300);
 
-            const sectionName = section.id === '#teamUpdates' ? 'Team updates' : 'Open positions';
-            console.log(`TV Mode: ${sectionName} - width: ${originalWidth}px, speed: ${pixelsPerSecond}px/s, anim: ${animDurationSecs.toFixed(1)}s, display: ${(sectionDuration/1000).toFixed(1)}s`);
+            const cardCount = ($track.children('.team-card-wrapper, .position-card-wrapper').length) / 2 || 4;
+            const estimatedSecs = (cardCount * 420) / 90;
+            sectionDuration = Math.max(20000, estimatedSecs * 1000);
         }
+    } else if (section.id === '#countdownBanner') {
+        // Full-screen countdown — show for 25 seconds
+        sectionDuration = 25000;
+    } else if (section.id === '#announcements') {
+        // 7 s per card, clamped to [10s … 60s]
+        const cardCount = Math.max(1, $('#announcementsContainer .announcement-card').length);
+        sectionDuration = Math.min(60000, Math.max(10000, cardCount * 7000));
+    } else if (section.id === '#holidays') {
+        // 4s per card, minimum 15s
+        const cardCount = $('#holidaysContainer .holiday-card').length;
+        sectionDuration = Math.max(15000, cardCount * 4000);
     }
 
-    console.log(`⏱️ Section display time: ${(sectionDuration/1000).toFixed(1)} seconds`);
+    console.log(`⏱️ "${section.label}" display time: ${(sectionDuration / 1000).toFixed(1)}s`);
 
-    // After a brief paint delay, set up horizontal scroll where needed.
     setTimeout(function () {
-        if (section.id === '#teamUpdates' || section.id === '#positions') {
+        if (isHorizontal) {
             startTVHorizontalScroll(section.id, sectionDuration - 1000);
-        } else {
-            startTVInfiniteScroll(section.id, sectionDuration - 1000);
         }
-    }, 200);
+        // Vertical sections (announcements, holidays) need no scroll setup
+    }, 400);
 
     contentRotationTimer = setTimeout(function () {
-        console.log(`⏰ Section "${section.label}" display time (${(sectionDuration/1000).toFixed(1)}s) complete. Moving to next...`);
+        console.log(`⏰ "${section.label}" complete. Moving to next...`);
         stopTVAutoScroll();
+
         currentContentSection++;
         showNextContentSection();
     }, sectionDuration);
 }
 
 /**
- * Start horizontal scroll for sections with CSS animations (team updates, open positions)
+ * Start horizontal scroll for sections with CSS animations.
+ * Handles teamUpdates, holidays, and positions.
  */
 function startTVHorizontalScroll(sectionId, duration) {
     const $section = $(sectionId);
     if (!$section.length) return;
 
-    // These sections handle their own CSS-based horizontal scroll
-    // Just ensure the scroll track has animation running
-    const trackSelector = sectionId === '#teamUpdates' ? '.team-updates-scroll-track' : '.positions-scroll-track';
+    if (sectionId === '#holidays') {
+        // Holidays uses #holidaysContainer as the scroll track
+        const $track = $section.find('#holidaysContainer');
+        if ($track.length) {
+            $track.css('animation-play-state', 'running');
+            console.log('TV Mode: Started horizontal scroll for #holidays');
+        }
+        return;
+    }
+
+    const trackSelector = sectionId === '#teamUpdates'
+        ? '.team-updates-scroll-track'
+        : '.positions-scroll-track';
     const $track = $section.find(trackSelector);
-    
     if ($track.length) {
-        // Start animation
         $track.css('animation-play-state', 'running');
         console.log(`TV Mode: Started horizontal scroll for ${sectionId}`);
     }
+}
+
+/**
+ * Convert the holidays list to a horizontal infinite scroll strip for TV mode.
+ * Duplicates holiday cards and applies scrollHolidays CSS animation.
+ */
+function setupTVHolidaysHorizontal() {
+    const $container = $('#holidaysContainer');
+    if (!$container.length) return;
+    if ($container.data('tv-horizontal')) return; // already set up
+
+    // Save original HTML for teardown
+    const originalHtml = $container.html();
+    $container.data('tv-horizontal-original', originalHtml);
+    $container.data('tv-horizontal', true);
+
+    // Duplicate for seamless loop
+    $container.html(originalHtml + originalHtml);
+
+    // Measure and apply animation duration after paint
+    requestAnimationFrame(() => {
+        const totalW = $container[0].scrollWidth;
+        const halfW   = totalW / 2;
+        const speed   = 90; // px per second
+        const secs    = Math.max(12, halfW / speed);
+
+        $container.css({
+            'animation-name':            'scrollHolidays',
+            'animation-duration':         secs + 's',
+            'animation-timing-function': 'linear',
+            'animation-iteration-count': 'infinite',
+            'animation-play-state':      'running'
+        });
+        console.log(`TV Holidays horizontal: ${halfW}px wide → ${secs.toFixed(1)}s animation`);
+    });
+}
+
+/**
+ * Restore holidays list to original state after TV mode hides it.
+ */
+function teardownTVHolidaysHorizontal() {
+    const $container = $('#holidaysContainer');
+    if (!$container.length || !$container.data('tv-horizontal')) return;
+
+    const original = $container.data('tv-horizontal-original') || '';
+    $container.html(original);
+    $container.css({
+        'animation-name': '',
+        'animation-duration': '',
+        'animation-timing-function': '',
+        'animation-iteration-count': '',
+        'animation-play-state': ''
+    });
+    $container.removeData('tv-horizontal').removeData('tv-horizontal-original');
+    console.log('TV Holidays: restored to vertical layout');
 }
 
 /**
@@ -2137,29 +2324,43 @@ function restartCarouselCycle() {
     console.log('State before reset: currentContentSection=' + currentContentSection + ', tvModeEnabled=' + tvModeEnabled);
     debugLog('Restarting carousel cycle');
 
+    // ── Notify parent kiosk frame that one full portal cycle is complete ──────
+    // The kiosk listens for this signal and switches to the next screen
+    // (Shoutouts) immediately, rather than relying on a fixed timer.
+    if (window.parent && window.parent !== window) {
+        console.log('📡 TV Mode: sending tv-cycle-complete to kiosk parent');
+        window.parent.postMessage({ type: 'tv-cycle-complete' }, '*');
+    }
+
     if (contentRotationTimer) {
         clearTimeout(contentRotationTimer);
         contentRotationTimer = null;
     }
     stopTVAutoScroll();
 
-    // Instantly hide content sections (no fadeOut race condition) and force-hide positions even with tv-mode CSS
-    $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #joiners')
-        .hide()
-        .addClass('tv-hidden-section');
+    // Re-add carousel-phase class to hide main while carousel runs
+    $('body').addClass('tv-carousel-phase');
+
+    // Instantly hide content sections and reset countdown banner
+    $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #joiners, #countdownBanner')
+        .hide().addClass('tv-hidden-section');
+    $('#countdownBanner').removeClass('tv-event-active');
     currentContentSection = 0;
     contentRotationStarted = false;
-    cachedTVSections = []; // Clear cache for next cycle
-    console.log('State after reset: currentContentSection=' + currentContentSection + ', contentRotationStarted=' + contentRotationStarted + ', cachedTVSections=[]');
+    cachedTVSections = [];
+
+    // Hide main content area — carousel phase shows only carousel+stats+countdown
+    $('main').hide();
+    updateTVHeaderSection('Slideshow', 'bi-images');
 
     // Show carousel + stats bar
     $('.carousel-section').fadeIn(500);
     $('.stats-bar').fadeIn(500);
 
-    // Only restore countdown banner and breaking news if there is an actual upcoming event
-    if ($('#countdownBanner').data('has-event') === true) {
-        $('#countdownBanner').data('tv-hidden', false).removeClass('tv-mode-hidden').fadeIn(500);
-    }
+    // Keep countdown banner hidden during carousel phase — shown as a full-screen
+    // overlay in the content rotation (tv-event-active) if an event exists.
+    $('#countdownBanner').hide();
+
     if ($('#breakingTickerContent').text().trim() !== '') {
         $('#breakingNewsBar').data('tv-hidden', false).removeClass('tv-mode-hidden').fadeIn(500);
     }
@@ -2207,6 +2408,11 @@ function restartCarouselCycle() {
     });
 
     console.log(`TV Mode: Carousel restarted — ${totalSlides} slides, waiting for slide events`);
+
+    // Re-render positions in TV mode (duplicated) for the upcoming content cycle.
+    if (positionsData && positionsData.length > 0) {
+        renderPositions(positionsData);
+    }
 }
 
 /**
@@ -2215,6 +2421,7 @@ function restartCarouselCycle() {
 function exitTVMode() {
     tvModeEnabled = false;
     $('body').removeClass('tv-mode');
+    $('body').removeClass('tv-carousel-phase'); // ensure carousel-phase is cleared
 
     // Exit fullscreen
     if (document.exitFullscreen) {
@@ -2240,12 +2447,18 @@ function exitTVMode() {
         clearTimeout(contentRotationTimer);
         contentRotationTimer = null;
     }
+    // Clear the carousel placeholder fallback timer
+    if (window._tvCarouselFallbackTimer) {
+        clearTimeout(window._tvCarouselFallbackTimer);
+        window._tvCarouselFallbackTimer = null;
+    }
     // Remove slide event listener
     $('#heroCarousel').off('slid.bs.carousel.tvmode');
     stopTVAutoScroll();
 
     // Show all primary sections; keep positions visible in home mode
     $('#teamUpdates, #announcements, #holidays, #positions, #joiners').removeClass('tv-hidden-section tv-position-visible');
+    $('#countdownBanner').removeClass('tv-hidden-section tv-event-active');
     $('.carousel-section').css('display', '').show();
     $('#teamUpdates').css('display', '').show();
     $('#announcements').css('display', '').show();
@@ -2270,6 +2483,20 @@ function exitTVMode() {
     // Countdown banner visibility is controlled by its own logic
     contentRotationStarted = false;
     cachedTVSections = []; // Clear cache
+
+    // Restore main content area visibility
+    $('main').show();
+
+    // Hide TV header bar and stop its clock
+    $('#tvHeader').hide();
+    if (window._tvHeaderClockInterval) {
+        clearInterval(window._tvHeaderClockInterval);
+        window._tvHeaderClockInterval = null;
+    }
+
+    // Restore holidays to normal vertical layout if it was set up for TV
+    teardownTVHolidaysHorizontal();
+
     debugLog('TV Mode disabled');
 }
 
@@ -2344,6 +2571,8 @@ function updateDarkModeIcon(isDark) {
  * Global positions data storage
  */
 let positionsData = [];
+// JS-based horizontal scroll state for positions (normal mode)
+window._posScroll = { paused: false, interval: null };
 // Promise/jqXHR for positions load in progress
 let positionsLoadRequest = null;
 // Guard to ensure content rotation starts only once per switch
@@ -2419,12 +2648,28 @@ function loadOpenPositions() {
  * Render open positions section
  */
 function renderPositions(positions) {
+    const $wrapper   = $('.positions-scroll-wrapper');
     const $container = $('#positionsContainer');
-    const $section = $('#positions');
+    const $section   = $('#positions');
     $container.empty();
 
+    // Clear any previous JS scroll interval
+    if (window._posScroll.interval) {
+        clearInterval(window._posScroll.interval);
+        window._posScroll.interval = null;
+    }
+    window._posScroll.paused = false;
+
     if (!positions || positions.length === 0) {
-        $section.addClass('no-data');
+        $section.removeClass('no-data');
+        $container.html(`
+            <div class="text-center py-5 text-muted" style="width:100%;">
+                <i class="bi bi-briefcase fs-1 d-block mb-3 opacity-25"></i>
+                <p class="mb-0">No open positions at this time.</p>
+            </div>
+        `);
+        // In TV mode, skip this section from the rotation
+        if (tvModeEnabled) $section.addClass('no-data');
         return;
     }
 
@@ -2433,10 +2678,10 @@ function renderPositions(positions) {
     let cardsHtml = '';
     positions.forEach(position => {
         const postingDate = formatDate(position.postingDate);
-        const statusClass = position.status === 'OPEN' ? 'open' : 
-                           position.status === 'CLOSED' ? 'closed' : 'on-hold';
-        const statusText = position.status === 'OPEN' ? 'Open' : 
-                          position.status === 'CLOSED' ? 'Closed' : 'On Hold';
+        const statusClass = position.status === 'OPEN'   ? 'open'   :
+                            position.status === 'CLOSED' ? 'closed' : 'on-hold';
+        const statusText  = position.status === 'OPEN'   ? 'Open'   :
+                            position.status === 'CLOSED' ? 'Closed' : 'On Hold';
 
         cardsHtml += `
             <div class="position-card-wrapper">
@@ -2472,39 +2717,97 @@ function renderPositions(positions) {
         `;
     });
 
-    // Duplicate for seamless horizontal scroll
-    $container.html(cardsHtml + cardsHtml);
+    if (tvModeEnabled) {
+        // TV mode: duplicate for seamless CSS infinite scroll
+        $container.html(cardsHtml + cardsHtml);
+        $container.css('animation', '');  // restore CSS animation
+    } else {
+        // Normal mode: real cards once — correct count displayed
+        $container.html(cardsHtml);
+        $container.css('animation', 'none');   // no CSS animation
+
+        // Start JS-based smooth horizontal auto-scroll (ping-pong left↔right)
+        const wrapperEl = $wrapper.length ? $wrapper[0] : null;
+        if (!wrapperEl) return;
+
+        setTimeout(() => {
+            const maxScroll = wrapperEl.scrollWidth - wrapperEl.clientWidth;
+            if (maxScroll <= 0) return;  // all cards visible, nothing to scroll
+
+            let direction = 1;   // 1 = scroll right, -1 = scroll left
+            let pos = 0;
+
+            // Pause on hover / touch so user can interact
+            $wrapper.off('mouseenter.posScroll mouseleave.posScroll');
+            $wrapper.on('mouseenter.posScroll', () => { window._posScroll.paused = true; });
+            $wrapper.on('mouseleave.posScroll',  () => { window._posScroll.paused = false; });
+
+                window._posScroll.interval = setInterval(() => {
+                    if (window._posScroll.paused) return;
+
+                    pos += direction * 0.5;   // slow, smooth scroll speed
+
+                    if (pos >= maxScroll) {
+                        pos = maxScroll;
+                        direction = -1;
+                        // Longer pause at the end before scrolling back
+                        window._posScroll.paused = true;
+                        setTimeout(() => { window._posScroll.paused = false; }, 2500);
+                    } else if (pos <= 0) {
+                        pos = 0;
+                        direction = 1;
+                        // Longer pause at the start before scrolling forward
+                        window._posScroll.paused = true;
+                        setTimeout(() => { window._posScroll.paused = false; }, 2500);
+                    }
+
+                    wrapperEl.scrollLeft = pos;
+                }, 16);   // ~60 fps
+        }, 600);
+    }
 }
 
 /**
  * Initialize scroll toggle buttons
  */
 function initScrollToggles() {
-    // Toggle team updates scroll
+    // Toggle team updates scroll (CSS animation)
     $('#toggleTeamScroll').on('click', function () {
-        const $track = $('.team-updates-scroll-track');
-        const $icon = $(this).find('i');
-
-        if ($track.css('animation-play-state') === 'paused') {
-            $track.css('animation-play-state', 'running');
-            $icon.removeClass('bi-play-fill').addClass('bi-pause-fill');
-        } else {
-            $track.css('animation-play-state', 'paused');
-            $icon.removeClass('bi-pause-fill').addClass('bi-play-fill');
-        }
+        const $track  = $('.team-updates-scroll-track');
+        const $icon   = $(this).find('i');
+        const isPaused = $track.css('animation-play-state') === 'paused';
+        $track.css('animation-play-state', isPaused ? 'running' : 'paused');
+        $icon.toggleClass('bi-pause-fill', isPaused).toggleClass('bi-play-fill', !isPaused);
     });
 
     // Toggle positions scroll
     $('#togglePositionsScroll').on('click', function () {
-        const $track = $('.positions-scroll-track');
         const $icon = $(this).find('i');
 
-        if ($track.css('animation-play-state') === 'paused') {
-            $track.css('animation-play-state', 'running');
-            $icon.removeClass('bi-play-fill').addClass('bi-pause-fill');
+        if (tvModeEnabled) {
+            // TV mode — control CSS animation on the track
+            const $track   = $('.positions-scroll-track');
+            const isPaused = $track.css('animation-play-state') === 'paused';
+            $track.css('animation-play-state', isPaused ? 'running' : 'paused');
+            $icon.toggleClass('bi-pause-fill', isPaused).toggleClass('bi-play-fill', !isPaused);
         } else {
-            $track.css('animation-play-state', 'paused');
-            $icon.removeClass('bi-pause-fill').addClass('bi-play-fill');
+            // Normal mode — toggle JS interval pause
+            window._posScroll.paused = !window._posScroll.paused;
+            const nowPaused = window._posScroll.paused;
+            $icon.toggleClass('bi-pause-fill', !nowPaused).toggleClass('bi-play-fill', nowPaused);
         }
     });
+
+    // ── Scroll-to-bottom fade removal ──────────────────────────────────────
+    // When the user scrolls holidays or announcements to the bottom,
+    // remove the bottom-fade mask hint (the content is fully visible).
+    function bindScrollFade(selector) {
+        $(document).on('scroll', selector, function () {
+            const el = this;
+            const atBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 4;
+            $(el).toggleClass('scrolled-to-bottom', atBottom);
+        });
+    }
+    bindScrollFade('.holiday-list');
+    bindScrollFade('.announcements-scroll-wrapper');
 }
