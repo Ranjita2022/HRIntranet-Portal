@@ -32,8 +32,11 @@ public class DatabaseEnumFixer {
             
             // Fix 4: Employee.status ENUM
             fixEmployeeStatusEnum();
+
+            // Fix 5: employees.end_date column
+            fixEmployeeEndDateColumn();
             
-            // Fix 5: EmergencyContact.type ENUM
+            // Fix 6: EmergencyContact.type ENUM
             fixEmergencyContactTypeEnum();
             
             logger.info("✓ All database enum fixes completed successfully!");
@@ -143,13 +146,19 @@ public class DatabaseEnumFixer {
                 logger.info("Step 3: Converting back to ENUM with uppercase values...");
                 jdbcTemplate.execute(
                     "ALTER TABLE announcements MODIFY COLUMN type " +
-                    "ENUM('GENERAL', 'URGENT', 'BREAKING', 'POLICY', 'EVENT') NOT NULL DEFAULT 'GENERAL'"
+                    "ENUM('GENERAL', 'TRAINING', 'URGENT', 'BREAKING', 'POLICY', 'EVENT') NOT NULL DEFAULT 'GENERAL'"
                 );
                 
                 logger.info("✓ announcements type enum fix completed!");
             } else {
                 logger.info("✓ announcements type enum values are already correct.");
             }
+
+            // Ensure announcements enum definition includes all currently supported values.
+            jdbcTemplate.execute(
+                "ALTER TABLE announcements MODIFY COLUMN type " +
+                "ENUM('GENERAL', 'TRAINING', 'URGENT', 'BREAKING', 'POLICY', 'EVENT') NOT NULL DEFAULT 'GENERAL'"
+            );
         } catch (Exception e) {
             logger.warn("Could not fix announcements type enum: {}", e.getMessage());
         }
@@ -188,6 +197,25 @@ public class DatabaseEnumFixer {
             }
         } catch (Exception e) {
             logger.warn("Could not fix employees status enum: {}", e.getMessage());
+        }
+    }
+
+    private void fixEmployeeEndDateColumn() {
+        try {
+            Integer columnCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'employees' AND column_name = 'end_date'",
+                Integer.class
+            );
+
+            if (columnCount == null || columnCount == 0) {
+                logger.info("Adding employees.end_date column...");
+                jdbcTemplate.execute("ALTER TABLE employees ADD COLUMN end_date DATE NULL AFTER start_date");
+                logger.info("✓ employees.end_date column added!");
+            } else {
+                logger.info("✓ employees.end_date column already exists.");
+            }
+        } catch (Exception e) {
+            logger.warn("Could not fix employees end_date column: {}", e.getMessage());
         }
     }
     

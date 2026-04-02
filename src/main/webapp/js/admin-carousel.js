@@ -61,8 +61,8 @@ function renderCarouselTable() {
         <tr>
             <td class="text-muted">${slide.id}</td>
             <td>
-                ${slide.image && slide.image.imageUrl
-                    ? `<img src="${slide.image.imageUrl}" alt="Preview" class="slide-thumb">`
+                ${getCarouselImageUrl(slide)
+                    ? `<img src="${escapeHtml(getCarouselImageUrl(slide))}" alt="Preview" class="slide-thumb">`
                     : '<span class="slide-thumb-placeholder"><i class="bi bi-image"></i></span>'}
             </td>
             <td><span class="fw-semibold">${escapeHtml(slide.title || '—')}</span></td>
@@ -79,7 +79,7 @@ function renderCarouselTable() {
                     <button class="btn btn-sm btn-outline-primary" onclick="editCarouselSlide(${slide.id})" title="Edit">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSlide(${slide.id})" title="Delete">
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCarouselSlide(${slide.id})" title="Delete">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -109,9 +109,10 @@ function showCarouselModal(id = null) {
             document.getElementById('carouselIsActive').checked = slide.isActive;
             
             // Show existing image preview
-            if (slide.image && slide.image.imageUrl) {
+            const imageUrl = getCarouselImageUrl(slide);
+            if (imageUrl) {
                 const preview = document.getElementById('imagePreview');
-                preview.src = slide.image.imageUrl;
+                preview.src = imageUrl;
                 document.getElementById('imagePreviewContainer').style.display = 'block';
             }
         }
@@ -156,6 +157,7 @@ function handleCarouselImageSelect(event) {
 // Save carousel slide
 async function saveCarouselSlide() {
     const id = editingCarouselId;
+    const isEdit = !!editingCarouselId;
     const title = document.getElementById('carouselTitle').value.trim();
     const subtitle = document.getElementById('carouselSubtitle').value.trim();
     const displayOrder = parseInt(document.getElementById('carouselDisplayOrder').value) || 0;
@@ -166,6 +168,13 @@ async function saveCarouselSlide() {
     if (!id && !imageFile) {
         showError('Please select an image');
         return;
+    }
+
+    const saveBtn = document.getElementById('saveCarouselBtn');
+    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
     }
     
     try {
@@ -178,18 +187,10 @@ async function saveCarouselSlide() {
                 isActive: isActive
             };
             
-            const response = await AdminAPI.fetch(`/admin/carousel/${id}`, {
+            await AdminAPI.fetch(`/admin/carousel/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(slideData)
             });
-            
-            if (response && response.id) {
-                showSuccess('Carousel slide updated successfully');
-                carouselModal.hide();
-                loadCarouselSlides();
-            } else {
-                throw new Error('Failed to update carousel slide');
-            }
         } else {
             // Create new slide with image
             const formData = new FormData();
@@ -198,22 +199,28 @@ async function saveCarouselSlide() {
             if (subtitle) formData.append('subtitle', subtitle);
             formData.append('displayOrder', displayOrder);
             
-            const response = await AdminAPI.fetchMultipart(`/admin/carousel`, {
+            await AdminAPI.fetchMultipart(`/admin/carousel`, {
                 method: 'POST',
                 body: formData
             });
-            
-            if (response && response.id) {
-                showSuccess('Carousel slide created successfully');
-                carouselModal.hide();
-                loadCarouselSlides();
-            } else {
-                throw new Error('Failed to create carousel slide');
-            }
+        }
+
+        showSuccess(isEdit ? 'Carousel slide updated successfully' : 'Carousel slide created successfully');
+        carouselModal.hide();
+        
+        try {
+            await loadCarouselSlides();
+        } catch (reloadError) {
+            console.warn('Reload after save failed:', reloadError);
         }
     } catch (error) {
         console.error('Error saving carousel slide:', error);
-        showError('Failed to save carousel slide: ' + error.message);
+        showError('Failed to save carousel slide: ' + getApiErrorMessage(error));
+    } finally {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalBtnHtml;
+        }
     }
 }
 
@@ -245,6 +252,11 @@ async function deleteCarouselSlide(id) {
     }
 }
 
+// Backward compatibility for any stale inline handlers.
+function deleteSlide(id) {
+    return deleteCarouselSlide(id);
+}
+
 // Show loading spinner in table
 function showLoadingTable(elementId, colspan) {
     const element = document.getElementById(elementId);
@@ -264,16 +276,92 @@ function showLoadingTable(elementId, colspan) {
 
 // Show success toast
 function showSuccess(message) {
-    document.getElementById('successMessage').textContent = message;
-    const toast = new bootstrap.Toast(document.getElementById('successToast'));
-    toast.show();
+    showToast(message, 'success');
 }
 
 // Show error toast
 function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-    const toast = new bootstrap.Toast(document.getElementById('errorToast'));
+    showToast(message, 'danger');
+}
+
+function showToast(message, type = 'info') {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${escapeHtml(message)}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
     toast.show();
+    
+    // Remove toast element after it's hidden
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+function getApiErrorMessage(error) {
+    const fallback = 'Please try again.';
+    const raw = (error && error.message ? String(error.message) : '').trim();
+    if (!raw) return fallback;
+
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+            if (parsed.error) return String(parsed.error);
+            if (parsed.message) return String(parsed.message);
+        }
+    } catch (e) {
+        // Not JSON; use raw message.
+    }
+
+    return raw;
+}
+
+function getCarouselImageUrl(slide) {
+    if (!slide) return '';
+
+    if (slide.image && slide.image.imageUrl) {
+        return slide.image.imageUrl;
+    }
+
+    if (slide.imageUrl) {
+        if (slide.imageUrl.startsWith('http') || slide.imageUrl.startsWith('/')) {
+            return slide.imageUrl;
+        }
+        return `${CONFIG.API_BASE_URL}/uploads/${slide.imageUrl}`;
+    }
+
+    if (slide.image && slide.image.filePath) {
+        if (slide.image.filePath.startsWith('http') || slide.image.filePath.startsWith('/')) {
+            return slide.image.filePath;
+        }
+    }
+
+    if (slide.image && slide.image.filename) {
+        return `${CONFIG.API_BASE_URL}/uploads/${slide.image.filename}`;
+    }
+
+    return '';
 }
 
 // Escape HTML to prevent XSS

@@ -104,14 +104,16 @@
                                 <th>Email</th>
                                 <th>Position</th>
                                 <th>Department</th>
+                                <th width="120">Birth Date</th>
                                 <th width="120">Start Date</th>
+                                <th width="120">End Date</th>
                                 <th width="110">Status</th>
                                 <th width="100" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="employeesTableBody">
                             <tr>
-                                <td colspan="9" class="text-center py-4">
+                                <td colspan="11" class="text-center py-4">
                                     <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
                                     Loading employees…
                                 </td>
@@ -180,22 +182,34 @@
                                 <label for="employeeDepartment" class="form-label">Department <span class="text-danger">*</span></label>
                                 <select class="form-select" id="employeeDepartment" required>
                                     <option value="">Select Department</option>
-                                    <option>Engineering</option><option>HR</option><option>Marketing</option>
-                                    <option>Finance</option><option>Sales</option><option>IT</option>
-                                    <option>Operations</option><option>Product</option><option>Design</option>
-                                    <option>Analytics</option>
+                                    <option>Engineering</option>
+                                    <option>IT</option>
+                                    <option>HR</option>
+                                    <option>Marketing</option>
+                                    <option>Finance &amp; Administration</option>
+                                    <option>Audit</option> 
+                                    <option>Philanthropy</option>
+                                    <!-- <option>Operations</option>
+                                    <option>Analytics</option> -->
                                 </select>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="employeeStartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="employeeStartDate" required>
-                            <small class="text-muted">Employees who joined within last 30 days appear as "New Joiners"</small>
                         </div>
                         <div class="mb-3">
                             <label for="employeeBirthDate" class="form-label">Birth Date</label>
                             <input type="date" class="form-control" id="employeeBirthDate">
                             <small class="text-muted">Optional — used for birthday celebrations on the portal</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeStartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="employeeStartDate" required>
+                                <small class="text-muted">Employees who joined within last 30 days appear as "New Joiners"</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="employeeEndDate">
+                                <small class="text-muted">Enter end date for terminated employees</small>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="employeePhoto" class="form-label">Profile Photo</label>

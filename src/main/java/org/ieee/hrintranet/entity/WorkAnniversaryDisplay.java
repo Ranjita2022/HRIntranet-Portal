@@ -45,6 +45,15 @@ public class WorkAnniversaryDisplay {
     
     @Column(name = "years_of_experience")
     private Integer yearsOfExperience;
+
+    @Transient
+    private String employeeStatus;
+
+    @Transient
+    private Integer monthsOfExperience;
+
+    @Transient
+    private String experienceLabel;
     
     @Column(name = "is_published")
     private Boolean isPublished = true;

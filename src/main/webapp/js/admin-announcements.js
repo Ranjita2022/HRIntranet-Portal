@@ -5,6 +5,7 @@
 
 let announcementsData = [];
 let editingAnnouncementId = null;
+let hasExistingImageInEdit = false;
 
 /**
  * Initialize announcements section
@@ -61,8 +62,8 @@ function renderAnnouncementsTable() {
 
     // ── Stats ──
     const now = new Date();
-    const activeList  = announcementsData.filter(a => a.isActive && !(a.expiryDate && new Date(a.expiryDate) < now));
-    const expiredList = announcementsData.filter(a => a.expiryDate && new Date(a.expiryDate) < now);
+    const activeList  = announcementsData.filter(a => a.isActive && !isAnnouncementExpired(a, now));
+    const expiredList = announcementsData.filter(a => isAnnouncementExpired(a, now));
     const urgentList  = announcementsData.filter(a => a.type === 'URGENT' || a.type === 'BREAKING');
     updateStats(activeList, expiredList, urgentList);
 
@@ -73,6 +74,7 @@ function renderAnnouncementsTable() {
     // ── Type badge map ──
     const typeBadges = {
         'GENERAL': '<span class="badge badge-general">General</span>',
+        'TRAINING':'<span class="badge badge-training">Training</span>',
         'URGENT':  '<span class="badge badge-urgent">Urgent</span>',
         'BREAKING':'<span class="badge badge-breaking">Breaking</span>',
         'POLICY':  '<span class="badge badge-policy">Policy</span>',
@@ -81,8 +83,11 @@ function renderAnnouncementsTable() {
 
     tbody.innerHTML = sortedAnnouncements.map(announcement => {
         const publishDate = formatDate(announcement.publishDate);
-        const expiryDate  = announcement.expiryDate ? formatDate(announcement.expiryDate) : '<span class="text-muted">—</span>';
-        const isExpired   = announcement.expiryDate && new Date(announcement.expiryDate) < now;
+        const effectiveExpiryDate = getEffectiveAnnouncementExpiryDate(announcement);
+        const expiryDate  = effectiveExpiryDate
+            ? formatDate(effectiveExpiryDate.toISOString().split('T')[0])
+            : '<span class="text-muted">—</span>';
+        const isExpired   = isAnnouncementExpired(announcement, now);
 
         const statusBadge = announcement.isActive && !isExpired
             ? '<span class="badge status-active">Active</span>'
@@ -107,7 +112,7 @@ function renderAnnouncementsTable() {
                     <span class="announcement-title">${escapeHtml(announcement.title)}</span>
                     ${hasImage}${priorityBadge}
                 </td>
-                <td>${typeBadges[announcement.type] || `<span class="badge bg-secondary">${announcement.type}</span>`}</td>
+                <td>${typeBadges[announcement.type] || `<span class="badge bg-secondary">${escapeHtml((announcement.type || '').toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))}</span>`}</td>
                 <td class="text-muted small" title="${announcement.description ? escapeHtml(announcement.description) : ''}">${descText}</td>
                 <td>${publishDate}</td>
                 <td>${expiryDate}</td>
@@ -127,6 +132,34 @@ function renderAnnouncementsTable() {
     }).join('');
 }
 
+function getEffectiveAnnouncementExpiryDate(announcement) {
+    if (announcement.expiryDate) {
+        const explicitExpiry = new Date(announcement.expiryDate);
+        return isNaN(explicitExpiry.getTime()) ? null : explicitExpiry;
+    }
+
+    if (!announcement.publishDate) {
+        return null;
+    }
+
+    const publishDate = new Date(announcement.publishDate);
+    if (isNaN(publishDate.getTime())) {
+        return null;
+    }
+
+    // Auto-expire after 30 days if no explicit expiry date is set.
+    publishDate.setDate(publishDate.getDate() + 30);
+    return publishDate;
+}
+
+function isAnnouncementExpired(announcement, now = new Date()) {
+    const effectiveExpiry = getEffectiveAnnouncementExpiryDate(announcement);
+    if (!effectiveExpiry) {
+        return false;
+    }
+    return effectiveExpiry < now;
+}
+
 /**
  * Update stats cards
  */
@@ -143,6 +176,7 @@ function updateStats(activeList, expiredList, urgentList) {
  */
 function showAddAnnouncementModal() {
     editingAnnouncementId = null;
+    hasExistingImageInEdit = false;
     document.getElementById('announcementModalTitle').textContent = 'Add Announcement';
     document.getElementById('announcementForm').reset();
     document.getElementById('announcementType').value = 'GENERAL';
@@ -155,6 +189,8 @@ function showAddAnnouncementModal() {
     // Clear image preview
     document.getElementById('imagePreviewContainer').style.display = 'none';
     document.getElementById('announcementImagePreview').src = '';
+    const removeBtn = document.getElementById('removeAnnouncementImageBtn');
+    if (removeBtn) removeBtn.style.display = 'none';
     
     const modal = new bootstrap.Modal(document.getElementById('announcementModal'));
     modal.show();
@@ -179,13 +215,21 @@ async function showEditAnnouncementModal(id) {
     document.getElementById('announcementExpiryDate').value = announcement.expiryDate || '';
     document.getElementById('announcementIsActive').checked = announcement.isActive;
     document.getElementById('announcementPriority').value = announcement.priority || 0;
+    document.getElementById('announcementImage').value = '';
     
     // Show image preview if exists
-    if (announcement.imageUrl) {
+    const existingImageUrl = getAnnouncementImageUrl(announcement);
+    if (existingImageUrl) {
+        hasExistingImageInEdit = true;
         document.getElementById('imagePreviewContainer').style.display = 'block';
-        document.getElementById('announcementImagePreview').src = announcement.imageUrl;
+        document.getElementById('announcementImagePreview').src = existingImageUrl;
+        const removeBtn = document.getElementById('removeAnnouncementImageBtn');
+        if (removeBtn) removeBtn.style.display = 'inline-block';
     } else {
+        hasExistingImageInEdit = false;
         document.getElementById('imagePreviewContainer').style.display = 'none';
+        const removeBtn = document.getElementById('removeAnnouncementImageBtn');
+        if (removeBtn) removeBtn.style.display = 'none';
     }
     
     const modal = new bootstrap.Modal(document.getElementById('announcementModal'));
@@ -218,8 +262,56 @@ function handleAnnouncementImageSelect(event) {
     reader.onload = (e) => {
         document.getElementById('imagePreviewContainer').style.display = 'block';
         document.getElementById('announcementImagePreview').src = e.target.result;
+        const removeBtn = document.getElementById('removeAnnouncementImageBtn');
+        if (removeBtn) removeBtn.style.display = hasExistingImageInEdit ? 'inline-block' : 'none';
     };
     reader.readAsDataURL(file);
+}
+
+function getAnnouncementImageUrl(announcement) {
+    if (!announcement) return '';
+
+    if (announcement.imageUrl) return announcement.imageUrl;
+    if (announcement.ImageURL) return announcement.ImageURL;
+
+    if (announcement.image && announcement.image.filePath) {
+        if (announcement.image.filePath.startsWith('http')) {
+            return announcement.image.filePath;
+        }
+    }
+
+    if (announcement.image && announcement.image.filename) {
+        return `${CONFIG.API_BASE_URL}/uploads/${announcement.image.filename}`;
+    }
+
+    return '';
+}
+
+async function removeAnnouncementImage() {
+    if (!editingAnnouncementId) return;
+
+    if (!confirm('Remove the current announcement image?')) {
+        return;
+    }
+
+    try {
+        const response = await AdminAPI.announcements.deleteImage(editingAnnouncementId);
+        if (response && response.message) {
+            showSuccess('Announcement image removed successfully');
+            hasExistingImageInEdit = false;
+            document.getElementById('announcementImagePreview').src = '';
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            document.getElementById('announcementImage').value = '';
+            const removeBtn = document.getElementById('removeAnnouncementImageBtn');
+            if (removeBtn) removeBtn.style.display = 'none';
+            await loadAnnouncements();
+        } else {
+            showError('Failed to remove announcement image');
+        }
+    } catch (error) {
+        console.error('Error removing announcement image:', error);
+        showError('Error removing announcement image: ' + error.message);
+    }
 }
 
 /**
@@ -281,7 +373,7 @@ async function saveAnnouncement(event) {
             if (imageFile) {
                 try {
                     const uploadResponse = await AdminAPI.announcements.uploadImage(announcementId, imageFile);
-                    if (!uploadResponse || !uploadResponse.id) {
+                    if (!uploadResponse || (!uploadResponse.image && !uploadResponse.id)) {
                         showError('Announcement saved but image upload failed');
                         await loadAnnouncements();
                         bootstrap.Modal.getInstance(document.getElementById('announcementModal')).hide();

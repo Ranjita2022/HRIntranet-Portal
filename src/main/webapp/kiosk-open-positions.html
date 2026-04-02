@@ -339,8 +339,14 @@
     <script src="js/config.js"></script>
     <script>
         const API_BASE_URL = CONFIG.API_BASE_URL;
+        const DEFAULT_POSITION_APPLY_URL = 'https://ieee.taleo.net/careersection/1/jobsearch.ftl';
         let allPositions = [];
         let autoRefreshInterval = null;
+
+        function getPositionApplyUrl(position) {
+            const applyUrl = (position && (position.applyLink || position.applyUrl || position.applicationUrl) || '').trim();
+            return applyUrl || DEFAULT_POSITION_APPLY_URL;
+        }
 
         $(document).ready(function() {
             loadAvailableMonths();
@@ -416,6 +422,7 @@
             $('#emptyState').hide();
 
             allPositions.forEach(position => {
+                const applyUrl = getPositionApplyUrl(position);
                 const statusClass = position.status === 'OPEN' ? 'open' : 
                                    position.status === 'CLOSED' ? 'closed' : 'on-hold';
                 const statusText = position.status === 'OPEN' ? 'Open' : 
@@ -450,7 +457,7 @@
                             </div>
                             ` : ''}
 
-                            <button class="apply-button" onclick="window.open('index.html', '_blank')">
+                            <button class="apply-button" onclick="window.open('${escapeHtml(applyUrl)}', '_blank')">
                                 <i class="bi bi-arrow-right"></i> Learn More & Apply
                             </button>
                         </div>

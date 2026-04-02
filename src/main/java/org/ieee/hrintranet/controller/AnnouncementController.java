@@ -111,4 +111,17 @@ public class AnnouncementController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<?> deleteAnnouncementImage(@PathVariable int id, Authentication authentication) {
+        return announcementRepository.findById(id)
+                .map(announcement -> {
+                    announcement.setImage(null);
+                    announcementRepository.save(announcement);
+                    auditService.logAction(authentication.getName(), "DELETE", "announcement_image", id, null, null);
+                    return ResponseEntity.ok(Map.of("message", "Announcement image removed successfully"));
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Announcement not found")));
+    }
 }

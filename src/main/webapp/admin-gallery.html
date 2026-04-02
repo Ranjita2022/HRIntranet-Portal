@@ -53,6 +53,44 @@
             padding: 6px 12px;
             font-size: 0.875rem;
         }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            min-width: 0;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .action-buttons .btn i {
+            margin-right: 0.35rem;
+        }
+
+        .action-buttons .btn[title="Delete folder"],
+        .action-buttons .btn[title="Hide from gallery"],
+        .action-buttons .btn[title="Show in gallery"] {
+            justify-content: center;
+        }
+
+        @media (max-width: 1399.98px) {
+            .action-buttons {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .action-buttons {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
         
         .scan-section {
             background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
@@ -145,7 +183,19 @@
         <!-- Folders List -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom">
-                <h5 class="mb-0">Gallery Folders</h5>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0">Gallery Folders</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="selectAllFolders" onchange="toggleSelectAllFolders(this.checked)">
+                            <label class="form-check-label" for="selectAllFolders">Select all</label>
+                        </div>
+                        <span class="text-muted small" id="selectedFoldersCount">0 selected</span>
+                        <button type="button" class="btn btn-sm btn-danger" id="deleteSelectedFoldersBtn" onclick="deleteSelectedFolders()" disabled>
+                            <i class="bi bi-trash me-1"></i>Delete Selected Folders
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div id="foldersContainer">
@@ -284,6 +334,49 @@
                     <button type="button" class="btn btn-primary" onclick="uploadImages()" id="uploadButton">
                         <i class="bi bi-upload me-2"></i>Upload Images
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Folder Images Modal -->
+    <div class="modal fade" id="manageImagesModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-images me-2"></i>Manage Folder Images</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="manageImagesFolderId">
+
+                    <div class="alert alert-secondary py-2">
+                        <strong>Folder:</strong> <span id="manageImagesFolderTitle"></span>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" id="selectAllFolderImages" onchange="toggleSelectAllFolderImages(this.checked)">
+                                <label class="form-check-label" for="selectAllFolderImages">Select all</label>
+                            </div>
+                            <span class="text-muted small" id="selectedImagesCount">0 selected</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" id="deleteSelectedImagesBtn" onclick="deleteSelectedFolderImages()" disabled>
+                            <i class="bi bi-trash me-1"></i>Delete Selected
+                        </button>
+                    </div>
+
+                    <div id="folderImagesContainer">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading images...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

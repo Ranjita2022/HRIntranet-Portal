@@ -174,6 +174,15 @@
             API_BASE_URL: CONFIG.API_BASE_URL  // Backend API URL from centralized config
         };
 
+        const QUERY_PARAMS = new URLSearchParams(window.location.search);
+        const BATCH_SIZE = parseInt(QUERY_PARAMS.get('batchSize') || '0', 10);
+        const BATCH_INDEX = parseInt(QUERY_PARAMS.get('batchIndex') || '0', 10);
+        const INTERVAL_MS = parseInt(QUERY_PARAMS.get('intervalMs') || '0', 10);
+
+        if (Number.isFinite(INTERVAL_MS) && INTERVAL_MS >= 1000) {
+            GALLERY_CONFIG.PHOTO_INTERVAL = INTERVAL_MS;
+        }
+
         let allPhotos = [];              // All photos from all folders
         let currentPhotoIndex = 0;
         let intervalTimer = null;
@@ -190,6 +199,8 @@
         // Load gallery data
         async function loadGallery() {
             try {
+                allPhotos = [];
+
                 // Fetch active gallery folders from backend
                 const response = await fetch(`${GALLERY_CONFIG.API_BASE_URL}/public/gallery/folders`);
                 if (!response.ok) {
@@ -206,8 +217,18 @@
                 
                 // Build photo list from all folders
                 for (const folder of folders) {
-                    const photos = await scanFolder(folder.folderName, folder.displayTitle, folder.photoCount);
+                    const photos = await loadFolderPhotos(folder.folderName, folder.displayTitle);
                     allPhotos.push(...photos);
+                }
+
+                if (Number.isFinite(BATCH_SIZE) && BATCH_SIZE > 0 && allPhotos.length > 0) {
+                    const totalBatches = Math.ceil(allPhotos.length / BATCH_SIZE);
+                    const normalizedBatch = ((BATCH_INDEX % totalBatches) + totalBatches) % totalBatches;
+                    const start = normalizedBatch * BATCH_SIZE;
+                    const end = Math.min(start + BATCH_SIZE, allPhotos.length);
+                    allPhotos = allPhotos.slice(start, end);
+
+                    console.log(`[Gallery] Batch mode: batch ${normalizedBatch + 1}/${totalBatches}, showing ${allPhotos.length} photos`);
                 }
 
                 if (allPhotos.length === 0) {
@@ -223,38 +244,20 @@
             }
         }
 
-        // Scan a folder for images
-        async function scanFolder(folderName, displayTitle, expectedCount) {
-            const photos = [];
-            const extensions = ['.jpg', '.jpeg', '.png', '.gif'];
-            
-            // Load images based on expected count from backend
-            for (let i = 1; i <= (expectedCount || 50); i++) {
-                const filename = `image-${i}.jpg`;
-                const path = `images/gallery/${folderName}/${filename}`;
-                
-                // Test if image exists by trying to load it
-                if (await imageExists(path)) {
-                    photos.push({
-                        path: path,
-                        folder: folderName,
-                        folderDisplay: displayTitle || formatFolderName(folderName),
-                        filename: filename
-                    });
-                }
+        // Load all images in a folder from backend (supports jpg/png/gif/webp and real filenames).
+        async function loadFolderPhotos(folderName, displayTitle) {
+            const response = await fetch(`${GALLERY_CONFIG.API_BASE_URL}/public/gallery/folders/${encodeURIComponent(folderName)}/images`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch images for folder: ${folderName}`);
             }
-            
-            return photos;
-        }
 
-        // Check if image exists
-        function imageExists(url) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = url;
-            });
+            const images = await response.json();
+            return images.map((image) => ({
+                path: image.url,
+                folder: folderName,
+                folderDisplay: displayTitle || formatFolderName(folderName),
+                filename: image.filename
+            }));
         }
 
         // Start slideshow

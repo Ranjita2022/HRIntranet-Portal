@@ -1,6 +1,7 @@
 package org.ieee.hrintranet.controller;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,7 +10,6 @@ import org.ieee.hrintranet.entity.Employee;
 import org.ieee.hrintranet.entity.WorkAnniversaryDisplay;
 import org.ieee.hrintranet.repository.EmployeeRepository;
 import org.ieee.hrintranet.repository.WorkAnniversaryDisplayRepository;
-import org.ieee.hrintranet.repository.WorkAnniversaryRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,12 +29,11 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 public class WorkAnniversaryController {
     
-    private final WorkAnniversaryRepository workAnniversaryRepository;
     private final WorkAnniversaryDisplayRepository workAnniversaryDisplayRepository;
     private final EmployeeRepository employeeRepository;
     
     /**
-     * Calculate work anniversaries for all active employees
+     * Calculate work anniversaries for all employees
      * Returns WorkAnniversaryDisplay entity objects with calculated anniversary data
      */
     private List<WorkAnniversaryDisplay> calculateAnniversariesForDisplay() {
@@ -44,54 +43,68 @@ public class WorkAnniversaryController {
         // Clear existing display data and recalculate
         workAnniversaryDisplayRepository.deleteAll();
         
-        // Get all active employees
-        List<Employee> allActiveEmployees = employeeRepository.findAll().stream()
-                .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
-                .collect(Collectors.toList());
+        // Get all employees, including active, inactive, and terminated records
+        List<Employee> allEmployees = employeeRepository.findAll().stream()
+            .collect(Collectors.toList());
         
-        // Calculate and save anniversaries for each employee
-        for (Employee emp : allActiveEmployees) {
+        // Calculate and save experience rows for each employee
+        for (Employee emp : allEmployees) {
             LocalDate startDate = emp.getStartDate();
             if (startDate == null || startDate.isAfter(today)) continue;
             
-            // Calculate years of service
-            int yearsOfService = today.getYear() - startDate.getYear();
-            
-            // Adjust if anniversary hasn't occurred yet this year
-            if (today.getMonthValue() < startDate.getMonthValue() || 
-                (today.getMonthValue() == startDate.getMonthValue() && today.getDayOfMonth() < startDate.getDayOfMonth())) {
-                yearsOfService--;
-            }
-            
-            // Show only the HIGHEST milestone
-            if (yearsOfService >= 1) {
-                LocalDate anniversaryDate = startDate.plusYears(yearsOfService);
-                
-                // Create and save entity
-                WorkAnniversaryDisplay displayEntity = new WorkAnniversaryDisplay(
-                    emp.getId(),
-                    emp.getFullName(),
-                    emp.getDepartment(),
-                    emp.getPosition(),
-                    startDate,
-                    anniversaryDate,
-                    yearsOfService
-                );
-                
-                WorkAnniversaryDisplay savedEntity = workAnniversaryDisplayRepository.save(displayEntity);
-                calculatedAnniversaries.add(savedEntity);
-            }
+            int totalMonths = (int) ChronoUnit.MONTHS.between(startDate, today);
+            int yearsOfService = totalMonths / 12;
+            int monthsOfExperience = totalMonths % 12;
+
+            LocalDate experienceDate = resolveCompletedExperienceDate(startDate, today, yearsOfService, totalMonths);
+
+            // Create and save entity
+            WorkAnniversaryDisplay displayEntity = new WorkAnniversaryDisplay(
+                emp.getId(),
+                emp.getFullName(),
+                emp.getDepartment(),
+                emp.getPosition(),
+                startDate,
+                experienceDate,
+                yearsOfService
+            );
+            displayEntity.setEmployeeStatus(emp.getStatus() != null ? emp.getStatus().name() : null);
+            displayEntity.setMonthsOfExperience(monthsOfExperience);
+            displayEntity.setExperienceLabel(buildExperienceLabel(yearsOfService, monthsOfExperience));
+
+            WorkAnniversaryDisplay savedEntity = workAnniversaryDisplayRepository.save(displayEntity);
+            calculatedAnniversaries.add(savedEntity);
         }
         
         return calculatedAnniversaries;
     }
-    
-    /**
-     * Calculate and save work anniversaries for all active employees
-     * Shows only the HIGHEST milestone reached (highest years of service)
-     */
-    private void calculateAndSaveAnniversaries() {
-        calculateAnniversariesForDisplay();
+
+    private String buildExperienceLabel(int yearsOfService, int monthsOfExperience) {
+        if (yearsOfService >= 1) {
+            return yearsOfService + " " + (yearsOfService == 1 ? "Year" : "Years");
+        }
+        return monthsOfExperience + " " + (monthsOfExperience == 1 ? "Month" : "Months");
+    }
+
+    private LocalDate safeAnniversaryDate(LocalDate startDate, int year) {
+        int month = startDate.getMonthValue();
+        int day = startDate.getDayOfMonth();
+        int maxDay = java.time.Month.of(month).length(java.time.Year.isLeap(year));
+        int safeDay = Math.min(day, maxDay);
+        return LocalDate.of(year, month, safeDay);
+    }
+
+    private LocalDate resolveCompletedExperienceDate(LocalDate startDate, LocalDate today, int yearsOfService, int totalMonths) {
+        if (yearsOfService < 1) {
+            return startDate.plusMonths(totalMonths);
+        }
+
+        LocalDate anniversaryThisYear = safeAnniversaryDate(startDate, today.getYear());
+        if (anniversaryThisYear.isAfter(today)) {
+            return safeAnniversaryDate(startDate, today.getYear() - 1);
+        }
+
+        return anniversaryThisYear;
     }
     
     /**
@@ -156,8 +169,7 @@ public class WorkAnniversaryController {
     }
     
     /**
-     * Get all published work anniversaries with employee experience years
-     * Accessible to authenticated admin users
+     * Get all work anniversaries for authenticated admin users
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")

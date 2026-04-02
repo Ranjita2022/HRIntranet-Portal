@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `announcements`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `announcements` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `type` enum('GENERAL','URGENT','BREAKING','POLICY','EVENT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'GENERAL',
+  `type` enum('GENERAL','TRAINING','URGENT','BREAKING','POLICY','EVENT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'GENERAL',
   `title` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `image_id` int DEFAULT NULL,

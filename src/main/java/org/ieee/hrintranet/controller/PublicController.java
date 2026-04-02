@@ -3,9 +3,19 @@ package org.ieee.hrintranet.controller;
 import org.ieee.hrintranet.entity.*;
 import org.ieee.hrintranet.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +37,13 @@ public class PublicController {
     private final org.ieee.hrintranet.repository.GalleryFolderRepository galleryFolderRepository;
     private final org.ieee.hrintranet.repository.QuickLinkRepository quickLinkRepository;
     private final org.ieee.hrintranet.repository.EmergencyContactRepository emergencyContactRepository;
+
+    @Value("${app.gallery.dir:src/main/webapp/images/gallery}")
+    private String galleryDir;
     
     @GetMapping("/portal-data")
     public ResponseEntity<Map<String, Object>> getPortalData(
-            @RequestParam(defaultValue = "6") int maxJoiners,
+            @RequestParam(defaultValue = "8") int maxJoiners,
             @RequestParam(defaultValue = "50") int maxHolidays,
             @RequestParam(defaultValue = "10") int maxAnnouncements,
             @RequestParam(defaultValue = "2000") int maxCarousel) {
@@ -95,14 +108,21 @@ public class PublicController {
             return h;
         }).collect(Collectors.toList());
         
-        // Get active announcements (published within last 30 days, excluding events)
+        // Get active announcements (excluding events).
+        // If expiry date is missing, default visibility window is 30 days from publish date.
         List<Announcement> activeAnnouncements = announcementRepository.findAll().stream()
-                .filter(ann -> ann.getIsActive())
-                .filter(ann -> ann.getType() != Announcement.AnnouncementType.EVENT)  // Exclude events
-                .filter(ann -> !ann.getPublishDate().isBefore(thirtyDaysAgo) && !ann.getPublishDate().isAfter(today))
-                .sorted((a1, a2) -> a2.getPublishDate().compareTo(a1.getPublishDate()))
-                .limit(maxAnnouncements)
-                .collect(Collectors.toList());
+            .filter(ann -> ann.getIsActive())
+            .filter(ann -> ann.getType() != Announcement.AnnouncementType.EVENT)
+            .filter(ann -> ann.getPublishDate() != null && !ann.getPublishDate().isAfter(today))
+            .filter(ann -> {
+                LocalDate effectiveExpiry = ann.getExpiryDate() != null
+                    ? ann.getExpiryDate()
+                    : ann.getPublishDate().plusDays(30);
+                return !effectiveExpiry.isBefore(today);
+            })
+            .sorted((a1, a2) -> a2.getPublishDate().compareTo(a1.getPublishDate()))
+            .limit(maxAnnouncements)
+            .collect(Collectors.toList());
         
         // Get active events (show future events and past 30 days)
         LocalDate thirtyDaysFromNow = today.plusDays(30);
@@ -153,6 +173,8 @@ public class PublicController {
             b.put("Type", "breaking");
             b.put("Title", ann.getTitle());
             b.put("Description", ann.getDescription() != null ? ann.getDescription() : "");
+            b.put("Date", ann.getPublishDate() != null ? ann.getPublishDate().toString() : "");
+            b.put("EndDate", ann.getExpiryDate() != null ? ann.getExpiryDate().toString() : "");
             return b;
         }).collect(Collectors.toList());
         
@@ -184,33 +206,27 @@ public class PublicController {
         LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
         List<Map<String, Object>> celebrations = new java.util.ArrayList<>();
         
-        // Get all active employees for calculating work anniversaries and birthdays
-        List<Employee> allActiveEmployees = employeeRepository.findAll().stream()
-                .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
-                .collect(Collectors.toList());
-        
-        // Calculate work anniversaries dynamically for all active employees
+        // Calculate work anniversaries dynamically for active employees only
         // Show only the HIGHEST/MOST RECENT anniversary milestone reached
         // Data is derived directly from employee start dates for this endpoint.
+        List<Employee> allEmployees = employeeRepository.findAll();
+        List<Employee> allActiveEmployees = allEmployees.stream()
+            .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
+            .collect(Collectors.toList());
+
         for (Employee emp : allActiveEmployees) {
             LocalDate startDate = emp.getStartDate();
             if (startDate == null || startDate.isAfter(today)) continue;
             
-            // Calculate years of service (complete years passed)
+            // Calculate the anniversary date in the current year so every anniversary
+            // that falls in this month is shown together, regardless of whether the
+            // day has passed yet.
             int yearsOfService = today.getYear() - startDate.getYear();
-            
-            // Adjust if anniversary hasn't occurred yet this year
-            if (today.getMonthValue() < startDate.getMonthValue() || 
-                (today.getMonthValue() == startDate.getMonthValue() && today.getDayOfMonth() < startDate.getDayOfMonth())) {
-                yearsOfService--;
-            }
-            
-            // Show only the HIGHEST milestone (not all prior ones)
+
             if (yearsOfService >= 1) {
-                LocalDate anniversaryDate = startDate.plusYears(yearsOfService);
-                
-                // Include in celebrations if anniversary date falls within the current MONTH (1st to last day)
-                // This includes anniversaries that already happened this month
+                LocalDate anniversaryDate = safeAnniversaryDate(startDate, today.getYear());
+
+                // Include in celebrations if anniversary date falls within the current MONTH
                 LocalDate startOfMonth = today.withDayOfMonth(1);
                 if (!anniversaryDate.isBefore(startOfMonth) && !anniversaryDate.isAfter(endOfMonth)) {
                     Map<String, Object> anniversary = new HashMap<>();
@@ -282,6 +298,14 @@ public class PublicController {
         response.put("celebrations", celebrations);
         
         return ResponseEntity.ok(response);
+    }
+
+    private LocalDate safeAnniversaryDate(LocalDate startDate, int year) {
+        int month = startDate.getMonthValue();
+        int day = startDate.getDayOfMonth();
+        int maxDay = java.time.Month.of(month).length(java.time.Year.isLeap(year));
+        int safeDay = Math.min(day, maxDay);
+        return LocalDate.of(year, month, safeDay);
     }
     
     @GetMapping("/gallery/random")
@@ -395,17 +419,84 @@ public class PublicController {
         
         List<Map<String, Object>> folderList = folders.stream().map(folder -> {
             Map<String, Object> f = new HashMap<>();
+            File folderDir = resolveFolderDirectory(folder.getFolderName());
+            int actualPhotoCount = countImageFiles(folderDir);
             f.put("id", folder.getId());
             f.put("folderName", folder.getFolderName());
             f.put("displayTitle", folder.getDisplayTitle());
             f.put("description", folder.getDescription());
             f.put("folderPath", folder.getFolderPath());
-            f.put("photoCount", folder.getPhotoCount());
+            f.put("photoCount", actualPhotoCount);
             f.put("displayOrder", folder.getDisplayOrder());
             return f;
         }).collect(Collectors.toList());
         
         return ResponseEntity.ok(folderList);
+    }
+
+    @GetMapping("/gallery/folders/{folderName}/images")
+    public ResponseEntity<?> getFolderImages(@PathVariable String folderName) {
+        try {
+            File folderDir = resolveFolderDirectory(folderName);
+            if (!folderDir.exists() || !folderDir.isDirectory()) {
+                return ResponseEntity.ok(List.of());
+            }
+
+            File[] imageFiles = folderDir.listFiles((dir, name) -> isImageFilename(name));
+            if (imageFiles == null) {
+                return ResponseEntity.ok(List.of());
+            }
+
+            java.util.Arrays.sort(imageFiles, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+
+            List<Map<String, Object>> images = java.util.Arrays.stream(imageFiles)
+                .map(file -> {
+                    Map<String, Object> image = new HashMap<>();
+                    image.put("filename", file.getName());
+                    image.put("url", ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/api/public/gallery/image/")
+                        .path(folderName)
+                        .path("/")
+                        .path(encodeUrlPathSegment(file.getName()))
+                        .toUriString());
+                    return image;
+                })
+                .collect(Collectors.toList());
+
+            return ResponseEntity.ok(images);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to load folder images: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/gallery/image/{folderName}/{filename:.+}")
+    public ResponseEntity<Resource> getFolderImage(@PathVariable String folderName, @PathVariable String filename) {
+        try {
+            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            File folderDir = resolveFolderDirectory(folderName);
+            Path filePath = Paths.get(folderDir.getAbsolutePath(), filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=86400, public")
+                .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
     
     @GetMapping("/employees")
@@ -434,5 +525,41 @@ public class PublicController {
         status.put("message", "HR Intranet Portal API is running");
         status.put("timestamp", LocalDate.now().toString());
         return ResponseEntity.ok(status);
+    }
+
+    private File resolveFolderDirectory(String folderName) {
+        return new File(getGalleryRootDirectory(), folderName);
+    }
+
+    private boolean isImageFilename(String filename) {
+        String lower = filename.toLowerCase();
+        return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")
+            || lower.endsWith(".gif") || lower.endsWith(".webp");
+    }
+
+    private int countImageFiles(File folderDir) {
+        if (folderDir == null || !folderDir.exists() || !folderDir.isDirectory()) {
+            return 0;
+        }
+
+        File[] files = folderDir.listFiles((dir, name) -> isImageFilename(name));
+        return files == null ? 0 : files.length;
+    }
+
+    private String encodeUrlPathSegment(String value) {
+        return java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    private File getGalleryRootDirectory() {
+        File configured = new File(galleryDir);
+        if (!configured.isAbsolute()) {
+            configured = new File(System.getProperty("user.dir"), galleryDir);
+        }
+
+        if (!configured.exists()) {
+            configured.mkdirs();
+        }
+
+        return configured;
     }
 }

@@ -8,13 +8,17 @@ import org.ieee.hrintranet.repository.GalleryFolderRepository;
 import org.ieee.hrintranet.service.AuditService;
 import org.ieee.hrintranet.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,11 @@ public class GalleryController {
     private final GalleryFolderRepository galleryFolderRepository;
     private final FileStorageService fileStorageService;
     private final AuditService auditService;
+
+    @Value("${app.gallery.dir:src/main/webapp/images/gallery}")
+    private String galleryDir;
+
+    private static final String[] ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"};
     
     @GetMapping
     public ResponseEntity<List<GalleryImage>> getAllImages() {
@@ -176,15 +185,99 @@ public class GalleryController {
     public ResponseEntity<List<GalleryFolder>> getAllFolders() {
         return ResponseEntity.ok(galleryFolderRepository.findAllByOrderByDisplayOrderAsc());
     }
+
+    @GetMapping("/folders/{folderId}/images")
+    public ResponseEntity<?> getFolderImages(@PathVariable int folderId) {
+        try {
+            GalleryFolder folder = galleryFolderRepository.findById(folderId)
+                .orElseThrow(() -> new RuntimeException("Folder not found"));
+
+            File folderDir = resolveFolderDirectory(folder.getFolderName(), folder.getFolderPath());
+            File[] imageFiles = listImageFiles(folderDir);
+
+            List<Map<String, Object>> images = new ArrayList<>();
+            if (imageFiles != null) {
+                for (File imageFile : imageFiles) {
+                    String filename = imageFile.getName();
+                    String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/api/public/gallery/image/")
+                        .path(folder.getFolderName())
+                        .path("/")
+                        .path(encodeUrlPathSegment(filename))
+                        .toUriString();
+
+                    Map<String, Object> image = new HashMap<>();
+                    image.put("filename", filename);
+                    image.put("url", imageUrl);
+                    image.put("size", imageFile.length());
+                    image.put("lastModified", imageFile.lastModified());
+                    images.add(image);
+                }
+            }
+
+            return ResponseEntity.ok(images);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to list images: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/folders/{folderId}/images/{filename:.+}")
+    public ResponseEntity<?> deleteFolderImage(
+            @PathVariable int folderId,
+            @PathVariable String filename,
+            Authentication authentication) {
+        try {
+            GalleryFolder folder = galleryFolderRepository.findById(folderId)
+                .orElseThrow(() -> new RuntimeException("Folder not found"));
+
+            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid filename"));
+            }
+
+            File folderDir = resolveFolderDirectory(folder.getFolderName(), folder.getFolderPath());
+            File imageFile = new File(folderDir, filename);
+
+            if (!imageFile.exists() || !imageFile.isFile()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Image file not found"));
+            }
+
+            if (!imageFile.delete()) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to delete image file"));
+            }
+
+            int totalCount = countImageFiles(folderDir);
+            folder.setPhotoCount(totalCount);
+            galleryFolderRepository.save(folder);
+
+            auditService.logAction(
+                authentication.getName(),
+                "DELETE",
+                "gallery_folders",
+                folder.getId(),
+                Map.of("filename", filename, "photoCount", totalCount + 1),
+                Map.of("filename", filename, "photoCount", totalCount)
+            );
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Image deleted successfully",
+                "photoCount", totalCount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to delete image: " + e.getMessage()));
+        }
+    }
     
     @PostMapping("/folders/scan")
     public ResponseEntity<?> scanGalleryFolders(Authentication authentication) {
         try {
-            String galleryPath = "images/gallery";
-            File galleryDir = new File(galleryPath);
+            File galleryDir = getWritableGalleryRootDirectory();
             
             if (!galleryDir.exists() || !galleryDir.isDirectory()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Gallery directory not found: " + galleryPath));
+                return ResponseEntity.badRequest().body(Map.of("error", "Gallery directory not found: " + galleryDir.getAbsolutePath()));
             }
             
             List<Map<String, Object>> results = new ArrayList<>();
@@ -201,12 +294,7 @@ public class GalleryController {
                 String folderName = folder.getName();
                 
                 // Count image files in the folder
-                File[] imageFiles = folder.listFiles((dir, name) -> {
-                    String lower = name.toLowerCase();
-                    return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || 
-                           lower.endsWith(".png") || lower.endsWith(".gif");
-                });
-                int photoCount = (imageFiles != null) ? imageFiles.length : 0;
+                int photoCount = countImageFiles(folder);
                 
                 // Check if folder already exists
                 GalleryFolder existingFolder = galleryFolderRepository.findByFolderName(folderName).orElse(null);
@@ -354,8 +442,7 @@ public class GalleryController {
             
             // Create physical directory
             String galleryPath = "images/gallery/" + folderName;
-            File projectRoot = new File(System.getProperty("user.dir")).getParentFile();
-            File directory = new File(projectRoot, galleryPath);
+            File directory = resolveFolderDirectory(folderName, galleryPath);
             if (directory.exists()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Folder already exists in filesystem"));
             }
@@ -394,6 +481,36 @@ public class GalleryController {
                 .body(Map.of("error", "Failed to create folder: " + e.getMessage()));
         }
     }
+
+    @DeleteMapping("/folders/{id}")
+    public ResponseEntity<?> deleteFolder(@PathVariable int id, Authentication authentication) {
+        try {
+            GalleryFolder folder = galleryFolderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Folder not found"));
+
+            File folderDir = resolveFolderDirectory(folder.getFolderName(), folder.getFolderPath());
+            if (folderDir.exists() && folderDir.isDirectory() && !deleteDirectoryRecursively(folderDir)) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to delete folder from filesystem"));
+            }
+
+            galleryFolderRepository.delete(folder);
+
+            auditService.logAction(
+                authentication.getName(),
+                "DELETE",
+                "gallery_folders",
+                folder.getId(),
+                folder,
+                null
+            );
+
+            return ResponseEntity.ok(Map.of("message", "Folder deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to delete folder: " + e.getMessage()));
+        }
+    }
     
     /**
      * Upload images to a gallery folder
@@ -408,10 +525,8 @@ public class GalleryController {
             GalleryFolder folder = galleryFolderRepository.findById(folderId)
                 .orElseThrow(() -> new RuntimeException("Folder not found"));
             
-            // Use path relative to project root (parent of backend directory)
-            String galleryPath = "images/gallery/" + folder.getFolderName();
-            File projectRoot = new File(System.getProperty("user.dir")).getParentFile();
-            File directory = new File(projectRoot, galleryPath);
+            // Store under the resolved gallery root so listing and serving stay in sync.
+            File directory = resolveFolderDirectory(folder.getFolderName(), folder.getFolderPath());
             
             if (!directory.exists()) {
                 directory.mkdirs();
@@ -419,7 +534,7 @@ public class GalleryController {
             
             // Count existing images to determine starting number
             File[] existingFiles = directory.listFiles((dir, name) -> 
-                name.toLowerCase().matches("image-\\d+\\.(jpg|jpeg|png|gif)"));
+                name.toLowerCase().matches("image-\\d+\\.(jpg|jpeg|png|gif|webp)"));
             int currentCount = existingFiles != null ? existingFiles.length : 0;
             int startNumber = currentCount + 1;
             
@@ -474,7 +589,7 @@ public class GalleryController {
             
             // Update folder photo count
             File[] allFiles = directory.listFiles((dir, name) -> 
-                name.toLowerCase().matches("image-\\d+\\.(jpg|jpeg|png|gif)"));
+                name.toLowerCase().matches("image-\\d+\\.(jpg|jpeg|png|gif|webp)"));
             int totalCount = allFiles != null ? allFiles.length : 0;
             folder.setPhotoCount(totalCount);
             galleryFolderRepository.save(folder);
@@ -503,5 +618,79 @@ public class GalleryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Failed to upload images: " + e.getMessage()));
         }
+    }
+
+    private File getWritableGalleryRootDirectory() {
+        File configured = new File(galleryDir);
+        if (!configured.isAbsolute()) {
+            configured = new File(System.getProperty("user.dir"), galleryDir);
+        }
+
+        if (!configured.exists()) {
+            configured.mkdirs();
+        }
+
+        return configured;
+    }
+
+    private File resolveFolderDirectory(String folderName) {
+        return resolveFolderDirectory(folderName, null);
+    }
+
+    private File resolveFolderDirectory(String folderName, String folderPath) {
+        return new File(getWritableGalleryRootDirectory(), folderName);
+    }
+
+    private File[] listImageFiles(File folderDir) {
+        if (folderDir == null || !folderDir.exists() || !folderDir.isDirectory()) {
+            return new File[0];
+        }
+
+        File[] files = folderDir.listFiles((dir, name) -> isImageFilename(name));
+        if (files == null) {
+            return new File[0];
+        }
+
+        java.util.Arrays.sort(files, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        return files;
+    }
+
+    private int countImageFiles(File folderDir) {
+        return listImageFiles(folderDir).length;
+    }
+
+    private boolean isImageFilename(String filename) {
+        String lower = filename.toLowerCase();
+        for (String extension : ALLOWED_IMAGE_EXTENSIONS) {
+            if (lower.endsWith(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String encodeUrlPathSegment(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    private boolean deleteDirectoryRecursively(File directory) {
+        if (directory == null || !directory.exists()) {
+            return true;
+        }
+
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    if (!deleteDirectoryRecursively(file)) {
+                        return false;
+                    }
+                } else if (!file.delete()) {
+                    return false;
+                }
+            }
+        }
+
+        return directory.delete();
     }
 }
