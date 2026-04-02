@@ -22,10 +22,27 @@ function init() {
     debugLog('Loading data from database');
     loadAllDataFromDatabase();
 
+    // Load right-column widgets independently so they are not blocked by
+    // portal-data failures on first page load.
+    loadSidebarWidgets();
+
     // Setup auto-refresh if enabled
     if (CONFIG.AUTO_REFRESH_MINUTES > 0) {
         setInterval(loadAllDataFromDatabase, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
         debugLog(`Auto-refresh enabled: every ${CONFIG.AUTO_REFRESH_MINUTES} minutes`);
+    }
+}
+
+/**
+ * Load sidebar widgets that should always be available in home mode.
+ */
+function loadSidebarWidgets() {
+    if (typeof loadQuickLinks === 'function') {
+        loadQuickLinks();
+    }
+
+    if (typeof loadEmergencyContacts === 'function') {
+        loadEmergencyContacts();
     }
 }
 
@@ -81,15 +98,8 @@ function loadAllDataFromDatabase() {
                 loadRandomGalleryImages();
             }
 
-            // Load quick links if needed
-            if (typeof loadQuickLinks === 'function') {
-                loadQuickLinks();
-            }
-
-            // Load emergency contacts if needed
-            if (typeof loadEmergencyContacts === 'function') {
-                loadEmergencyContacts();
-            }
+            // Keep sidebar widgets refreshed with latest data.
+            loadSidebarWidgets();
 
             // Load open positions for current month (always load data, TV mode controls visibility)
             if (typeof loadOpenPositions === 'function') {
@@ -109,6 +119,9 @@ function loadAllDataFromDatabase() {
 
             showError('Some problem occurred. Please try again later.');
             debugLog('Database loading error', { status, error, response: xhr.responseText });
+
+            // Fallback: still load sidebar widgets even when portal-data fails.
+            loadSidebarWidgets();
         }
     });
 }
@@ -158,10 +171,12 @@ function transformDatabaseResponse(dbResponse) {
     // Transform announcements
     if (dbResponse.announcements && dbResponse.announcements.length > 0) {
         dbResponse.announcements.forEach(announcement => {
-            const type = mapAnnouncementType(announcement.Type);
+            const announcementType = (announcement.Type || 'GENERAL').toString().toUpperCase();
+            const type = mapAnnouncementType(announcementType);
             updates.push({
                 ID: announcement.ID,
                 Type: type,
+                AnnouncementType: announcementType,
                 Title: announcement.Title,
                 Name: '',
                 Position: '',
@@ -288,6 +303,7 @@ function transformDatabaseResponse(dbResponse) {
 function mapAnnouncementType(dbType) {
     const typeMap = {
         'GENERAL': 'announcement',
+        'TRAINING': 'announcement',
         'URGENT': 'announcement',
         'BREAKING': 'breaking',
         'POLICY': 'announcement',
@@ -549,6 +565,20 @@ function processUpdatesData(data) {
             case 'announcement':
                 announcements.push({
                     id: row.ID,
+                    type: row.AnnouncementType || 'GENERAL',
+                    title: row.Title,
+                    description: row.Description,
+                    imageUrl: row.ImageURL
+                });
+                break;
+
+            case 'general':
+            case 'training':
+            case 'urgent':
+            case 'policy':
+                announcements.push({
+                    id: row.ID,
+                    type: type.toUpperCase(),
                     title: row.Title,
                     description: row.Description,
                     imageUrl: row.ImageURL
@@ -1060,6 +1090,7 @@ function renderAnnouncements(announcements) {
         BREAKING:{ icon: 'bi-lightning-fill',           color: '#fd7e14', bg: '#fff3e0', label: 'Breaking' },
         POLICY:  { icon: 'bi-file-earmark-text-fill',   color: '#6f42c1', bg: '#f3e8ff', label: 'Policy' },
         EVENT:   { icon: 'bi-calendar-event-fill',      color: '#0d6efd', bg: '#e8f0fe', label: 'Event' },
+        TRAINING:{ icon: 'bi-mortarboard-fill',         color: '#0f766e', bg: '#e6fffb', label: 'Training' },
         GENERAL: { icon: 'bi-megaphone-fill',           color: '#0084CA', bg: '#e8f4fd', label: 'General' }
     };
 
@@ -2457,7 +2488,7 @@ function exitTVMode() {
     stopTVAutoScroll();
 
     // Show all primary sections; keep positions visible in home mode
-    $('#teamUpdates, #announcements, #holidays, #positions, #joiners').removeClass('tv-hidden-section tv-position-visible');
+    $('#teamUpdates, #announcements, #holidays, #positions, #joiners, #quicklinks, #emergency').removeClass('tv-hidden-section tv-position-visible');
     $('#countdownBanner').removeClass('tv-hidden-section tv-event-active');
     $('.carousel-section').css('display', '').show();
     $('#teamUpdates').css('display', '').show();
@@ -2465,6 +2496,8 @@ function exitTVMode() {
     $('#holidays').css('display', '').show();
     $('#positions').css('display', '').show();
     $('#joiners').css('display', '').show();
+    $('#quicklinks').css('display', '').show();
+    $('#emergency').css('display', '').show();
     $('.stats-bar').css('display', '').show();
 
     // Restore countdown under stats in home mode only when a real upcoming event exists.

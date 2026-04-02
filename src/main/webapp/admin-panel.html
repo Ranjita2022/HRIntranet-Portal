@@ -23,12 +23,18 @@
             font-size: 2rem;
             margin: 0;
             font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .stat-card p {
             margin: 0.4rem 0 0 0;
-            opacity: 0.9;
+            opacity: 1;
             font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.2px;
         }
 
         .stat-card i {
@@ -631,14 +637,20 @@
 
                 // Calculate additional stats
                 const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
+                const thirtyDaysAgo = new Date(now);
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                 
-                const newJoinersThisMonth = employees.filter(e => {
+                const newJoinersThisMonthList = employees.filter(e => {
                     if (!e.startDate) return false;
                     const joinDate = new Date(e.startDate);
-                    return joinDate.getMonth() === currentMonth && joinDate.getFullYear() === currentYear;
-                }).length;
+                    return joinDate >= thirtyDaysAgo && joinDate <= now;
+                });
+
+                const newJoinersThisMonth = newJoinersThisMonthList.length;
+                const activeNewJoinersThisMonth = newJoinersThisMonthList.filter(e => e.status === 'ACTIVE').length;
+
+                const activeCarouselSlides = carousel.filter(slide => slide && slide.isActive !== false).length;
+                const activeQuickLinks = quickLinks.filter(link => link && link.isActive !== false).length;
 
                 const activeAnnouncements = announcements.filter(a => {
                     if (a.expiryDate) {
@@ -663,8 +675,8 @@
                             <p><strong><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:</strong> ${upcomingHolidays} / ${holidays.length}</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong><i class="bi bi-images text-purple"></i> Carousel Slides:</strong> ${carousel.length}</p>
-                            <p><strong><i class="bi bi-link-45deg text-primary"></i> Quick Links:</strong> ${quickLinks.length}</p>
+                            <p><strong><i class="bi bi-images text-purple"></i> Carousel Slides:</strong> ${activeCarouselSlides} / ${carousel.length}</p>
+                            <p><strong><i class="bi bi-link-45deg text-primary"></i> Quick Links:</strong> ${activeQuickLinks} / ${quickLinks.length}</p>
                             <p><strong><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Contacts:</strong> ${emergencyContactsCount} / ${emergencyContacts.length}</p>
                             <p><strong><i class="bi bi-folder2-open text-secondary"></i> Gallery Images:</strong> ${totalGalleryImages} in ${galleryFolders.length} folders</p>
                         </div>

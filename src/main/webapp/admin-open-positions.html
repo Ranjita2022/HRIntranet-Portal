@@ -306,8 +306,8 @@
                             <input type="date" class="form-control" id="postingDate" required>
                         </div>
                         <div class="mb-3">
-                            <label for="requisitionId" class="form-label">Requisition ID</label>
-                            <input type="text" class="form-control" id="requisitionId" placeholder="e.g., E3480">
+                            <label for="requisitionId" class="form-label">Requisition ID *</label>
+                            <input type="text" class="form-control" id="requisitionId" placeholder="e.g., E3480" required>
                         </div>
                         <div class="mb-3">
                             <label for="positionStatus" class="form-label">Status *</label>
@@ -334,7 +334,13 @@
     <script src="js/admin-utils.js"></script>
     <script>
         const API_BASE_URL = CONFIG.API_BASE_URL;
+        const DEFAULT_POSITION_APPLY_URL = 'https://ieee.taleo.net/careersection/1/jobsearch.ftl';
         let allPositions = [];
+
+        function getPositionApplyUrl(position) {
+            const applyUrl = (position && (position.applyLink || position.applyUrl || position.applicationUrl) || '').trim();
+            return applyUrl || DEFAULT_POSITION_APPLY_URL;
+        }
 
         $(document).ready(function() {
             initializePage();
@@ -369,10 +375,6 @@
                 console.log('Authenticated - fetching all positions from admin API');
                 AdminAPI.fetch('/admin/positions', {
                     method: 'GET'
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Admin API failed');
-                    return response.json();
                 })
                 .then(data => {
                     allPositions = data || [];
@@ -447,11 +449,12 @@
             }
 
             filtered.forEach((position, index) => {
+                const applyUrl = getPositionApplyUrl(position);
                 const row = `
                     <tr>
                         <td class="text-muted">${index + 1}</td>
                         <td>
-                            <a href="#" class="requisition-title" onclick="return false;">
+                            <a href="${escapeHtml(applyUrl)}" class="requisition-title" target="_blank" rel="noopener noreferrer">
                                 ${escapeHtml(position.requisitionTitle)}
                             </a>
                         </td>
@@ -504,7 +507,7 @@
         }
 
         function showError(message) {
-            alert(message);
+            showToast(message, 'danger');
         }
 
         function savePosition() {
@@ -516,7 +519,7 @@
 
             // Check if user is authenticated
             if (!AdminAPI || !AdminAPI.isAuthenticated()) {
-                alert('Please login first to save changes. Redirecting to login...');
+                showToast('Please login first to save changes. Redirecting to login...', 'danger');
                 window.location.href = 'admin-login.html';
                 return;
             }
@@ -525,7 +528,7 @@
                 requisitionTitle: document.getElementById('requisitionTitle').value,
                 location: document.getElementById('location').value,
                 postingDate: document.getElementById('postingDate').value,
-                requisitionId: document.getElementById('requisitionId').value,
+                requisitionId: document.getElementById('requisitionId').value.trim(),
                 status: document.getElementById('positionStatus').value,
                 isPublished: true,
                 description: '',
@@ -536,6 +539,22 @@
             const positionId = form.dataset.positionId;
             const method = positionId ? 'PUT' : 'POST';
             const url = positionId ? `/admin/positions/${positionId}` : '/admin/positions';
+
+            if (!positionData.requisitionId) {
+                showToast('Please enter Requisition ID.', 'danger');
+                document.getElementById('requisitionId').focus();
+                return;
+            }
+
+            // Client-side guard for duplicate requisition ID.
+            const duplicate = allPositions.find(p =>
+                (p.requisitionId || '').trim().toUpperCase() === positionData.requisitionId.toUpperCase() &&
+                String(p.id) !== String(positionId || '')
+            );
+            if (duplicate) {
+                showToast(`Requisition ID "${positionData.requisitionId}" already exists. Please enter a unique Requisition ID.`, 'danger');
+                return;
+            }
 
             AdminAPI.fetch(url, {
                 method: method,
@@ -548,18 +567,37 @@
                 // AdminAPI.fetch already handles responses, just proceed to success
                 loadPositions();
                 bootstrap.Modal.getInstance(document.getElementById('addPositionModal')).hide();
-                alert(positionId ? 'Position updated successfully!' : 'Position added successfully!');
+                showToast(positionId ? 'Position updated successfully!' : 'Position added successfully!', 'success');
             })
             .catch(error => {
                 console.error('Error saving position:', error);
                 // Check if it's a 401 Unauthorized
                 if (error.message && error.message.includes('401')) {
-                    alert('Your session has expired. Please login again.');
+                    showToast('Your session has expired. Please login again.', 'danger');
                     window.location.href = 'admin-login.html';
                 } else {
-                    alert('Error saving position: ' + error.message);
+                    showToast(getFriendlyPositionSaveError(error.message || 'Failed to save position'), 'danger');
                 }
             });
+        }
+
+        function getFriendlyPositionSaveError(rawMessage) {
+            let message = (rawMessage || '').toString();
+
+            // Some backend errors arrive as JSON string text.
+            try {
+                const parsed = JSON.parse(message);
+                message = parsed.message || parsed.error || message;
+            } catch (e) {
+                // Keep original text if not JSON.
+            }
+
+            const normalized = message.toLowerCase();
+            if (normalized.includes('duplicate entry') && normalized.includes('requisition_id')) {
+                return 'Requisition ID already exists. Please enter a unique Requisition ID.';
+            }
+
+            return 'Error saving position: ' + message;
         }
 
         function editPosition(id) {
@@ -591,14 +629,46 @@
             AdminAPI.fetch(`/admin/positions/${id}`, {
                 method: 'DELETE'
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to delete position');
+            .then(() => {
                 loadPositions();
-                alert('Position deleted successfully!');
+                showToast('Position deleted successfully!', 'success');
             })
             .catch(error => {
                 console.error('Error deleting position:', error);
-                alert('Error deleting position: ' + error.message);
+                showToast('Error deleting position: ' + error.message, 'danger');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                toastContainer.style.zIndex = '1080';
+                document.body.appendChild(toastContainer);
+            }
+
+            const toastId = 'toast-' + Date.now();
+            const icon = type === 'success' ? 'bi-check-circle-fill' :
+                type === 'danger' ? 'bi-exclamation-circle-fill' : 'bi-info-circle-fill';
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi ${icon} me-2"></i>${escapeHtml(message)}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
             });
         }
 

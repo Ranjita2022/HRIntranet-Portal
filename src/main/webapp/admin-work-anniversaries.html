@@ -169,7 +169,7 @@
                 </div>
                 <div class="stat-card">
                     <h3 id="maxYearsCount" style="color:#198754;">0</h3>
-                    <p><i class="bi bi-award me-1"></i>Max Years</p>
+                    <p><i class="bi bi-award me-1"></i>Max Experience</p>
                 </div>
                 <div class="stat-card">
                     <h3 id="totalAnniversariesCount">0</h3>
@@ -179,9 +179,9 @@
 
             <!-- Filter Section -->
             <div class="filter-group">
-                <label for="yearFilter">Filter by Years:</label>
-                <select id="yearFilter" class="form-select" style="width: 150px;">
-                    <option value="">All Years</option>
+                <label for="experienceFilter">Filter by Experience:</label>
+                <select id="experienceFilter" class="form-select" style="width: 180px;">
+                    <option value="">All Experience</option>
                 </select>
                 <button class="btn btn-secondary btn-sm" onclick="loadAnniversaries()">
                     <i class="bi bi-arrow-clockwise"></i> Refresh
@@ -205,7 +205,7 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="groupedTab" data-bs-toggle="tab" data-bs-target="#groupedView" type="button" role="tab">
-                        <i class="bi bi-bar-chart"></i> Grouped by Years
+                        <i class="bi bi-bar-chart"></i> Grouped by Experience
                     </button>
                 </li>
             </ul>
@@ -218,7 +218,7 @@
                     <div id="emptyState" class="text-center py-5" style="display: none;">
                         <i class="bi bi-award empty-state-icon d-block mb-3"></i>
                         <h5 class="text-muted">No Work Anniversaries Found</h5>
-                        <p class="text-muted">Work anniversaries will appear here as employees complete their years of service</p>
+                        <p class="text-muted">Work anniversaries will appear here as employees complete their service months and years</p>
                     </div>
 
                     <!-- Anniversaries Table Card -->
@@ -236,8 +236,8 @@
                                         <th width="150">Position</th>
                                         <th width="120">Start Date</th>
                                         <th width="120">Anniversary Date</th>
-                                        <th width="100">Years</th>
-                                        <th width="80">Status</th>
+                                        <th width="120">Experience</th>
+                                        <th width="110">Employee Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="anniversariesTableBody">
@@ -266,12 +266,13 @@
                                         <th>Employee Name</th>
                                         <th width="150">Department</th>
                                         <th width="120">Anniversary Date</th>
-                                        <th width="100">Years</th>
+                                        <th width="120">Experience</th>
+                                        <th width="110">Employee Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="currentMonthTableBody">
                                     <tr>
-                                        <td colspan="5" class="text-center py-4">
+                                        <td colspan="6" class="text-center py-4">
                                             <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading…
                                         </td>
                                     </tr>
@@ -281,7 +282,7 @@
                     </div>
                 </div>
 
-                <!-- Grouped by Years View -->
+                <!-- Grouped by Experience View -->
                 <div class="tab-pane fade" id="groupedView" role="tabpanel">
                     <div id="groupedContainer"></div>
                 </div>
@@ -339,15 +340,20 @@
         }
 
         function loadAnniversaries() {
-            // Fetch work anniversaries directly from dedicated endpoint - gets data from Employee table
             $.ajax({
-                url: `${API_BASE_URL}/public/work-anniversaries/all`,
+                url: `${API_BASE_URL}/public/work-anniversaries/all-employees`,
                 method: 'GET',
                 success: function(data) {
                     const anniversaries = data || [];
 
                     // Map response directly - already has position and startDate from Employee entity
                     allAnniversaries = anniversaries.map(item => {
+                        const yearsOfExperience = Number(item.yearsOfExperience || 0);
+                        const monthsOfExperience = Number(item.monthsOfExperience || 0);
+                        const totalExperienceMonths = yearsOfExperience * 12 + monthsOfExperience;
+                        const experienceLabel = item.experienceLabel || buildExperienceLabel(yearsOfExperience, monthsOfExperience);
+                        const employeeStatus = item.employeeStatus || '-';
+
                         return {
                             id: item.id || item.employeeId || '',
                             employeeId: item.employeeId || item.id || null,
@@ -356,8 +362,12 @@
                             position: item.position || '-',
                             startDate: item.startDate || '',
                             anniversaryDate: item.anniversaryDate || '',
-                            yearsOfExperience: item.yearsOfExperience || 0,
-                            isPublished: item.isPublished !== false  // Default to true if not specified
+                            yearsOfExperience,
+                            monthsOfExperience,
+                            totalExperienceMonths,
+                            experienceLabel,
+                            employeeStatus,
+                            experienceSortValue: totalExperienceMonths
                         };
                     });
 
@@ -370,11 +380,14 @@
                         return !Number.isNaN(date.getTime()) && date >= startOfMonth && date <= endOfMonth;
                     });
 
-                    // Group by years
+                    // Group by experience label
                     groupedAnniversaries = allAnniversaries.reduce((acc, item) => {
-                        const years = item.yearsOfExperience || 0;
-                        acc[years] = acc[years] || [];
-                        acc[years].push(item);
+                        const key = item.experienceSortValue || 0;
+                        acc[key] = acc[key] || {
+                            label: item.experienceLabel,
+                            items: []
+                        };
+                        acc[key].items.push(item);
                         return acc;
                     }, {});
 
@@ -384,7 +397,8 @@
                     displayCurrentMonth();
                     displayGrouped();
                 },
-                error: function() {
+                error: function(xhr) {
+                    console.error('Failed to load work anniversaries:', xhr.status, xhr.responseText);
                     showError('Failed to load work anniversaries');
                 }
             });
@@ -402,11 +416,11 @@
 
             $('#emptyState').hide();
 
-            // Apply year filter
-            const selectedYear = $('#yearFilter').val();
+            // Apply experience filter
+            const selectedExperience = $('#experienceFilter').val();
             let filtered = allAnniversaries;
-            if (selectedYear) {
-                filtered = allAnniversaries.filter(a => a.yearsOfExperience == selectedYear);
+            if (selectedExperience) {
+                filtered = allAnniversaries.filter(a => String(a.experienceSortValue) === selectedExperience);
             }
 
             if (filtered.length === 0) {
@@ -426,8 +440,8 @@
                         <td>${escapeHtml(anniversary.position)}</td>
                         <td>${formatDate(anniversary.startDate)}</td>
                         <td>${formatDate(anniversary.anniversaryDate)}</td>
-                        <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${anniversary.yearsOfExperience} ${anniversary.yearsOfExperience === 1 ? 'Year' : 'Years'}</span></td>
-                        <td><span class="badge ${anniversary.isPublished ? 'bg-success' : 'bg-secondary'}">${anniversary.isPublished ? 'Published' : 'Draft'}</span></td>
+                        <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${escapeHtml(anniversary.experienceLabel)}</span></td>
+                        <td>${renderStatusBadge(anniversary.employeeStatus)}</td>
                     </tr>
                 `;
                 $tbody.append(row);
@@ -439,7 +453,7 @@
             $tbody.empty();
 
             if (currentMonthAnniversaries.length === 0) {
-                $tbody.html('<tr><td colspan="5" class="text-center text-muted">No anniversaries this month</td></tr>');
+                $tbody.html('<tr><td colspan="6" class="text-center text-muted">No anniversaries this month</td></tr>');
                 return;
             }
 
@@ -450,7 +464,8 @@
                         <td><strong>${escapeHtml(anniversary.employeeName)}</strong></td>
                         <td>${escapeHtml(anniversary.department)}</td>
                         <td>${formatDate(anniversary.anniversaryDate)}</td>
-                        <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${anniversary.yearsOfExperience} ${anniversary.yearsOfExperience === 1 ? 'Year' : 'Years'}</span></td>
+                        <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${escapeHtml(anniversary.experienceLabel)}</span></td>
+                        <td>${renderStatusBadge(anniversary.employeeStatus)}</td>
                     </tr>
                 `;
                 $tbody.append(row);
@@ -461,20 +476,21 @@
             const $container = $('#groupedContainer');
             $container.empty();
 
-            const years = Object.keys(groupedAnniversaries).sort((a, b) => b - a);
+            const keys = Object.keys(groupedAnniversaries).sort((a, b) => b - a);
 
-            if (years.length === 0) {
+            if (keys.length === 0) {
                 $container.html('<p class="text-center text-muted">No work anniversaries data available</p>');
                 return;
             }
 
-            years.forEach(year => {
-                const employees = groupedAnniversaries[year];
+            keys.forEach(key => {
+                const group = groupedAnniversaries[key];
+                const employees = group.items;
                 const html = `
                     <div class="card mb-3">
                         <div class="card-header bg-light">
                             <h5 class="mb-0">
-                                <span class="anniversary-badge year-${year}">${year} ${year == 1 ? 'Year' : 'Years'} of Experience</span>
+                                <span class="anniversary-badge year-${key}">${escapeHtml(group.label)} of Experience</span>
                                 <span class="badge bg-primary float-end">${employees.length} employee${employees.length !== 1 ? 's' : ''}</span>
                             </h5>
                         </div>
@@ -509,28 +525,50 @@
         }
 
         function populateYearFilter() {
-            const years = [...new Set(allAnniversaries.map(a => a.yearsOfExperience))].sort((a, b) => b - a);
-            const $select = $('#yearFilter');
+            const experiences = [...new Map(allAnniversaries.map(a => [String(a.experienceSortValue), a])).values()]
+                .sort((a, b) => b.experienceSortValue - a.experienceSortValue);
+            const $select = $('#experienceFilter');
 
-            $select.html('<option value="">All Years</option>');
+            $select.html('<option value="">All Experience</option>');
 
-            years.forEach(year => {
-                $select.append(`<option value="${year}">${year} ${year === 1 ? 'Year' : 'Years'}</option>`);
+            experiences.forEach(item => {
+                $select.append(`<option value="${item.experienceSortValue}">${escapeHtml(item.experienceLabel)}</option>`);
             });
 
-            $select.on('change', function() {
+            $select.off('change').on('change', function() {
                 displayAnniversaries();
             });
         }
 
         function updateStats() {
             const uniqueEmployees = new Set(allAnniversaries.map(a => a.employeeId || a.id || a.employeeName)).size;
-            const maxYears = Math.max(...allAnniversaries.map(a => a.yearsOfExperience), 0);
+            const maxExperience = allAnniversaries.reduce((max, item) => Math.max(max, item.experienceSortValue || 0), 0);
 
             $('#totalEmployeesCount').text(uniqueEmployees);
             $('#currentMonthCount').text(currentMonthAnniversaries.length);
-            $('#maxYearsCount').text(maxYears);
+            $('#maxYearsCount').text(buildExperienceLabel(Math.floor(maxExperience / 12), maxExperience % 12));
             $('#totalAnniversariesCount').text(allAnniversaries.length);
+        }
+
+        function buildExperienceLabel(yearsOfExperience, monthsOfExperience) {
+            if (yearsOfExperience >= 1) {
+                return `${yearsOfExperience} ${yearsOfExperience === 1 ? 'Year' : 'Years'}`;
+            }
+
+            return `${monthsOfExperience} ${monthsOfExperience === 1 ? 'Month' : 'Months'}`;
+        }
+
+        function renderStatusBadge(status) {
+            const normalized = (status || '').toUpperCase();
+            const styles = {
+                ACTIVE: 'bg-success',
+                INACTIVE: 'bg-warning text-dark',
+                TERMINATED: 'bg-danger'
+            };
+
+            const label = normalized ? normalized.charAt(0) + normalized.slice(1).toLowerCase() : '-';
+            const cssClass = styles[normalized] || 'bg-secondary';
+            return `<span class="badge ${cssClass}">${label}</span>`;
         }
 
         function formatDate(dateString) {
@@ -552,10 +590,10 @@
                 return;
             }
 
-            let csv = 'ID,Employee Name,Department,Position,Start Date,Anniversary Date,Years of Experience,Status\n';
+            let csv = 'ID,Employee Name,Department,Position,Start Date,Anniversary Date,Experience,Status\n';
 
             allAnniversaries.forEach(anniversary => {
-                csv += `${anniversary.id},"${anniversary.employeeName}","${anniversary.department}","${anniversary.position}",${anniversary.startDate},${anniversary.anniversaryDate},${anniversary.yearsOfExperience},"${anniversary.isPublished ? 'Published' : 'Draft'}"\n`;
+                csv += `${anniversary.id},"${anniversary.employeeName}","${anniversary.department}","${anniversary.position}",${anniversary.startDate},${anniversary.anniversaryDate},"${anniversary.experienceLabel}","${anniversary.employeeStatus || '-'}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });

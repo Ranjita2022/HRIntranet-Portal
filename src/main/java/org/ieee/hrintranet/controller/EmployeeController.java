@@ -57,6 +57,7 @@ public class EmployeeController {
         map.put("position", emp.getPosition());
         map.put("department", emp.getDepartment());
         map.put("startDate", emp.getStartDate());
+        map.put("endDate", emp.getEndDate());
         map.put("birthDate", emp.getBirthDate());
         map.put("status", emp.getStatus());
         map.put("createdAt", emp.getCreatedAt());
@@ -78,6 +79,12 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<?> createEmployee(@RequestBody Employee employee, Authentication authentication) {
         try {
+            if (employee.getStatus() == Employee.EmployeeStatus.TERMINATED && employee.getEndDate() == null) {
+                employee.setEndDate(LocalDate.now());
+            } else if (employee.getStatus() != Employee.EmployeeStatus.TERMINATED) {
+                employee.setEndDate(null);
+            }
+
             if (employeeRepository.findByEmployeeId(employee.getEmployeeId()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Employee ID already exists"));
             }
@@ -111,7 +118,15 @@ public class EmployeeController {
                     existing.setPosition(employee.getPosition());
                     existing.setDepartment(employee.getDepartment());
                     existing.setStartDate(employee.getStartDate());
+                    existing.setEndDate(employee.getEndDate());
                     existing.setStatus(employee.getStatus());
+
+                    if (existing.getStatus() == Employee.EmployeeStatus.TERMINATED && existing.getEndDate() == null) {
+                        existing.setEndDate(LocalDate.now());
+                    } else if (existing.getStatus() != Employee.EmployeeStatus.TERMINATED) {
+                        existing.setEndDate(null);
+                    }
+
                     if (employee.getProfileImage() != null) {
                         existing.setProfileImage(employee.getProfileImage());
                     }

@@ -425,3 +425,20 @@ body {
 .toast-container {
     z-index: 10000 !important;
 }
+
+/* related resource: admin-common.css:392:1 */
+.table-card .table tbody td { /* the element was td */
+  width: 100px;
+  min-width: 50px;
+  padding-left: 8px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* related resource: admin-common.css:383:1 */
+.table-card .table { /* the element was table#anniversariesTable */
+  table-layout: auto;
+  width: auto;
+}

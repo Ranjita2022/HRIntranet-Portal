@@ -77,6 +77,7 @@
         <span id="timer-label">3:00</span>
     </div>
 
+    <script src="js/config.js"></script>
     <script>
         // Kiosk Configuration
         const KIOSK_CONFIG = {
@@ -84,7 +85,9 @@
             // These values are safety fallbacks only — normally switched by events.
             PORTAL_DURATION:   30 * 60 * 1000, // 30 min fallback (event-driven in practice)
             SHOUTOUTS_DURATION: 30 * 60 * 1000, // 30 min fallback (event-driven in practice)
-            GALLERY_DURATION:  0.5 * 60 * 1000, // 30 seconds
+            GALLERY_DURATION:  0.5 * 60 * 1000, // fallback when API is unavailable
+            GALLERY_BATCH_SIZE: 50,              // max images per gallery cycle
+            GALLERY_IMAGE_INTERVAL_MS: 3000,     // 3 seconds per image
             ENABLE_INDICATOR: true,
             AUTO_START: true
         };
@@ -114,6 +117,7 @@
         let rotationTimer = null;
         let progressTimer = null;
         let startTime = null;
+        let galleryBatchIndex = parseInt(sessionStorage.getItem('kioskGalleryBatchIndex') || '0', 10);
 
         const frame = document.getElementById('kiosk-frame');
         const modeLabel = document.getElementById('mode-label');
@@ -124,6 +128,43 @@
         // Hide indicator if disabled
         if (!KIOSK_CONFIG.ENABLE_INDICATOR) {
             indicator.style.display = 'none';
+        }
+
+        async function configureGalleryBatchMode() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/public/gallery/folders`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const folders = await response.json();
+                const totalImages = folders.reduce((sum, folder) => sum + (folder.photoCount || 0), 0);
+
+                if (totalImages <= 0) {
+                    MODES.GALLERY.url = 'gallery.html';
+                    MODES.GALLERY.duration = KIOSK_CONFIG.GALLERY_DURATION;
+                    return;
+                }
+
+                const totalBatches = Math.ceil(totalImages / KIOSK_CONFIG.GALLERY_BATCH_SIZE);
+                const normalizedBatchIndex = ((galleryBatchIndex % totalBatches) + totalBatches) % totalBatches;
+                const startIndex = normalizedBatchIndex * KIOSK_CONFIG.GALLERY_BATCH_SIZE;
+                const batchImageCount = Math.min(KIOSK_CONFIG.GALLERY_BATCH_SIZE, totalImages - startIndex);
+
+                const exactDuration = batchImageCount * KIOSK_CONFIG.GALLERY_IMAGE_INTERVAL_MS;
+
+                MODES.GALLERY.url = `gallery.html?batchSize=${KIOSK_CONFIG.GALLERY_BATCH_SIZE}&batchIndex=${normalizedBatchIndex}&intervalMs=${KIOSK_CONFIG.GALLERY_IMAGE_INTERVAL_MS}`;
+                MODES.GALLERY.duration = exactDuration;
+
+                galleryBatchIndex = (normalizedBatchIndex + 1) % totalBatches;
+                sessionStorage.setItem('kioskGalleryBatchIndex', String(galleryBatchIndex));
+
+                console.log(`[Kiosk] Gallery batch ${normalizedBatchIndex + 1}/${totalBatches}: ${batchImageCount} images, ${Math.round(exactDuration / 1000)}s`);
+            } catch (error) {
+                MODES.GALLERY.url = 'gallery.html';
+                MODES.GALLERY.duration = KIOSK_CONFIG.GALLERY_DURATION;
+                console.warn('[Kiosk] Failed to configure gallery batch mode, using fallback:', error.message);
+            }
         }
 
         function formatTime(ms) {
@@ -159,11 +200,15 @@
             }
         }
 
-        function switchMode() {
+        async function switchMode() {
             // Move to next mode in rotation
             currentMode = MODES[currentMode].next;
             
             const mode = MODES[currentMode];
+
+            if (currentMode === 'GALLERY') {
+                await configureGalleryBatchMode();
+            }
             
             // Update UI
             modeLabel.textContent = mode.label;
@@ -290,7 +335,7 @@
         console.log('[Kiosk] Initialized');
         console.log('[Kiosk] Portal:    event-driven (30 min safety fallback)');
         console.log('[Kiosk] Shoutouts: event-driven (30 min safety fallback)');
-        console.log('[Kiosk] Gallery:   ' + KIOSK_CONFIG.GALLERY_DURATION / 60000 + ' min fixed timer');
+        console.log(`[Kiosk] Gallery:   batch mode (${KIOSK_CONFIG.GALLERY_BATCH_SIZE} images max, ${KIOSK_CONFIG.GALLERY_IMAGE_INTERVAL_MS / 1000}s each)`);
         console.log('[Kiosk] Shortcuts: Ctrl+K (toggle indicator), Ctrl+N (next), Ctrl+R (restart)');
     </script>
 </body>

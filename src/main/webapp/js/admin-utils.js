@@ -280,6 +280,12 @@ const AdminAPI = {
                 method: 'POST',
                 body: formData
             });
+        },
+
+        async deleteImage(id) {
+            return AdminAPI.fetch(`/admin/announcements/${id}/image`, {
+                method: 'DELETE'
+            });
         }
     },
     

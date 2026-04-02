@@ -2,6 +2,8 @@
 
 let allFolders = [];
 let editModal = null;
+let selectedFolderImages = new Set();
+let selectedFolders = new Set();
 
 // Initialize on page load
 $(document).ready(function() {
@@ -16,21 +18,14 @@ $(document).ready(function() {
 // Load all gallery folders
 async function loadFolders() {
     try {
-        const token = localStorage.getItem('authToken');
-        
         // Check if CONFIG is defined (in case of browser cache issues)
         if (typeof CONFIG === 'undefined') {
             throw new Error('Configuration not loaded. Please refresh the page (Ctrl+Shift+R)');
         }
         
-        // Try to fetch from public endpoint (no auth needed)
-        const response = await fetch(`${CONFIG.API_BASE_URL}/public/gallery/folders`);
-        
-        if (!response.ok) {
-            throw new Error('Failed to load folders');
-        }
-        
-        allFolders = await response.json();
+        // Use the admin endpoint so inactive folders remain visible in the admin UI.
+        // The public gallery page should keep using the public active-only endpoint.
+        allFolders = await AdminAPI.fetch('/admin/gallery/folders');
         console.log('Loaded folders:', allFolders);
         
         renderFolders();
@@ -57,6 +52,8 @@ function renderFolders() {
     const container = $('#foldersContainer');
     
     if (allFolders.length === 0) {
+        selectedFolders.clear();
+        updateFolderSelectionUI();
         container.html(`
             <div class="empty-state">
                 <i class="bi bi-folder-x"></i>
@@ -76,11 +73,21 @@ function renderFolders() {
         const isActive = folder.isActive !== false; // Default to true if undefined
         const statusClass = isActive ? 'active' : 'inactive';
         const cardClass = isActive ? '' : 'inactive';
+        const isSelected = selectedFolders.has(folder.id);
         
         html += `
             <div class="col-md-6 col-lg-4">
                 <div class="card folder-card ${cardClass} h-100">
                     <div class="card-body">
+                        <div class="d-flex justify-content-end mb-2">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input folder-select-checkbox" type="checkbox"
+                                       id="folder-select-${folder.id}"
+                                       onchange="toggleFolderSelection(${folder.id}, this.checked)"
+                                       ${isSelected ? 'checked' : ''}>
+                                <label class="form-check-label small" for="folder-select-${folder.id}">Select</label>
+                            </div>
+                        </div>
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="card-title mb-0">
                                 <i class="bi bi-folder-fill text-primary me-2"></i>${escapeHtml(folder.displayTitle || folder.folderName)}
@@ -113,6 +120,11 @@ function renderFolders() {
                                     title="Edit folder details">
                                 <i class="bi bi-pencil me-2"></i>Edit
                             </button>
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="showFolderImages(${folder.id}, '${escapeHtml(folder.displayTitle || folder.folderName)}')"
+                                    title="View and delete images">
+                                <i class="bi bi-images me-2"></i>Images
+                            </button>
                             <button class="btn btn-sm btn-outline-info" 
                                     onclick="showUploadModal(${folder.id}, '${escapeHtml(folder.folderName)}', '${escapeHtml(folder.displayTitle || folder.folderName)}')"
                                     title="Upload images">
@@ -123,6 +135,11 @@ function renderFolders() {
                                     title="${isActive ? 'Hide from gallery' : 'Show in gallery'}">
                                 <i class="bi bi-${isActive ? 'eye-slash' : 'eye'}"></i>
                             </button>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    onclick="deleteFolder(${folder.id})"
+                                    title="Delete folder">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -132,6 +149,58 @@ function renderFolders() {
     
     html += '</div>';
     container.html(html);
+    updateFolderSelectionUI();
+}
+
+function toggleFolderSelection(folderId, isSelected) {
+    if (isSelected) {
+        selectedFolders.add(folderId);
+    } else {
+        selectedFolders.delete(folderId);
+    }
+    updateFolderSelectionUI();
+}
+
+function toggleSelectAllFolders(selectAll) {
+    const checkboxes = document.querySelectorAll('.folder-select-checkbox');
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = selectAll;
+        const folderId = Number(checkbox.id.replace('folder-select-', ''));
+        if (selectAll) {
+            selectedFolders.add(folderId);
+        } else {
+            selectedFolders.delete(folderId);
+        }
+    });
+    updateFolderSelectionUI();
+}
+
+function updateFolderSelectionUI() {
+    const countEl = document.getElementById('selectedFoldersCount');
+    const deleteBtn = document.getElementById('deleteSelectedFoldersBtn');
+    const selectAllCheckbox = document.getElementById('selectAllFolders');
+    const checkboxes = document.querySelectorAll('.folder-select-checkbox');
+
+    const total = checkboxes.length;
+    const selected = selectedFolders.size;
+
+    if (countEl) {
+        countEl.textContent = `${selected} selected`;
+    }
+
+    if (deleteBtn) {
+        deleteBtn.disabled = selected === 0;
+    }
+
+    if (selectAllCheckbox) {
+        if (total === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = selected === total;
+            selectAllCheckbox.indeterminate = selected > 0 && selected < total;
+        }
+    }
 }
 
 // Update statistics
@@ -239,7 +308,11 @@ async function saveFolder() {
         
         showLoading('Saving changes...');
         
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
+
+        if (!token) {
+            throw new Error('Please login first');
+        }
         
         const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}`, {
             method: 'PUT',
@@ -251,7 +324,8 @@ async function saveFolder() {
         });
         
         if (!response.ok) {
-            throw new Error('Failed to save folder changes');
+            const errorData = await response.json().catch(() => ({ error: `Server returned ${response.status}` }));
+            throw new Error(errorData.error || `Failed to save folder changes (${response.status})`);
         }
         
         editModal.hide();
@@ -366,23 +440,40 @@ function showInfo(message) {
 }
 
 function showToast(message, type = 'info') {
-    // Simple alert for now - can be replaced with Bootstrap Toast
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-             style="z-index: 9999; min-width: 300px;" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    let toastContainer = document.querySelector('.toast-container.gallery-toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container gallery-toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1090';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toastId = 'gallery-toast-' + Date.now();
+    const toastTypeClass = {
+        success: 'text-bg-success',
+        danger: 'text-bg-danger',
+        warning: 'text-bg-warning',
+        info: 'text-bg-info'
+    }[type] || 'text-bg-primary';
+
+    const toastHtml = `
+        <div id="${toastId}" class="toast ${toastTypeClass}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
         </div>
     `;
-    
-    $('body').append(alertHtml);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        $('.alert').fadeOut(function() {
-            $(this).remove();
-        });
-    }, 5000);
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 5000 });
+    toast.show();
+
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
 }
 
 // Show create folder modal
@@ -461,6 +552,94 @@ async function createFolder() {
         showToast(`Failed to create folder: ${error.message}`, 'danger');
     } finally {
         hideLoading();
+    }
+}
+
+async function deleteFolder(folderId) {
+    const folder = allFolders.find((f) => f.id === folderId);
+    if (!folder) {
+        showToast('Folder not found', 'danger');
+        return;
+    }
+
+    const folderName = folder.displayTitle || folder.folderName;
+    if (!confirm(`Delete folder "${folderName}" and all images inside it? This cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        await deleteGalleryFolderById(folderId);
+        selectedFolders.delete(folderId);
+        updateFolderSelectionUI();
+        await loadFolders();
+        showToast(`Folder "${escapeHtml(folderName)}" deleted successfully`, 'success');
+    } catch (error) {
+        console.error('Delete folder error:', error);
+        showToast(`Failed to delete folder: ${error.message}`, 'danger');
+    }
+}
+
+async function deleteSelectedFolders() {
+    const selectedIds = Array.from(selectedFolders);
+    if (selectedIds.length === 0) {
+        showToast('Please select at least one folder', 'warning');
+        return;
+    }
+
+    if (!confirm(`Delete ${selectedIds.length} selected folder(s) and all images inside them? This cannot be undone.`)) {
+        return;
+    }
+
+    const deleteBtn = document.getElementById('deleteSelectedFoldersBtn');
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const folderId of selectedIds) {
+        try {
+            await deleteGalleryFolderById(folderId);
+            successCount++;
+        } catch (error) {
+            console.error(`Failed to delete folder ${folderId}:`, error);
+            failCount++;
+        }
+    }
+
+    selectedFolders.clear();
+    updateFolderSelectionUI();
+    await loadFolders();
+
+    if (failCount === 0) {
+        showToast(`Deleted ${successCount} folder(s) successfully`, 'success');
+    } else {
+        showToast(`Deleted ${successCount} folder(s), failed ${failCount}`, 'warning');
+    }
+}
+
+async function deleteGalleryFolderById(folderId) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
+
+    if (!token) {
+        throw new Error('Please login first');
+    }
+
+    if (typeof CONFIG === 'undefined') {
+        throw new Error('Configuration not loaded. Please refresh the page (Ctrl+Shift+R).');
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: `Server returned ${response.status}` }));
+        throw new Error(errorData.error || `Failed to delete folder (${response.status})`);
     }
 }
 
@@ -591,5 +770,258 @@ async function uploadImages() {
         showToast(`Failed to upload images: ${error.message}`, 'danger');
         $('#uploadButton').prop('disabled', false);
         $('#uploadProgress').hide();
+    }
+}
+
+// Show folder images modal
+async function showFolderImages(folderId, displayTitle) {
+    $('#manageImagesFolderId').val(folderId);
+    $('#manageImagesFolderTitle').text(displayTitle);
+    selectedFolderImages.clear();
+    $('#selectAllFolderImages').prop('checked', false);
+    updateSelectedImagesUI();
+    $('#folderImagesContainer').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading images...</span>
+            </div>
+        </div>
+    `);
+
+    const modal = new bootstrap.Modal(document.getElementById('manageImagesModal'));
+    modal.show();
+
+    await loadFolderImages(folderId);
+}
+
+// Load all images for a selected folder
+async function loadFolderImages(folderId) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
+
+        if (!token) {
+            showToast('Please login first', 'danger');
+            return;
+        }
+
+        const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}/images`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: `Server returned ${response.status}` }));
+            throw new Error(error.error || `Server returned ${response.status}`);
+        }
+
+        const images = await response.json();
+        const container = $('#folderImagesContainer');
+
+        if (!images || images.length === 0) {
+            selectedFolderImages.clear();
+            updateSelectedImagesUI();
+            container.html(`
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-image fs-1 d-block mb-2"></i>
+                    No images found in this folder.
+                </div>
+            `);
+            return;
+        }
+
+        let html = '<div class="row g-3">';
+        images.forEach((image) => {
+            const encodedFilename = encodeURIComponent(image.filename);
+            const isSelected = selectedFolderImages.has(encodedFilename);
+            html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input folder-image-checkbox" type="checkbox"
+                                       id="img-${encodedFilename}"
+                                       onchange="toggleFolderImageSelection('${encodedFilename}', this.checked)"
+                                       ${isSelected ? 'checked' : ''}>
+                                <label class="form-check-label small" for="img-${encodedFilename}">Select</label>
+                            </div>
+                        </div>
+                        <img src="${image.url}" class="card-img-top" style="height: 150px; object-fit: cover;" alt="${escapeHtml(image.filename)}">
+                        <div class="card-body p-2">
+                            <div class="small text-truncate mb-2" title="${escapeHtml(image.filename)}">${escapeHtml(image.filename)}</div>
+                            <button class="btn btn-sm btn-outline-danger w-100"
+                                    onclick="deleteFolderImage(${folderId}, '${encodedFilename}')">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.html(html);
+        updateSelectAllCheckbox();
+        updateSelectedImagesUI();
+
+    } catch (error) {
+        console.error('Failed to load folder images:', error);
+        $('#folderImagesContainer').html(`
+            <div class="alert alert-danger mb-0">
+                Failed to load images: ${escapeHtml(error.message)}
+            </div>
+        `);
+    }
+}
+
+function toggleFolderImageSelection(encodedFilename, isSelected) {
+    if (isSelected) {
+        selectedFolderImages.add(encodedFilename);
+    } else {
+        selectedFolderImages.delete(encodedFilename);
+    }
+    updateSelectAllCheckbox();
+    updateSelectedImagesUI();
+}
+
+function toggleSelectAllFolderImages(selectAll) {
+    const checkboxes = document.querySelectorAll('.folder-image-checkbox');
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = selectAll;
+        const encodedFilename = checkbox.id.replace('img-', '');
+        if (selectAll) {
+            selectedFolderImages.add(encodedFilename);
+        } else {
+            selectedFolderImages.delete(encodedFilename);
+        }
+    });
+    updateSelectedImagesUI();
+}
+
+function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('selectAllFolderImages');
+    if (!selectAllCheckbox) return;
+
+    const checkboxes = document.querySelectorAll('.folder-image-checkbox');
+    const total = checkboxes.length;
+    const selected = document.querySelectorAll('.folder-image-checkbox:checked').length;
+
+    if (total === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        return;
+    }
+
+    selectAllCheckbox.checked = selected === total;
+    selectAllCheckbox.indeterminate = selected > 0 && selected < total;
+}
+
+function updateSelectedImagesUI() {
+    const countEl = document.getElementById('selectedImagesCount');
+    const deleteBtn = document.getElementById('deleteSelectedImagesBtn');
+    const count = selectedFolderImages.size;
+
+    if (countEl) {
+        countEl.textContent = `${count} selected`;
+    }
+    if (deleteBtn) {
+        deleteBtn.disabled = count === 0;
+    }
+}
+
+async function deleteSelectedFolderImages() {
+    const folderId = $('#manageImagesFolderId').val();
+    const selected = Array.from(selectedFolderImages);
+
+    if (!folderId || selected.length === 0) {
+        showToast('Please select at least one image', 'warning');
+        return;
+    }
+
+    if (!confirm(`Delete ${selected.length} selected image(s)? This cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
+        if (!token) {
+            showToast('Please login first', 'danger');
+            return;
+        }
+
+        const deleteBtn = document.getElementById('deleteSelectedImagesBtn');
+        if (deleteBtn) deleteBtn.disabled = true;
+
+        const results = await Promise.allSettled(
+            selected.map((encodedFilename) =>
+                fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}/images/${encodedFilename}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+            )
+        );
+
+        let successCount = 0;
+        let failureCount = 0;
+
+        for (const result of results) {
+            if (result.status === 'fulfilled' && result.value.ok) {
+                successCount++;
+            } else {
+                failureCount++;
+            }
+        }
+
+        selectedFolderImages.clear();
+        $('#selectAllFolderImages').prop('checked', false);
+        updateSelectedImagesUI();
+
+        await loadFolderImages(folderId);
+        await loadFolders();
+
+        if (failureCount === 0) {
+            showToast(`Deleted ${successCount} image(s)`, 'success');
+        } else {
+            showToast(`Deleted ${successCount} image(s), failed ${failureCount}`, 'warning');
+        }
+    } catch (error) {
+        console.error('Failed to delete selected images:', error);
+        showToast(`Failed to delete selected images: ${error.message}`, 'danger');
+    } finally {
+        updateSelectedImagesUI();
+    }
+}
+
+// Delete selected image file from folder
+async function deleteFolderImage(folderId, encodedFilename) {
+    const filename = decodeURIComponent(encodedFilename);
+    if (!confirm(`Delete image "${filename}"? This cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
+        const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}/images/${encodedFilename}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: `Server returned ${response.status}` }));
+            throw new Error(error.error || `Server returned ${response.status}`);
+        }
+
+        showToast(`Deleted ${filename}`, 'success');
+    selectedFolderImages.delete(encodedFilename);
+    updateSelectedImagesUI();
+        await loadFolderImages(folderId);
+        await loadFolders();
+    } catch (error) {
+        console.error('Failed to delete image:', error);
+        showToast(`Failed to delete image: ${error.message}`, 'danger');
     }
 }

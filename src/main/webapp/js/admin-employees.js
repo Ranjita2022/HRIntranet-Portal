@@ -18,7 +18,7 @@ async function initEmployees() {
  */
 async function loadEmployees() {
     try {
-        showLoadingTable('employeesTableBody', 9);
+        showLoadingTable('employeesTableBody', 11);
         const response = await AdminAPI.employees.getAll();
         
         // API returns array directly
@@ -70,7 +70,10 @@ function renderEmployeesTable() {
     const sorted = [...employeesData].sort((a, b) => a.employeeId.localeCompare(b.employeeId));
 
     tbody.innerHTML = sorted.map(employee => {
+        const birthDate = employee.birthDate || employee.birthdate;
+        const birthDateText = birthDate ? formatDate(birthDate) : '-';
         const startDate = formatDate(employee.startDate);
+        const endDate = employee.endDate ? formatDate(employee.endDate) : '-';
         const days      = Math.floor((new Date() - new Date(employee.startDate)) / 86400000);
         const isNewJoiner = days >= 0 && days <= 30;
 
@@ -100,7 +103,9 @@ function renderEmployeesTable() {
                 <td class="text-muted small">${escapeHtml(employee.email)}</td>
                 <td>${escapeHtml(employee.position)}</td>
                 <td>${escapeHtml(employee.department)}</td>
+                <td class="text-muted small">${birthDateText}</td>
                 <td class="text-muted small">${startDate}</td>
+                <td class="text-muted small">${employee.status === 'TERMINATED' ? endDate : '-'}</td>
                 <td>${statusBadges[employee.status] || employee.status}</td>
                 <td class="text-center">
                     <div class="d-flex gap-1 justify-content-center">
@@ -167,6 +172,7 @@ async function showEditEmployeeModal(id) {
     document.getElementById('employeePosition').value = employee.position;
     document.getElementById('employeeDepartment').value = employee.department;
     document.getElementById('employeeStartDate').value = employee.startDate;
+    document.getElementById('employeeEndDate').value = employee.endDate || '';
     document.getElementById('employeeStatus').value = employee.status;
     // Populate birth date for edit if available
     document.getElementById('employeeBirthDate').value = employee.birthDate || employee.birthdate || '';
@@ -226,6 +232,7 @@ async function saveEmployee(event) {
     const position = document.getElementById('employeePosition').value.trim();
     const department = document.getElementById('employeeDepartment').value.trim();
     const startDate = document.getElementById('employeeStartDate').value;
+    const endDate = document.getElementById('employeeEndDate').value;
     const birthDate = document.getElementById('employeeBirthDate').value;
     const status = document.getElementById('employeeStatus').value;
     const photoFile = document.getElementById('employeePhoto').files[0];
@@ -271,6 +278,7 @@ async function saveEmployee(event) {
         position,
         department,
         startDate,
+        endDate: status === 'TERMINATED' ? endDate : '',
         birthDate,
         status
     };

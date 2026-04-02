@@ -55,6 +55,6 @@ public class Announcement {
     private LocalDateTime updatedAt;
     
     public enum AnnouncementType {
-        GENERAL, URGENT, BREAKING, POLICY, EVENT
+        GENERAL, TRAINING, URGENT, BREAKING, POLICY, EVENT
     }
 }
