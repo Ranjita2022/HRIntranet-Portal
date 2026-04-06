@@ -81,7 +81,7 @@ function renderAnnouncementsTable() {
         'EVENT':   '<span class="badge badge-event">Event</span>'
     };
 
-    tbody.innerHTML = sortedAnnouncements.map(announcement => {
+    tbody.innerHTML = sortedAnnouncements.map((announcement, index) => {
         const publishDate = formatDate(announcement.publishDate);
         const effectiveExpiryDate = getEffectiveAnnouncementExpiryDate(announcement);
         const expiryDate  = effectiveExpiryDate
@@ -107,7 +107,7 @@ function renderAnnouncementsTable() {
 
         return `
             <tr>
-                <td class="text-muted">${announcement.id}</td>
+                <td class="text-muted">${index + 1}</td>
                 <td>
                     <span class="announcement-title">${escapeHtml(announcement.title)}</span>
                     ${hasImage}${priorityBadge}

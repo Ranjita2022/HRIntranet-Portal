@@ -69,7 +69,7 @@ function renderEmployeesTable() {
     // Sort by employee_id
     const sorted = [...employeesData].sort((a, b) => a.employeeId.localeCompare(b.employeeId));
 
-    tbody.innerHTML = sorted.map(employee => {
+    tbody.innerHTML = sorted.map((employee, index) => {
         const birthDate = employee.birthDate || employee.birthdate;
         const birthDateText = birthDate ? formatDate(birthDate) : '-';
         const startDate = formatDate(employee.startDate);
@@ -89,7 +89,7 @@ function renderEmployeesTable() {
 
         return `
             <tr>
-                <td class="text-muted">${employee.id}</td>
+                <td class="text-muted">${index + 1}</td>
                 <td class="fw-500">${escapeHtml(employee.employeeId)}</td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
@@ -408,36 +408,55 @@ function showError(message) {
  * Show toast notification
  */
 function showToast(message, type = 'info') {
-    // Create toast container if it doesn't exist
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Create toast element
-    const toastId = 'toast-' + Date.now();
-    const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${escapeHtml(message)}
+    try {
+        // Ensure bootstrap is available
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap not loaded');
+            alert(message);
+            return;
+        }
+        
+        // Create toast container if it doesn't exist
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '11000';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${escapeHtml(message)}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-    toast.show();
-    
-    // Remove toast element after it's hidden
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        if (!toastElement) {
+            console.error('Failed to create toast element');
+            alert(message);
+            return;
+        }
+        
+        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+        toast.show();
+        console.log(`Toast shown: ${type} - ${message}`);
+        
+        // Remove toast element after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    } catch (error) {
+        console.error('Error showing toast:', error);
+        alert(message);
+    }
 }

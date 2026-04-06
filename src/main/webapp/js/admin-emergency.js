@@ -79,9 +79,9 @@ function renderEmergencyContactsTable() {
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    tbody.innerHTML = sortedData.map(contact => `
+    tbody.innerHTML = sortedData.map((contact, index) => `
         <tr>
-            <td class="text-muted">${contact.id}</td>
+            <td class="text-muted">${index + 1}</td>
             <td>
                 ${contact.isEmergency ? '<i class="bi bi-exclamation-triangle-fill emergency-flag me-1"></i>' : ''}
                 <span class="fw-semibold">${escapeHtml(contact.title)}</span>
@@ -313,18 +313,69 @@ function showLoadingTable(elementId, colspan) {
     }
 }
 
-// Show success toast
+// Show success message
 function showSuccess(message) {
-    document.getElementById('successMessage').textContent = message;
-    const toast = new bootstrap.Toast(document.getElementById('successToast'));
-    toast.show();
+    showToast(message, 'success');
 }
 
-// Show error toast
+// Show error message
 function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-    const toast = new bootstrap.Toast(document.getElementById('errorToast'));
-    toast.show();
+    showToast(message, 'danger');
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    try {
+        // Ensure bootstrap is available
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap not loaded');
+            alert(message);
+            return;
+        }
+        
+        // Create toast container if it doesn't exist
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '11000';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${escapeHtml(message)}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        if (!toastElement) {
+            console.error('Failed to create toast element');
+            alert(message);
+            return;
+        }
+        
+        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+        toast.show();
+        console.log(`Toast shown: ${type} - ${message}`);
+        
+        // Remove toast element after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    } catch (error) {
+        console.error('Error showing toast:', error);
+        alert(message);
+    }
 }
 
 // Escape HTML to prevent XSS
