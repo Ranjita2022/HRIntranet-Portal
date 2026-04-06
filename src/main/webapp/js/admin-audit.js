@@ -92,7 +92,7 @@ function renderAuditLogsTable(logs) {
         return;
     }
     
-    tbody.innerHTML = logs.map(log => {
+    tbody.innerHTML = logs.map((log, index) => {
         const actionBadge = getActionBadge(log.action);
         const tableName = formatTableName(log.tableName);
         const timestamp = formatDateTime(log.createdAt);
@@ -100,7 +100,7 @@ function renderAuditLogsTable(logs) {
         
         return `
             <tr>
-                <td>${log.id}</td>
+                <td>${index + 1}</td>
                 <td><small>${timestamp}</small></td>
                 <td>${actionBadge}</td>
                 <td><span class="badge bg-secondary">${tableName}</span></td>

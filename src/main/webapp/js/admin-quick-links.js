@@ -117,9 +117,9 @@ function renderQuickLinksTable() {
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    tbody.innerHTML = sortedData.map(link => `
+    tbody.innerHTML = sortedData.map((link, index) => `
         <tr>
-            <td class="text-muted">${link.id}</td>
+            <td class="text-muted">${index + 1}</td>
             <td class="text-center">
                 ${link.icon
                     ? `<i class="bi ${link.icon} fs-5 text-primary"></i>`

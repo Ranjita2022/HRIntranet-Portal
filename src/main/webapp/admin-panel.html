@@ -600,6 +600,34 @@
         function capitalize(str) {
             return str.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
         }
+
+        function getEffectiveAnnouncementExpiryDate(announcement) {
+            if (announcement && announcement.expiryDate) {
+                const explicitExpiry = new Date(announcement.expiryDate);
+                return isNaN(explicitExpiry.getTime()) ? null : explicitExpiry;
+            }
+
+            if (!announcement || !announcement.publishDate) {
+                return null;
+            }
+
+            const publishDate = new Date(announcement.publishDate);
+            if (isNaN(publishDate.getTime())) {
+                return null;
+            }
+
+            // Keep logic consistent with admin-announcements.js
+            publishDate.setDate(publishDate.getDate() + 30);
+            return publishDate;
+        }
+
+        function isAnnouncementExpired(announcement, now = new Date()) {
+            const effectiveExpiry = getEffectiveAnnouncementExpiryDate(announcement);
+            if (!effectiveExpiry) {
+                return false;
+            }
+            return effectiveExpiry < now;
+        }
         
         async function loadDashboardStats() {
             try {
@@ -616,14 +644,15 @@
                 };
 
                 // Fetch all data from admin endpoints to get accurate counts
-                const [employees, announcements, holidays, carousel, quickLinks, emergencyContacts, galleryFolders] = await Promise.all([
+                const [employees, announcements, holidays, carousel, quickLinks, emergencyContacts, galleryFolders, positions] = await Promise.all([
                     fetch(AdminAPI.baseURL + '/admin/employees', { headers }).then(r => r.ok ? r.json() : []),
                     fetch(AdminAPI.baseURL + '/admin/announcements', { headers }).then(r => r.ok ? r.json() : []),
                     fetch(AdminAPI.baseURL + '/admin/holidays', { headers }).then(r => r.ok ? r.json() : []),
                     fetch(AdminAPI.baseURL + '/admin/carousel', { headers }).then(r => r.ok ? r.json() : []),
                     fetch(AdminAPI.baseURL + '/admin/quick-links', { headers }).then(r => r.ok ? r.json() : []),
                     fetch(AdminAPI.baseURL + '/admin/emergency-contacts', { headers }).then(r => r.ok ? r.json() : []),
-                    fetch(AdminAPI.baseURL + '/public/gallery/folders').then(r => r.ok ? r.json() : [])
+                    fetch(AdminAPI.baseURL + '/public/gallery/folders').then(r => r.ok ? r.json() : []),
+                    fetch(AdminAPI.baseURL + '/admin/positions', { headers }).then(r => r.ok ? r.json() : [])
                 ]);
 
                 // Calculate total gallery images from all folders
@@ -652,12 +681,9 @@
                 const activeCarouselSlides = carousel.filter(slide => slide && slide.isActive !== false).length;
                 const activeQuickLinks = quickLinks.filter(link => link && link.isActive !== false).length;
 
-                const activeAnnouncements = announcements.filter(a => {
-                    if (a.expiryDate) {
-                        return new Date(a.expiryDate) >= now;
-                    }
-                    return true;
-                }).length;
+                const activeAnnouncements = announcements.filter(a => a && a.isActive && !isAnnouncementExpired(a, now)).length;
+
+                const openPositions = positions.filter(p => String((p && p.status) || '').toUpperCase() === 'OPEN').length;
 
                 const upcomingHolidays = holidays.filter(h => {
                     return new Date(h.holidayDate) >= now;
@@ -672,6 +698,7 @@
                             <p><strong><i class="bi bi-people-fill text-primary"></i> Active Employees:</strong> ${employees.filter(e => e.status === 'ACTIVE').length} / ${employees.length}</p>
                             <p><strong><i class="bi bi-star-fill text-warning"></i> New Joiners (This Month):</strong> ${newJoinersThisMonth}</p>
                             <p><strong><i class="bi bi-megaphone-fill text-info"></i> Active Announcements:</strong> ${activeAnnouncements} / ${announcements.length}</p>
+                            <p><strong><i class="bi bi-briefcase-fill text-primary"></i> Open Positions:</strong> ${openPositions} / ${positions.length}</p>
                             <p><strong><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:</strong> ${upcomingHolidays} / ${holidays.length}</p>
                         </div>
                         <div class="col-md-6">

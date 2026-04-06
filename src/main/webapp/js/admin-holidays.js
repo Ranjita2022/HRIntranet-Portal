@@ -67,7 +67,7 @@ function renderHolidaysTable() {
     // Sort by date (ascending — upcoming first)
     const sorted = [...holidaysData].sort((a, b) => new Date(a.holidayDate) - new Date(b.holidayDate));
 
-    tbody.innerHTML = sorted.map(holiday => {
+    tbody.innerHTML = sorted.map((holiday, index) => {
         const date    = formatDate(holiday.holidayDate);
         const isPast  = new Date(holiday.holidayDate) < now;
         const statusBadge  = holiday.isActive
@@ -82,7 +82,7 @@ function renderHolidaysTable() {
 
         return `
             <tr>
-                <td class="text-muted">${holiday.id}</td>
+                <td class="text-muted">${index + 1}</td>
                 <td><span class="holiday-name">${escapeHtml(holiday.title)}</span></td>
                 <td class="date-cell">${date}</td>
                 <td class="text-muted small" title="${holiday.description ? escapeHtml(holiday.description) : ''}">${descText}</td>

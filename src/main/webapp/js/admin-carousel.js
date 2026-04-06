@@ -57,9 +57,9 @@ function renderCarouselTable() {
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    tbody.innerHTML = sortedData.map(slide => `
+    tbody.innerHTML = sortedData.map((slide, index) => `
         <tr>
-            <td class="text-muted">${slide.id}</td>
+            <td class="text-muted">${index + 1}</td>
             <td>
                 ${getCarouselImageUrl(slide)
                     ? `<img src="${escapeHtml(getCarouselImageUrl(slide))}" alt="Preview" class="slide-thumb">`
@@ -169,34 +169,20 @@ async function saveCarouselSlide() {
         showError('Please select an image');
         return;
     }
-
-    const saveBtn = document.getElementById('saveCarouselBtn');
-    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
-    if (saveBtn) {
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
-    }
     
     try {
         if (id) {
-            // Update existing slide (without image)
-            const slideData = {
-                title: title,
-                subtitle: subtitle,
-                displayOrder: displayOrder,
-                isActive: isActive
-            };
-            
+            // Update existing slide
             await AdminAPI.fetch(`/admin/carousel/${id}`, {
                 method: 'PUT',
-                body: JSON.stringify(slideData)
+                body: JSON.stringify({ title, subtitle, displayOrder, isActive })
             });
         } else {
             // Create new slide with image
             const formData = new FormData();
             formData.append('file', imageFile);
-            if (title) formData.append('title', title);
-            if (subtitle) formData.append('subtitle', subtitle);
+            formData.append('title', title);
+            formData.append('subtitle', subtitle);
             formData.append('displayOrder', displayOrder);
             
             await AdminAPI.fetchMultipart(`/admin/carousel`, {
@@ -207,20 +193,10 @@ async function saveCarouselSlide() {
 
         showSuccess(isEdit ? 'Carousel slide updated successfully' : 'Carousel slide created successfully');
         carouselModal.hide();
-        
-        try {
-            await loadCarouselSlides();
-        } catch (reloadError) {
-            console.warn('Reload after save failed:', reloadError);
-        }
+        loadCarouselSlides().catch(error => console.warn('Reload failed:', error));
     } catch (error) {
         console.error('Error saving carousel slide:', error);
         showError('Failed to save carousel slide: ' + getApiErrorMessage(error));
-    } finally {
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalBtnHtml;
-        }
     }
 }
 
@@ -274,49 +250,44 @@ function showLoadingTable(elementId, colspan) {
     }
 }
 
-// Show success toast
+// Show success message
 function showSuccess(message) {
     showToast(message, 'success');
 }
 
-// Show error toast
+// Show error message
 function showError(message) {
     showToast(message, 'danger');
 }
 
 function showToast(message, type = 'info') {
-    // Create toast container if it doesn't exist
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
+    if (typeof bootstrap === 'undefined') {
+        alert(message);
+        return;
     }
     
-    // Create toast element
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '11000';
+        document.body.appendChild(container);
+    }
+    
     const toastId = 'toast-' + Date.now();
     const toastHtml = `
         <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body">
-                    ${escapeHtml(message)}
-                </div>
+                <div class="toast-body">${escapeHtml(message)}</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     `;
     
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
+    container.insertAdjacentHTML('beforeend', toastHtml);
     const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-    toast.show();
-    
-    // Remove toast element after it's hidden
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+    new bootstrap.Toast(toastElement, { delay: 3000 }).show();
+    toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
 }
 
 function getApiErrorMessage(error) {
