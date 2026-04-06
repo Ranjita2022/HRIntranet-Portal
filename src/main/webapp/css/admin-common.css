@@ -18,6 +18,7 @@ body {
     padding: 0;
     z-index: 1000;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     transition: all 0.3s ease;
 }
 
@@ -45,27 +46,44 @@ body {
 }
 
 .menu-item {
+    position: relative;
     display: flex;
     align-items: center;
     padding: 0.875rem 1.5rem;
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     transition: all 0.2s ease;
-    border-left: 3px solid transparent;
     cursor: pointer;
+}
+
+.menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background-color 0.2s ease;
 }
 
 .menu-item:hover {
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    border-left-color: #0084CA;
+}
+
+.menu-item:hover::before {
+    background: #0084CA;
 }
 
 .menu-item.active {
     background: rgba(255, 255, 255, 0.15);
     color: white;
-    border-left-color: #ffc107;
     font-weight: 600;
+}
+
+.menu-item.active::before {
+    background: #ffc107;
 }
 
 .menu-item i {

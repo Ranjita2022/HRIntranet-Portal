@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Famous Quote - IEEE HR Portal</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div style="height:3px;background:linear-gradient(90deg,#ffc107 0%,#ff9800 40%,#ffc107 100%);"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <img src="images/ieee.png" alt="IEEE Logo" height="32" style="filter:brightness(0) invert(1);">
+                <span style="width:1px;height:28px;background:rgba(255,255,255,0.3);display:inline-block;"></span>
+                <span class="fw-semibold" style="font-size:1.05rem;letter-spacing:0.2px;">HR Intranet Portal</span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="index.html" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back To Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="py-5" style="background:#f4f6f9; min-height:70vh;">
+        <div class="container">
+            <section class="section-card quote-page-card">
+                <div class="section-header d-flex align-items-center mb-4">
+                    <div class="section-icon text-white" style="background: linear-gradient(135deg, #6f42c1 0%, #0d6efd 100%);">
+                        <i class="bi bi-stars"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h1 class="section-title mb-0">Famous Quote Of The Day</h1>
+                        <p class="text-muted mb-0 small">One quote is selected daily from ZenQuotes random API.</p>
+                    </div>
+                </div>
+
+                <div id="quotePageContainer" class="daily-quote-container">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                        <p class="mt-3 text-muted small mb-0">Loading quote of the day...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer" style="background:#1a2332; color:#c8d3e0; border-top:3px solid #ffc107;">
+        <div class="container-fluid px-4 py-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span style="font-size:0.85rem;">IEEE HR Intranet Portal</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="vendor/jquery/jquery-3.7.1.min.js"></script>
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/quotes.js"></script>
+</body>
+</html>

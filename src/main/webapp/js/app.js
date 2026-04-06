@@ -1315,6 +1315,7 @@ function renderEventCountdown(events) {
 
     if (upcomingEvents.length === 0) {
         $('#countdownTitle').text('');
+        $('#countdownEventDate').text('');
         $banner.hide().data('has-event', false);
         return;
     }
@@ -1323,6 +1324,13 @@ function renderEventCountdown(events) {
     const eventDate = new Date(nextEvent.date);
 
     $('#countdownTitle').text(nextEvent.title);
+    const eventDateText = eventDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+    $('#countdownEventDate').text(`On ${eventDateText}`);
     $banner.data('has-event', true);
 
     // In TV mode, always keep the countdown banner hidden during the carousel phase.
@@ -1752,7 +1760,7 @@ function enterTVMode() {
     $('main').hide();
 
     // Hide all content sections
-    $('#teamUpdates, #announcements, #celebrations, #holidays, #positions, #joiners, #quicklinks, #emergency')
+    $('#teamUpdates, #announcements, #celebrations, #holidays, #positions, #quotes, #joiners, #quicklinks, #emergency')
         .hide().addClass('tv-hidden-section');
 
     // Show carousel elements
@@ -1835,12 +1843,40 @@ function enterTVMode() {
  */
 function updateTVHeaderClock() {
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    $('#tvHeaderTime').text(timeStr);
-    $('#tvHeaderDate').text(dateStr);
+    const indiaTime = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+    });
+    const indiaDate = now.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'Asia/Kolkata'
+    });
+
+    const njTime = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'America/New_York'
+    });
+    const njDate = now.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'America/New_York'
+    });
+
+    $('#tvHeaderTimeIndia').text(indiaTime);
+    $('#tvHeaderDateIndia').text(indiaDate);
+    $('#tvHeaderTimeNj').text(njTime);
+    $('#tvHeaderDateNj').text(njDate);
     // Keep legacy clock in sync too
-    $('#tvClock').text(timeStr);
+    $('#tvClock').text(indiaTime);
 }
 
 /**
@@ -1852,6 +1888,7 @@ function updateTVHeaderSection(label, iconClass) {
         'Upcoming Holidays': 'bi-calendar-event-fill',
         'Announcements':     'bi-megaphone-fill',
         'Open Positions':    'bi-briefcase-fill',
+        'Famous Quotes':     'bi-quote',
         'Carousel':          'bi-images'
     };
     const icon = iconClass || fallbackIcons[label] || 'bi-display';
@@ -1995,6 +2032,9 @@ function getTVContentSections() {
         console.log('✅ Upcoming Event ADDED to rotation');
     }
 
+    // Always show Quotes at the end of TV section rotation.
+    candidates.push({ id: '#quotes', label: 'Famous Quotes', icon: 'bi-quote' });
+
     const result = candidates.filter(s => {
         const $el = $(s.id);
         const exists = $el.length > 0;
@@ -2041,10 +2081,11 @@ function showNextContentSection() {
     updateTVHeaderSection(section.label, section.icon);
 
     // Hide every content section completely (including countdown banner)
-    const $allSections = $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #joiners, #countdownBanner');
+    const $allSections = $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #quotes, #joiners, #countdownBanner');
     $allSections.hide().addClass('tv-hidden-section');
     $('#positions').removeClass('tv-position-visible');
     $('#countdownBanner').removeClass('tv-event-active');
+    $('#quotes').removeClass('tv-quote-active');
     $('.tv-scroll-viewport').remove();
 
     let $section = $(section.id);
@@ -2065,6 +2106,9 @@ function showNextContentSection() {
     } else if (section.id === '#countdownBanner') {
         // Full-screen event countdown overlay
         $section.removeClass('tv-hidden-section').addClass('tv-event-active').show();
+    } else if (section.id === '#quotes') {
+        // Full-screen quote overlay
+        $section.removeClass('tv-hidden-section').addClass('tv-quote-active').show();
     } else {
         $section.removeClass('tv-hidden-section').show();
     }
@@ -2098,6 +2142,9 @@ function showNextContentSection() {
     } else if (section.id === '#countdownBanner') {
         // Full-screen countdown — show for 25 seconds
         sectionDuration = 25000;
+    } else if (section.id === '#quotes') {
+        // Show quote like a kiosk card before carousel restarts.
+        sectionDuration = 10000;
     } else if (section.id === '#announcements') {
         // 7 s per card, clamped to [10s … 60s]
         const cardCount = Math.max(1, $('#announcementsContainer .announcement-card').length);
@@ -2373,7 +2420,7 @@ function restartCarouselCycle() {
     $('body').addClass('tv-carousel-phase');
 
     // Instantly hide content sections and reset countdown banner
-    $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #joiners, #countdownBanner')
+    $('#announcements, #celebrations, #teamUpdates, #holidays, #positions, #quotes, #joiners, #countdownBanner')
         .hide().addClass('tv-hidden-section');
     $('#countdownBanner').removeClass('tv-event-active');
     currentContentSection = 0;
@@ -2488,13 +2535,14 @@ function exitTVMode() {
     stopTVAutoScroll();
 
     // Show all primary sections; keep positions visible in home mode
-    $('#teamUpdates, #announcements, #holidays, #positions, #joiners, #quicklinks, #emergency').removeClass('tv-hidden-section tv-position-visible');
+    $('#teamUpdates, #announcements, #holidays, #positions, #quotes, #joiners, #quicklinks, #emergency').removeClass('tv-hidden-section tv-position-visible');
     $('#countdownBanner').removeClass('tv-hidden-section tv-event-active');
     $('.carousel-section').css('display', '').show();
     $('#teamUpdates').css('display', '').show();
     $('#announcements').css('display', '').show();
     $('#holidays').css('display', '').show();
     $('#positions').css('display', '').show();
+    $('#quotes').css('display', '').show();
     $('#joiners').css('display', '').show();
     $('#quicklinks').css('display', '').show();
     $('#emergency').css('display', '').show();
