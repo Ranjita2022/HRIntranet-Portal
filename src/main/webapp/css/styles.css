@@ -35,6 +35,89 @@
     border: 1px solid #edf0f4;
 }
 
+.quote-section-card,
+.quote-page-card {
+    overflow: hidden;
+}
+
+.daily-quote-container {
+    min-height: 180px;
+}
+
+.daily-quote-card {
+    background: linear-gradient(135deg, #f7f9ff 0%, #ffffff 60%, #f2f7ff 100%);
+    border: 1px solid #e3ecff;
+    border-left: 5px solid #6f42c1;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(20, 51, 97, 0.08);
+    padding: 1.4rem 1.6rem;
+    position: relative;
+}
+
+.quote-avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.quote-author-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    background: #e9eef8;
+}
+
+.quote-author-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6f42c1 0%, #0d6efd 100%);
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.quote-text {
+    position: relative;
+    margin: 0;
+    padding: 0.6rem 0 0.9rem;
+    color: #1f2e45;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1.65;
+}
+
+.quote-footer {
+    border-top: 1px solid #e7eefb;
+    padding-top: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.quote-author {
+    color: #3a4f73;
+    font-size: 0.96rem;
+    font-weight: 700;
+}
+
+.quote-author::before {
+    content: 'By ';
+    font-weight: 500;
+    color: #6b7f9e;
+}
+
+.quote-note {
+    color: #6b7f9e;
+    font-size: 0.8rem;
+}
+
 /* Base Styles - IEEE Typography */
 body {
     font-family: 'Roboto', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
@@ -664,6 +747,10 @@ html {
         height: 150px;
         order: -1;
     }
+
+    .quote-text {
+        font-size: 1.02rem;
+    }
 }
 
 /* Print Styles */
@@ -838,6 +925,14 @@ html {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
+}
+
+.countdown-event-date {
+    display: inline-block;
+    margin-top: 0.2rem;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 500;
 }
 
 .countdown-timer {
@@ -1766,21 +1861,29 @@ body.dark-mode .joiner-card,
 body.dark-mode .holiday-card,
 body.dark-mode .announcement-card,
 body.dark-mode .celebration-card,
-body.dark-mode .quick-link-item {
+body.dark-mode .quick-link-item,
+body.dark-mode .daily-quote-card {
     background: #16213e;
     border-color: #2a2a4a;
+}
+
+body.dark-mode .quote-author-avatar {
+    border-color: rgba(22, 33, 62, 0.95);
 }
 
 body.dark-mode .joiner-name,
 body.dark-mode .holiday-title,
 body.dark-mode .announcement-title,
-body.dark-mode .celebration-name {
+body.dark-mode .celebration-name,
+body.dark-mode .quote-text,
+body.dark-mode .quote-author {
     color: #fff;
 }
 
 body.dark-mode .joiner-description,
 body.dark-mode .holiday-description,
-body.dark-mode .announcement-description {
+body.dark-mode .announcement-description,
+body.dark-mode .quote-note {
     color: #aaa;
 }
 
@@ -2094,24 +2197,41 @@ body.tv-mode #tvHeader { display: flex; }
 }
 
 .tv-header-datetime {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    min-width: 340px;
+}
+
+.tv-timezone-block {
     text-align: right;
     min-width: 150px;
 }
 
+.tv-timezone-label {
+    color: rgba(255,255,255,0.72);
+    font-size: 0.62rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 0.12rem;
+}
+
 .tv-header-time {
     color: #ffffff;
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: 1px;
+    letter-spacing: 0.6px;
 }
 
 .tv-header-date {
     color: rgba(255,255,255,0.7);
-    font-size: 0.78rem;
+    font-size: 0.64rem;
     margin-top: 0.15rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 }
 
 /* ── Main content area in TV ─────────────────── */
@@ -2152,7 +2272,8 @@ body.tv-mode .col-lg-4 {
 body.tv-mode #teamUpdates,
 body.tv-mode #announcements,
 body.tv-mode #holidays,
-body.tv-mode #positions {
+body.tv-mode #positions,
+body.tv-mode #quotes {
     height: calc(100vh - 68px);
     display: flex !important;
     flex-direction: column;
@@ -2163,7 +2284,8 @@ body.tv-mode #positions {
 body.tv-mode #teamUpdates .section-card,
 body.tv-mode #announcements .section-card,
 body.tv-mode #holidays .section-card,
-body.tv-mode #positions .section-card {
+body.tv-mode #positions .section-card,
+body.tv-mode #quotes .section-card {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column;
@@ -2322,6 +2444,46 @@ body.tv-mode .announcement-icon {
 body.tv-mode .ann-type-badge {
     font-size: 0.72rem !important;
     opacity: 0.9;
+}
+
+body.tv-mode #quotes .daily-quote-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(244,248,255,0.94) 100%) !important;
+    border: 1px solid rgba(123, 150, 206, 0.35) !important;
+    border-left: 5px solid #7a8cff !important;
+    box-shadow: 0 12px 30px rgba(8, 30, 70, 0.16) !important;
+    height: calc(100vh - 220px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+body.tv-mode #quotes .quote-mark {
+    color: rgba(255,255,255,0.18) !important;
+}
+
+body.tv-mode #quotes .quote-author-avatar {
+    border-color: rgba(255,255,255,0.18) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.tv-mode #quotes .quote-text {
+    color: #17345d !important;
+    font-size: 2rem !important;
+    line-height: 1.5 !important;
+}
+
+body.tv-mode #quotes .quote-footer {
+    border-top: 1px solid rgba(89, 120, 176, 0.28) !important;
+}
+
+body.tv-mode #quotes .quote-author {
+    color: #1f3f6f !important;
+    font-size: 1.2rem !important;
+}
+
+body.tv-mode #quotes .quote-author::before,
+body.tv-mode #quotes .quote-note {
+    color: rgba(52, 83, 134, 0.78) !important;
 }
 
 /* ── Holidays in TV — vertical 2-column grid ──── */
@@ -2910,6 +3072,15 @@ body.tv-mode #countdownBanner.tv-event-active .countdown-title {
     word-break: break-word;
 }
 
+body.tv-mode #countdownBanner.tv-event-active .countdown-event-date {
+    display: block !important;
+    margin-top: 0.35rem !important;
+    font-size: clamp(0.9rem, 2vw, 1.35rem) !important;
+    color: rgba(220, 235, 255, 0.88) !important;
+    letter-spacing: 0.3px !important;
+    font-weight: 600 !important;
+}
+
 /* Also target .countdown-text wrapper in case it has its own styles */
 body.tv-mode #countdownBanner.tv-event-active .countdown-text {
     display: flex !important;
@@ -2965,6 +3136,76 @@ body.tv-mode #countdownBanner.tv-event-active .countdown-unit-label {
     margin-top: clamp(0.3rem, 1vh, 0.75rem) !important;
     font-weight: 500 !important;
     opacity: 1 !important;
+}
+
+/* ── Famous Quote — full-screen TV overlay (end of cycle) ─────────── */
+body.tv-mode #quotes.tv-quote-active {
+    display: flex !important;
+    position: fixed !important;
+    inset: 60px 0 0 0 !important;
+    z-index: 8500 !important;
+    background: radial-gradient(ellipse at 50% 36%, #0f2d6b 0%, #082048 55%, #07111e 100%) !important;
+    padding: clamp(1.2rem, 3vh, 3rem) clamp(1rem, 5vw, 5rem) !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .section-card {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: transparent !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .section-header {
+    display: none !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .daily-quote-container {
+    width: 100% !important;
+    min-height: 0 !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .daily-quote-card {
+    height: auto !important;
+    width: 100% !important;
+    padding: clamp(1.2rem, 3vh, 3rem) clamp(1rem, 3vw, 3rem) !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f4f8ff 100%) !important;
+    border: 1px solid rgba(107, 136, 196, 0.35) !important;
+    border-left: 8px solid #7a8cff !important;
+    border-radius: 18px !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .quote-avatar-wrap {
+    margin-bottom: clamp(0.4rem, 1.5vh, 1rem) !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .quote-author-avatar {
+    width: clamp(74px, 10vh, 110px) !important;
+    height: clamp(74px, 10vh, 110px) !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .quote-text {
+    text-align: center !important;
+    font-size: clamp(2rem, 5.2vh, 3.4rem) !important;
+    line-height: 1.35 !important;
+    font-weight: 600 !important;
+    color: #16345d !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .quote-footer {
+    justify-content: center !important;
+    border-top: none !important;
+    padding-top: 0.3rem !important;
+}
+
+body.tv-mode #quotes.tv-quote-active .quote-author {
+    font-size: clamp(1.2rem, 2.8vh, 2rem) !important;
+    color: #254a80 !important;
 }
 
 
@@ -3092,6 +3333,7 @@ body.tv-mode #teamUpdates.tv-hidden-section,
 body.tv-mode #announcements.tv-hidden-section,
 body.tv-mode #holidays.tv-hidden-section,
 body.tv-mode #positions.tv-hidden-section,
+body.tv-mode #quotes.tv-hidden-section,
 body.tv-mode #celebrations.tv-hidden-section,
 body.tv-mode #countdownBanner.tv-hidden-section,
 body.tv-mode #joiners.tv-hidden-section {

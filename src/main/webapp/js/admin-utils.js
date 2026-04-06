@@ -574,6 +574,53 @@ function previewImage(file, imgElement) {
 }
 
 /**
+ * Restore the sidebar scroll position so the active menu item stays in view
+ * when navigating between admin pages.
+ */
+function restoreSidebarScrollPosition() {
+    const sidebar = document.querySelector('.sidebar');
+
+    if (!sidebar) {
+        return;
+    }
+
+    const savedScrollTop = sessionStorage.getItem('adminSidebarScrollTop');
+    if (savedScrollTop !== null) {
+        sidebar.scrollTop = Number.parseInt(savedScrollTop, 10) || 0;
+    }
+
+    sidebar.addEventListener('scroll', () => {
+        sessionStorage.setItem('adminSidebarScrollTop', String(sidebar.scrollTop));
+    }, { passive: true });
+}
+
+/**
+ * Keep the active sidebar item visible without forcing a visible jump.
+ */
+function revealActiveSidebarItem() {
+    const sidebar = document.querySelector('.sidebar');
+    const activeItem = document.querySelector('.sidebar-menu a.menu-item.active');
+
+    if (!sidebar || !activeItem) {
+        return;
+    }
+
+    const sidebarRect = sidebar.getBoundingClientRect();
+    const itemRect = activeItem.getBoundingClientRect();
+    const isVisible = itemRect.top >= sidebarRect.top && itemRect.bottom <= sidebarRect.bottom;
+
+    if (isVisible) {
+        return;
+    }
+
+    const targetScrollTop = sidebar.scrollTop + (itemRect.top - sidebarRect.top) - (sidebar.clientHeight / 2) + (activeItem.clientHeight / 2);
+    sidebar.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: 'auto'
+    });
+}
+
+/**
  * Activate sidebar menu item based on current page URL.
  * Runs automatically on every admin page — no need to hardcode active class.
  */
@@ -617,7 +664,9 @@ function activateCurrentMenu() {
 AdminAPI.init();
 
 // Activate current menu on page load
+document.addEventListener('DOMContentLoaded', restoreSidebarScrollPosition);
 document.addEventListener('DOMContentLoaded', activateCurrentMenu);
+document.addEventListener('DOMContentLoaded', revealActiveSidebarItem);
 
 // Make AdminAPI available globally
 window.AdminAPI = AdminAPI;
@@ -629,4 +678,6 @@ window.showLoading = showLoading;
 window.showError = showError;
 window.validateImageFile = validateImageFile;
 window.previewImage = previewImage;
+window.restoreSidebarScrollPosition = restoreSidebarScrollPosition;
+window.revealActiveSidebarItem = revealActiveSidebarItem;
 window.activateCurrentMenu = activateCurrentMenu;
