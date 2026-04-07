@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.micrometer.common.lang.NonNull;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +36,7 @@ public class OpenPositionController {
      * Get position by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<OpenPosition> getPositionById(@PathVariable Integer id) {
+    public ResponseEntity<OpenPosition> getPositionById(@NonNull @PathVariable Integer id) {
         Optional<OpenPosition> position = openPositionRepository.findById(id);
         if (position.isPresent()) {
             return ResponseEntity.ok(position.get());
@@ -47,6 +49,9 @@ public class OpenPositionController {
      */
     @PostMapping
     public ResponseEntity<OpenPosition> createPosition(@RequestBody OpenPosition position) {
+        if (position == null) {
+            return ResponseEntity.badRequest().build();
+        }
         OpenPosition savedPosition = openPositionRepository.save(position);
         return ResponseEntity.ok(savedPosition);
     }
@@ -55,7 +60,10 @@ public class OpenPositionController {
      * Update existing position
      */
     @PutMapping("/{id}")
-    public ResponseEntity<OpenPosition> updatePosition(@PathVariable Integer id, @RequestBody OpenPosition positionDetails) {
+    public ResponseEntity<OpenPosition> updatePosition(@NonNull @PathVariable Integer id, @RequestBody OpenPosition positionDetails) {
+        if (positionDetails == null || id == null) {
+            return ResponseEntity.badRequest().build();
+        }
         Optional<OpenPosition> position = openPositionRepository.findById(id);
         if (position.isPresent()) {
             OpenPosition existingPosition = position.get();

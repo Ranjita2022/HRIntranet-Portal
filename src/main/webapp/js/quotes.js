@@ -42,6 +42,9 @@
             if (!parsed || !parsed.dayKey || !parsed.quote || !parsed.author) {
                 return null;
             }
+            if (typeof parsed.isFallback !== 'boolean') {
+                parsed.isFallback = true;
+            }
             return parsed;
         } catch (error) {
             return null;
@@ -54,6 +57,7 @@
             quote: quoteData.quote,
             author: quoteData.author,
             authorImageUrl: quoteData.authorImageUrl || '',
+            isFallback: !!quoteData.isFallback,
             source: getDailyQuoteApiUrl(),
             fetchedAt: new Date().toISOString()
         };
@@ -72,7 +76,7 @@
         `);
     }
 
-    function renderQuote(containerSelector, quoteData, options) {
+    function renderQuote(containerSelector, quoteData) {
         const $container = $(containerSelector);
         const authorInitials = getAuthorInitials(quoteData.author);
         const hasAuthorImage = !!quoteData.authorImageUrl;
@@ -155,12 +159,14 @@
             const quote = (payload.quote || payload.q || '').trim();
             const author = (payload.author || payload.a || 'Unknown').trim();
             const authorImageUrl = (payload.authorImageUrl || payload.author_image_url || '').trim();
+            const isFallback = !!payload.cachedFallback || payload.source === 'local-fallback';
 
             if (!quote) {
                 throw new Error('Quote API response did not include quote text');
             }
 
-            return { quote, author, authorImageUrl };
+
+            return { quote, author, authorImageUrl, isFallback };
         });
     }
 
@@ -174,8 +180,8 @@
         const todayKey = getLocalDayKey();
         const cached = readCachedQuote();
 
-        if (cached && cached.dayKey === todayKey && cached.authorImageUrl) {
-            renderQuote(targetSelector, cached, { isFallback: false });
+        if (cached && cached.dayKey === todayKey && !cached.isFallback) {
+            renderQuote(targetSelector, cached);
             return Promise.resolve(cached);
         }
 
@@ -184,12 +190,12 @@
         return fetchDailyQuoteFromApi()
             .then(freshQuote => {
                 const stored = saveCachedQuote(todayKey, freshQuote);
-                renderQuote(targetSelector, stored, { isFallback: false });
+                renderQuote(targetSelector, stored);
                 return stored;
             })
             .catch(error => {
                 if (cached) {
-                    renderQuote(targetSelector, cached, { isFallback: true });
+                    renderQuote(targetSelector, cached);
                     return cached;
                 }
 
