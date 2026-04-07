@@ -67,10 +67,13 @@ public class EmployeeController {
         // Compute profileImageUrl for frontend use
         String profileImageUrl = null;
         if (emp.getProfileImage() != null && emp.getProfileImage().getFilename() != null) {
-            profileImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/api/uploads/")
-                    .path(emp.getProfileImage().getFilename())
-                    .toUriString();
+            String filename = emp.getProfileImage().getFilename();
+            if (filename != null) {
+                profileImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/api/uploads/")
+                        .path(filename)
+                        .toUriString();
+            }
         }
         map.put("profileImageUrl", profileImageUrl);
         return map;

@@ -2756,6 +2756,11 @@ function renderPositions(positions) {
 
     $section.removeClass('no-data');
 
+    const openPositionsCareersUrl = (typeof CONFIG !== 'undefined' && CONFIG.OPEN_POSITIONS_CAREERS_URL)
+        ? CONFIG.OPEN_POSITIONS_CAREERS_URL
+        : 'https://ieee.taleo.net/careersection/1/jobsearch.ftl';
+    const safeOpenPositionsCareersUrl = escapeHtml(openPositionsCareersUrl);
+
     let cardsHtml = '';
     positions.forEach(position => {
         const postingDate = formatDate(position.postingDate);
@@ -2786,12 +2791,12 @@ function renderPositions(positions) {
                         </div>
                     </div>
                     <div class="card-actions">
-                        <a class="learn-more-btn" href="https://ieee.taleo.net/careersection/1/jobsearch.ftl" target="_blank" rel="noopener">
+                        <a class="learn-more-btn" href="${safeOpenPositionsCareersUrl}" target="_blank" rel="noopener">
                             Learn More
                         </a>
-                        <button class="apply-button-tv" onclick="window.open('https://ieee.taleo.net/careersection/1/jobsearch.ftl', '_blank')">
+                        <a class="apply-button-tv" href="${safeOpenPositionsCareersUrl}" target="_blank" rel="noopener">
                             <i class="bi bi-arrow-right"></i> Apply
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

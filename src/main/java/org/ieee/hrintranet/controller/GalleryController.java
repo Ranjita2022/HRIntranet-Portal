@@ -199,11 +199,13 @@ public class GalleryController {
             if (imageFiles != null) {
                 for (File imageFile : imageFiles) {
                     String filename = imageFile.getName();
+                    String folderName = folder.getFolderName() != null ? folder.getFolderName() : "";
+                    String encodedFilename = encodeUrlPathSegment(filename != null ? filename : "");
                     String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                         .path("/api/public/gallery/image/")
-                        .path(folder.getFolderName())
+                        .path(folderName != null && !folderName.isEmpty() ? folderName : "")
                         .path("/")
-                        .path(encodeUrlPathSegment(filename))
+                        .path(encodedFilename != null ? encodedFilename : "")
                         .toUriString();
 
                     Map<String, Object> image = new HashMap<>();

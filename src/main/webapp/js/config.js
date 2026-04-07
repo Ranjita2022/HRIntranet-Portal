@@ -50,6 +50,9 @@ const CONFIG = {
     // Development API URL
     // Works for both Maven Spring Boot and Tomcat WAR (when deployed as ROOT.war
     DEVELOPMENT_API_URL: 'http://localhost:8080/api',
+
+    // External careers page URL for Open Positions actions
+    OPEN_POSITIONS_CAREERS_URL: 'https://ieee.taleo.net/careersection/1/jobsearch.ftl',
     
     // Auto-detect API URL based on environment
     get API_BASE_URL() {
