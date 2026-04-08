@@ -394,10 +394,11 @@
         }
 
         function loadPositionsPublic() {
-            // Fetch all positions (both OPEN and CLOSED) from public API
-            const baseURL = CONFIG.API_BASE_URL || 'http://localhost:8080/api';
-            const url = `${baseURL}/public/positions/all`;
-            
+            // Fetch all positions (both OPEN and CLOSED) from public API.
+            // API_BASE_URL is auto-detected from window.location by config.js —
+            // no hardcoded host/IP needed here.
+            const url = `${CONFIG.API_BASE_URL}/public/positions/all`;
+
             fetch(url, {
                 method: 'GET'
             })
