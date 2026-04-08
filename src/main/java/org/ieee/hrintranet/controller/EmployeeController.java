@@ -82,6 +82,8 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<?> createEmployee(@RequestBody Employee employee, Authentication authentication) {
         try {
+            normalizeEmployeeNames(employee);
+
             if (employee.getStatus() == Employee.EmployeeStatus.TERMINATED && employee.getEndDate() == null) {
                 employee.setEndDate(LocalDate.now());
             } else if (employee.getStatus() != Employee.EmployeeStatus.TERMINATED) {
@@ -108,6 +110,8 @@ public class EmployeeController {
     public ResponseEntity<?> updateEmployee(@PathVariable int id, @RequestBody Employee employee, Authentication authentication) {
         return employeeRepository.findById(id)
                 .map(existing -> {
+                    normalizeEmployeeNames(employee);
+
                     Employee oldData = new Employee();
                     oldData.setId(existing.getId());
                     oldData.setEmployeeId(existing.getEmployeeId());
@@ -122,6 +126,7 @@ public class EmployeeController {
                     existing.setDepartment(employee.getDepartment());
                     existing.setStartDate(employee.getStartDate());
                     existing.setEndDate(employee.getEndDate());
+                    existing.setBirthDate(employee.getBirthDate());
                     existing.setStatus(employee.getStatus());
 
                     if (existing.getStatus() == Employee.EmployeeStatus.TERMINATED && existing.getEndDate() == null) {
@@ -138,6 +143,12 @@ public class EmployeeController {
                     return ResponseEntity.ok(updated);
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private void normalizeEmployeeNames(Employee employee) {
+        if (employee.getLastName() == null || employee.getLastName().trim().isEmpty()) {
+            employee.setLastName("");
+        }
     }
     
     @DeleteMapping("/{id}")

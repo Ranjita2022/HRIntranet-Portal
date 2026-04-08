@@ -23,7 +23,7 @@ public class Employee {
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
     
-    @Column(name = "last_name", nullable = false, length = 100)
+    @Column(name = "last_name", length = 100)
     private String lastName;
     
     @Column(name = "email", unique = true, nullable = false, length = 200)
@@ -62,6 +62,9 @@ public class Employee {
     
     @Transient
     public String getFullName() {
+        if (lastName == null || lastName.trim().isEmpty()) {
+            return firstName;
+        }
         return firstName + " " + lastName;
     }
     

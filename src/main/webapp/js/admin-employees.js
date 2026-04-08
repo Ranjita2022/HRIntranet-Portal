@@ -77,9 +77,13 @@ function renderEmployeesTable() {
         const days      = Math.floor((new Date() - new Date(employee.startDate)) / 86400000);
         const isNewJoiner = days >= 0 && days <= 30;
 
+        const firstInitial = (employee.firstName || '').trim().charAt(0).toUpperCase() || '?';
+        const lastInitial = (employee.lastName || '').trim().charAt(0).toUpperCase();
+        const avatarInitials = `${firstInitial}${lastInitial}`;
+
         const profileImage = employee.profileImageUrl
             ? `<img src="${employee.profileImageUrl}" alt="${escapeHtml(employee.fullName)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`
-            : `<span class="user-avatar" style="width:32px;height:32px;font-size:0.875rem;">${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}</span>`;
+            : `<span class="user-avatar" style="width:32px;height:32px;font-size:0.875rem;">${avatarInitials}</span>`;
 
         const statusBadges = {
             'ACTIVE':     '<span class="badge bg-success">Active</span>',
@@ -167,7 +171,7 @@ async function showEditEmployeeModal(id) {
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
     document.getElementById('employeeId').value = employee.employeeId;
     document.getElementById('employeeFirstName').value = employee.firstName;
-    document.getElementById('employeeLastName').value = employee.lastName;
+    document.getElementById('employeeLastName').value = employee.lastName || '';
     document.getElementById('employeeEmail').value = employee.email;
     document.getElementById('employeePosition').value = employee.position;
     document.getElementById('employeeDepartment').value = employee.department;
@@ -243,8 +247,8 @@ async function saveEmployee(event) {
         return;
     }
     
-    if (!firstName || !lastName) {
-        showError('First name and last name are required');
+    if (!firstName) {
+        showError('First name is required');
         return;
     }
     

@@ -114,6 +114,7 @@ const AdminAPI = {
         }
         
         const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+        const method = (options.method || 'GET').toUpperCase();
         
         const headers = {
             'Authorization': `Bearer ${this.token}`,
@@ -128,6 +129,7 @@ const AdminAPI = {
         try {
             const response = await fetch(url, {
                 ...options,
+                cache: method === 'GET' ? 'no-store' : options.cache,
                 headers
             });
             
