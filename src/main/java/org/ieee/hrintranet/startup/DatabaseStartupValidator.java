@@ -4,6 +4,7 @@ import org.ieee.hrintranet.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,11 @@ import org.springframework.stereotype.Component;
 public class DatabaseStartupValidator implements CommandLineRunner {
     
     private static final Logger logger = LoggerFactory.getLogger(DatabaseStartupValidator.class);
-    
+
+    /** Injected from application.properties / profile — no hardcoded URLs. */
+    @Value("${app.base-url:http://localhost:8080}")
+    private String appBaseUrl;
+
     private final EmployeeRepository employeeRepository;
     private final AnnouncementRepository announcementRepository;
     private final CarouselSlideRepository carouselSlideRepository;
@@ -103,8 +108,9 @@ public class DatabaseStartupValidator implements CommandLineRunner {
                 logger.info("========================================");
                 logger.info("Backend is ready to serve requests");
                 logger.info("API Endpoints:");
-                logger.info("  • Health: http://localhost:8080/api/public/health");
-                logger.info("  • Portal Data: http://localhost:8080/api/public/portal-data");
+                logger.info("  • Health:      {}/api/public/health", appBaseUrl);
+                logger.info("  • Portal Data: {}/api/public/portal-data", appBaseUrl);
+                logger.info("  • Config:      {}/api/public/config", appBaseUrl);
             } else {
                 logger.warn("========================================");
                 logger.warn("   ⚠ VALIDATION WARNINGS DETECTED");

@@ -1422,6 +1422,8 @@ function updateLastUpdatedTime() {
  */
 function showError(message) {
     $('#errorMessage').text(message);
+    // Show the actual resolved API URL in the troubleshooting hint
+    $('#errorApiHint').text(CONFIG.API_BASE_URL + '/public/portal-data');
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     errorModal.show();
 
