@@ -574,9 +574,11 @@ html {
 .announcement-image {
     width: 100%;
     border-radius: var(--border-radius);
-    margin-bottom: 0.75rem;
-    max-height: 150px;
+    margin-bottom: 0.5rem;
+    max-height: 180px;
+    display: block;
     object-fit: cover;
+    object-position: top center;
 }
 
 .announcement-meta {
@@ -906,11 +908,11 @@ html {
 .countdown-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .countdown-icon {
-    font-size: 2.5rem;
+    font-size: 2rem;
     opacity: 0.9;
 }
 
@@ -923,7 +925,7 @@ html {
 
 .countdown-title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 600;
 }
 
@@ -1222,9 +1224,12 @@ html {
 /* Team Card Image */
 .team-card-image {
     width: 100%;
-    height: 200px;
+    height: 300px;
+    display: block;
     object-fit: cover;
     background-color: #e9ecef;
+    /* border-radius: 50%; */
+    object-position: top center;
 }
 
 .team-card-image-placeholder {
@@ -1300,16 +1305,6 @@ html {
     color: #6c757d;
     margin-top: 0.75rem;
     margin-bottom: 0;
-}
-
-/* TV Mode - Full size team updates descriptions */
-body.tv-mode .team-card-description {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: #495057;
-    display: block !important;
-    max-height: none !important;
-    overflow: visible !important;
 }
 
 /* Badge for NEW joiners */
@@ -1578,7 +1573,7 @@ body.tv-mode .team-card-description {
 
 /* Section banner cards for horizontal scroll */
 .section-banner-card {
-    width: 320px;
+    width: 350px;
     flex-shrink: 0;
 }
 
@@ -2768,40 +2763,6 @@ body.tv-mode .joiner-date {
 
 body.tv-mode .joiner-description {
     font-size: 0.95rem;
-}
-
-/* TV Mode - Enhanced Team Updates Display */
-body.tv-mode .team-card-name {
-    font-size: 1.5rem !important;
-    font-weight: 600;
-}
-
-body.tv-mode .team-card-position {
-    font-size: 1.15rem !important;
-}
-
-body.tv-mode .team-card-department {
-    font-size: 1rem !important;
-    padding: 0.4rem 1rem;
-}
-
-body.tv-mode .team-card-date {
-    font-size: 1rem !important;
-}
-
-body.tv-mode .joiner-card-wrapper {
-    width: 300px;
-}
-
-/* TV Mode - Enhanced Team Card Display */
-body.tv-mode .team-card-wrapper {
-    min-width: 400px !important;
-    margin-right: 2rem;
-}
-
-body.tv-mode .team-card {
-    padding: 1rem;
-    min-height: 280px;
 }
 
 body.tv-mode .announcement-title {

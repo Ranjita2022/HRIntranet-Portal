@@ -1888,7 +1888,7 @@ function updateTVHeaderSection(label, iconClass) {
         'Upcoming Holidays': 'bi-calendar-event-fill',
         'Announcements':     'bi-megaphone-fill',
         'Open Positions':    'bi-briefcase-fill',
-        'Famous Quotes':     'bi-quote',
+        'Quote of the Day':     'bi-quote',
         'Carousel':          'bi-images'
     };
     const icon = iconClass || fallbackIcons[label] || 'bi-display';
