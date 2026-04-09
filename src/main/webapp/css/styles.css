@@ -575,7 +575,7 @@ html {
     width: 100%;
     border-radius: var(--border-radius);
     margin-bottom: 0.5rem;
-    max-height: 180px;
+    max-height: 150px;
     display: block;
     object-fit: cover;
     object-position: top center;
@@ -1223,22 +1223,29 @@ html {
 
 /* Team Card Image */
 .team-card-image {
-    width: 100%;
-    height: 300px;
+    width: 160px;
+    height: 160px;
     display: block;
     object-fit: cover;
     background-color: #e9ecef;
-    /* border-radius: 50%; */
+    border-radius: 50%;
     object-position: top center;
+    margin: 1rem auto 0;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .team-card-image-placeholder {
-    height: 200px;
+    width: 112px;
+    height: 112px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 4rem;
+    font-size: 2.1rem;
+    border-radius: 50%;
+    margin: 1rem auto 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .team-card-image-placeholder.joiner {
@@ -1294,7 +1301,7 @@ html {
 
 /* Meta wrapper groups date + description and stays at the bottom */
 .team-card-meta {
-    margin-top: auto;
+    margin-top: 0.85rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -2573,6 +2580,12 @@ body.tv-mode .team-card-department {
 }
 body.tv-mode .team-card-date { color: rgba(255,255,255,0.6) !important; font-size: 0.9rem !important; }
 body.tv-mode .team-card-description { color: rgba(220,235,255,0.75) !important; font-size: 0.95rem !important; }
+
+body.tv-mode .team-card-image,
+body.tv-mode .team-card-image-placeholder {
+    width: 150px !important;
+    height: 150px !important;
+}
 
 body.tv-mode .team-card-image-placeholder.joiner     { background: linear-gradient(135deg, #1a4f7a 0%, #00629B 100%) !important; }
 body.tv-mode .team-card-image-placeholder.birthday   { background: linear-gradient(135deg, #7a1a1a 0%, #dc3545 100%) !important; }
