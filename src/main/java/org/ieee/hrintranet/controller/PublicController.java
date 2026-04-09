@@ -55,6 +55,7 @@ public class PublicController {
         LocalDate thirtyDaysAgo = today.minusDays(30);
         List<Employee> recentJoiners = employeeRepository.findAll().stream()
                 .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
+            .filter(emp -> emp.getStartDate() != null)
                 .filter(emp -> !emp.getStartDate().isBefore(thirtyDaysAgo) && !emp.getStartDate().isAfter(today))
                 .sorted((e1, e2) -> e2.getStartDate().compareTo(e1.getStartDate()))
                 .limit(maxJoiners)
@@ -68,21 +69,11 @@ public class PublicController {
             joiner.put("Name", emp.getFullName());
             joiner.put("Position", emp.getPosition());
             joiner.put("Department", emp.getDepartment());
-            joiner.put("StartDate", emp.getStartDate().toString());
+            joiner.put("StartDate", emp.getStartDate() != null ? emp.getStartDate().toString() : "");
             joiner.put("Date", "");
             joiner.put("Description", "We are excited to welcome " + emp.getFullName() + 
                                      " as our new " + emp.getPosition() + ".");
-            String joinerImageUrl = "";
-            if (emp.getProfileImage() != null) {
-                if (emp.getProfileImage().getFilePath() != null && emp.getProfileImage().getFilePath().startsWith("http")) {
-                    joinerImageUrl = emp.getProfileImage().getFilePath();
-                } else {
-                    joinerImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                            .path("/api/uploads/")
-                            .path(emp.getProfileImage().getFilename())
-                            .toUriString();
-                }
-            }
+            String joinerImageUrl = resolveFileImageUrl(emp.getProfileImage());
             joiner.put("ImageURL", joinerImageUrl);
             return joiner;
         }).collect(Collectors.toList());
@@ -90,6 +81,7 @@ public class PublicController {
         // Get ALL upcoming holidays — no upper date limit
         List<Holiday> upcomingHolidays = holidayRepository.findFutureHolidays(today)
                 .stream()
+            .filter(holiday -> holiday.getHolidayDate() != null)
                 .limit(maxHolidays)
                 .collect(Collectors.toList());
         
@@ -111,8 +103,8 @@ public class PublicController {
         // Get active announcements (excluding events).
         // If expiry date is missing, default visibility window is 30 days from publish date.
         List<Announcement> activeAnnouncements = announcementRepository.findAll().stream()
-            .filter(ann -> ann.getIsActive())
-            .filter(ann -> ann.getType() != Announcement.AnnouncementType.EVENT)
+            .filter(ann -> Boolean.TRUE.equals(ann.getIsActive()))
+            .filter(ann -> ann.getType() != null && ann.getType() != Announcement.AnnouncementType.EVENT)
             .filter(ann -> ann.getPublishDate() != null && !ann.getPublishDate().isAfter(today))
             .filter(ann -> {
                 LocalDate effectiveExpiry = ann.getExpiryDate() != null
@@ -127,8 +119,9 @@ public class PublicController {
         // Get active events (show future events and past 30 days)
         LocalDate thirtyDaysFromNow = today.plusDays(30);
         List<Map<String, Object>> events = announcementRepository.findAll().stream()
-                .filter(ann -> ann.getIsActive())
-                .filter(ann -> ann.getType() == Announcement.AnnouncementType.EVENT)
+            .filter(ann -> Boolean.TRUE.equals(ann.getIsActive()))
+            .filter(ann -> ann.getType() == Announcement.AnnouncementType.EVENT)
+            .filter(ann -> ann.getPublishDate() != null)
                 .filter(ann -> !ann.getPublishDate().isAfter(thirtyDaysFromNow))  // Show events up to 30 days in future
                 .sorted((a1, a2) -> a1.getPublishDate().compareTo(a2.getPublishDate()))  // Sort by date ascending
                 .map(ann -> {
@@ -138,9 +131,7 @@ public class PublicController {
                     e.put("Title", ann.getTitle());
                     e.put("Date", ann.getPublishDate().toString());
                     e.put("Description", ann.getDescription() != null ? ann.getDescription() : "");
-                        String eventImageUrl = ann.getImage() != null ?
-                            ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
-                                .path(ann.getImage().getFilename()).toUriString() : "";
+                        String eventImageUrl = resolveFileImageUrl(ann.getImage());
                         e.put("ImageURL", eventImageUrl);
                     return e;
                 }).collect(Collectors.toList());
@@ -157,9 +148,7 @@ public class PublicController {
                     a.put("StartDate", "");
                     a.put("Date", ann.getPublishDate().toString());
                     a.put("Description", ann.getDescription() != null ? ann.getDescription() : "");
-                        String annImageUrl = ann.getImage() != null ?
-                            ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
-                                .path(ann.getImage().getFilename()).toUriString() : "";
+                        String annImageUrl = resolveFileImageUrl(ann.getImage());
                         a.put("ImageURL", annImageUrl);
                     a.put("Priority", ann.getPriority());
                     return a;
@@ -192,8 +181,7 @@ public class PublicController {
             c.put("Subtitle", slide.getSubtitle() != null ? slide.getSubtitle() : "");
             String slideImageUrl = "";
             if (slide.getImage() != null) {
-                slideImageUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
-                        .path(slide.getImage().getFilename()).toUriString();
+                slideImageUrl = resolveFileImageUrl(slide.getImage());
             } else if (slide.getImageUrl() != null) {
                 slideImageUrl = slide.getImageUrl();
             }
@@ -237,15 +225,7 @@ public class PublicController {
                     anniversary.put("Years", yearsOfService);
                     anniversary.put("Position", emp.getPosition() != null ? emp.getPosition() : "");
                     anniversary.put("Department", emp.getDepartment());
-                    String annImg = "";
-                    if (emp.getProfileImage() != null) {
-                        if (emp.getProfileImage().getFilePath() != null && emp.getProfileImage().getFilePath().startsWith("http")) {
-                            annImg = emp.getProfileImage().getFilePath();
-                        } else {
-                            annImg = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
-                                    .path(emp.getProfileImage().getFilename()).toUriString();
-                        }
-                    }
+                    String annImg = resolveFileImageUrl(emp.getProfileImage());
                     anniversary.put("ImageURL", annImg);
                     celebrations.add(anniversary);
                 }
@@ -277,15 +257,7 @@ public class PublicController {
                 birthday.put("Date", birthdayThisYear.toString());
                 birthday.put("Position", emp.getPosition() != null ? emp.getPosition() : "");
                 birthday.put("Department", emp.getDepartment());
-                String bImg = "";
-                if (emp.getProfileImage() != null) {
-                    if (emp.getProfileImage().getFilePath() != null && emp.getProfileImage().getFilePath().startsWith("http")) {
-                        bImg = emp.getProfileImage().getFilePath();
-                    } else {
-                        bImg = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/uploads/")
-                                .path(emp.getProfileImage().getFilename()).toUriString();
-                    }
-                }
+                String bImg = resolveFileImageUrl(emp.getProfileImage());
                 birthday.put("ImageURL", bImg);
                 celebrations.add(birthday);
             }
@@ -308,6 +280,25 @@ public class PublicController {
         int maxDay = java.time.Month.of(month).length(java.time.Year.isLeap(year));
         int safeDay = Math.min(day, maxDay);
         return LocalDate.of(year, month, safeDay);
+    }
+
+    private String resolveFileImageUrl(Image image) {
+        if (image == null) {
+            return "";
+        }
+
+        if (image.getFilePath() != null && image.getFilePath().startsWith("http")) {
+            return image.getFilePath();
+        }
+
+        if (image.getFilename() == null || image.getFilename().isBlank()) {
+            return "";
+        }
+
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/uploads/")
+                .path(image.getFilename())
+                .toUriString();
     }
     
     @GetMapping("/gallery/random")
