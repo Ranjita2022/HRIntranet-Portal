@@ -262,7 +262,7 @@
         let autoPlayInterval = null;
         let progressTimer = null;
         let isPaused = false;
-        const DISPLAY_DURATION = 8000; // 10 seconds per shoutout
+        const DISPLAY_DURATION = 60000; // 61 min per shoutout
 
         // ── Signal the parent kiosk that one full cycle is done ──────────────
         function notifyKioskCycleComplete() {
@@ -325,6 +325,7 @@
             // Force reflow then animate
             void bar.offsetWidth;
             bar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
+            // console.log(`⏱️ Displaying shoutouts for ${DISPLAY_DURATION}ms`);
             bar.style.width = '100%';
         }
 

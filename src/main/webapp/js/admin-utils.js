@@ -449,6 +449,13 @@ const AdminAPI = {
         async getStats() {
             return AdminAPI.fetch('/admin/audit-logs/stats');
         }
+    },
+
+    // === SHOUTOUTS API (READ-ONLY) ===
+    shoutouts: {
+        async getAll() {
+            return AdminAPI.fetch('/admin/shoutouts');
+        }
     }
 };
 

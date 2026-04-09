@@ -6,6 +6,7 @@ import org.ieee.hrintranet.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -59,6 +60,7 @@ public class PublicWorkAnniversaryController {
                 experienceDate,
                 yearsOfService
             );
+            displayEntity.setProfileImageUrl(buildProfileImageUrl(emp));
             displayEntity.setMonthsOfExperience(monthsOfExperience);
             displayEntity.setExperienceLabel(buildExperienceLabel(yearsOfService, monthsOfExperience));
 
@@ -126,6 +128,7 @@ public class PublicWorkAnniversaryController {
                 experienceDate,
                 yearsOfService
             );
+            displayEntity.setProfileImageUrl(buildProfileImageUrl(emp));
             displayEntity.setEmployeeStatus(emp.getStatus() != null ? emp.getStatus().name() : null);
             displayEntity.setMonthsOfExperience(monthsOfExperience);
             displayEntity.setExperienceLabel(buildExperienceLabel(yearsOfService, monthsOfExperience));
@@ -196,5 +199,26 @@ public class PublicWorkAnniversaryController {
         );
         
         return ResponseEntity.ok(groupedByYear);
+    }
+
+    private String buildProfileImageUrl(Employee emp) {
+        if (emp.getProfileImage() == null) {
+            return "";
+        }
+
+        String filePath = emp.getProfileImage().getFilePath();
+        if (filePath != null && filePath.startsWith("http")) {
+            return filePath;
+        }
+
+        String filename = emp.getProfileImage().getFilename();
+        if (filename == null || filename.isBlank()) {
+            return "";
+        }
+
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/uploads/")
+                .path(filename)
+                .toUriString();
     }
 }

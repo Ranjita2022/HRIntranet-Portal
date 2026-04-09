@@ -57,6 +57,38 @@
             margin: 0 0.5rem 0 0;
             font-weight: 500;
         }
+
+        .anniversary-avatar-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            background: #f8f9fa;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .anniversary-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .anniversary-avatar-placeholder {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #00629B;
+            background: linear-gradient(135deg, #e7f3ff 0%, #d9ecff 100%);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .anniversary-employee-cell {
+            min-width: 220px;
+        }
     </style>
 </head>
 <body>
@@ -83,9 +115,7 @@
             <a href="admin-announcements.html" class="menu-item">
                 <i class="bi bi-megaphone-fill"></i>
                 <span>Announcements</span>
-            </a>
-            
-            <a href="admin-holidays.html" class="menu-item">
+<a href="admin-holidays.html" class="menu-item">
                 <i class="bi bi-calendar-event-fill"></i>
                 <span>Holidays</span>
             </a>
@@ -119,8 +149,10 @@
                 <i class="bi bi-briefcase-fill"></i>
                 <span>Open Positions</span>
             </a>
-            
-            <div class="menu-section">System</div>
+
+        <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
+
+        
             
             <a href="admin-audit.html" class="menu-item">
                 <i class="bi bi-journal-text"></i>
@@ -358,6 +390,7 @@
                             id: item.id || item.employeeId || '',
                             employeeId: item.employeeId || item.id || null,
                             employeeName: item.employeeName || '',
+                            profileImageUrl: item.profileImageUrl || item.imageURL || item.imageUrl || '',
                             department: item.department || '-',
                             position: item.position || '-',
                             startDate: item.startDate || '',
@@ -410,7 +443,7 @@
 
             if (allAnniversaries.length === 0) {
                 $('#emptyState').show();
-                $tbody.html('<tr><td colspan="8" class="text-center">No anniversaries found</td></tr>');
+                $tbody.html('<tr><td colspan="9" class="text-center">No anniversaries found</td></tr>');
                 return;
             }
 
@@ -435,7 +468,12 @@
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><strong>${escapeHtml(anniversary.employeeName)}</strong></td>
+                        <td class="anniversary-employee-cell">
+                            <div class="d-flex align-items-center gap-2">
+                                ${renderEmployeeAvatar(anniversary)}
+                                <strong>${escapeHtml(anniversary.employeeName)}</strong>
+                            </div>
+                        </td>
                         <td>${escapeHtml(anniversary.department)}</td>
                         <td>${escapeHtml(anniversary.position)}</td>
                         <td>${formatDate(anniversary.startDate)}</td>
@@ -453,7 +491,7 @@
             $tbody.empty();
 
             if (currentMonthAnniversaries.length === 0) {
-                $tbody.html('<tr><td colspan="6" class="text-center text-muted">No anniversaries this month</td></tr>');
+                $tbody.html('<tr><td colspan="7" class="text-center text-muted">No anniversaries this month</td></tr>');
                 return;
             }
 
@@ -461,7 +499,12 @@
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><strong>${escapeHtml(anniversary.employeeName)}</strong></td>
+                        <td class="anniversary-employee-cell">
+                            <div class="d-flex align-items-center gap-2">
+                                ${renderEmployeeAvatar(anniversary)}
+                                <strong>${escapeHtml(anniversary.employeeName)}</strong>
+                            </div>
+                        </td>
                         <td>${escapeHtml(anniversary.department)}</td>
                         <td>${formatDate(anniversary.anniversaryDate)}</td>
                         <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${escapeHtml(anniversary.experienceLabel)}</span></td>
@@ -508,7 +551,12 @@
                                     <tbody>
                                         ${employees.map(emp => `
                                             <tr>
-                                                <td><strong>${escapeHtml(emp.employeeName)}</strong></td>
+                                                <td class="anniversary-employee-cell">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        ${renderEmployeeAvatar(emp)}
+                                                        <strong>${escapeHtml(emp.employeeName)}</strong>
+                                                    </div>
+                                                </td>
                                                 <td>${escapeHtml(emp.department)}</td>
                                                 <td>${escapeHtml(emp.position)}</td>
                                                 <td>${formatDate(emp.anniversaryDate)}</td>
@@ -571,6 +619,47 @@
             return `<span class="badge ${cssClass}">${label}</span>`;
         }
 
+        function renderEmployeeAvatar(employee) {
+            const employeeName = employee && employee.employeeName ? employee.employeeName : '';
+            const initials = getEmployeeInitials(employeeName);
+            const imageUrl = employee && employee.profileImageUrl ? employee.profileImageUrl : '';
+
+            if (imageUrl) {
+                return `
+                    <div class="anniversary-avatar-wrap" title="${escapeHtml(employeeName)}">
+                        <img class="anniversary-avatar" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(employeeName)}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
+                        <span class="anniversary-avatar anniversary-avatar-placeholder" style="display:none;">${escapeHtml(initials)}</span>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="anniversary-avatar-wrap anniversary-avatar-placeholder" title="${escapeHtml(employeeName)}">
+                    ${escapeHtml(initials)}
+                </div>
+            `;
+        }
+
+        function getEmployeeInitials(name) {
+            if (!name) return '?';
+
+            const parts = String(name)
+                .replace(/[^A-Za-z0-9\s.-]/g, ' ')
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean);
+
+            if (parts.length === 0) {
+                return '?';
+            }
+
+            if (parts.length === 1) {
+                return parts[0].slice(0, 2).toUpperCase();
+            }
+
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
         function formatDate(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
@@ -630,3 +719,8 @@
     </script>
 </body>
 </html>
+
+
+
+
+

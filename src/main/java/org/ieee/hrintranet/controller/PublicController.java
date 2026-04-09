@@ -235,6 +235,7 @@ public class PublicController {
                     anniversary.put("Name", emp.getFullName());
                     anniversary.put("Date", anniversaryDate.toString());
                     anniversary.put("Years", yearsOfService);
+                    anniversary.put("Position", emp.getPosition() != null ? emp.getPosition() : "");
                     anniversary.put("Department", emp.getDepartment());
                     String annImg = "";
                     if (emp.getProfileImage() != null) {
@@ -274,6 +275,7 @@ public class PublicController {
                 birthday.put("Type", "birthday");
                 birthday.put("Name", emp.getFullName());
                 birthday.put("Date", birthdayThisYear.toString());
+                birthday.put("Position", emp.getPosition() != null ? emp.getPosition() : "");
                 birthday.put("Department", emp.getDepartment());
                 String bImg = "";
                 if (emp.getProfileImage() != null) {

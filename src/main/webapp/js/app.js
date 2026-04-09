@@ -9,6 +9,9 @@ $(document).ready(function () {
     init();
 });
 
+let appAutoRefreshInterval = null;
+let portalDataRequestInFlight = false;
+
 /**
  * Initialize the application
  */
@@ -27,8 +30,8 @@ function init() {
     loadSidebarWidgets();
 
     // Setup auto-refresh if enabled
-    if (CONFIG.AUTO_REFRESH_MINUTES > 0) {
-        setInterval(loadAllDataFromDatabase, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
+    if (CONFIG.AUTO_REFRESH_MINUTES > 0 && !appAutoRefreshInterval) {
+        appAutoRefreshInterval = setInterval(loadAllDataFromDatabase, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
         debugLog(`Auto-refresh enabled: every ${CONFIG.AUTO_REFRESH_MINUTES} minutes`);
     }
 }
@@ -48,6 +51,12 @@ function loadSidebarWidgets() {
 
 // DATABASE API FUNCTIONS
 function loadAllDataFromDatabase() {
+    if (portalDataRequestInFlight) {
+        console.log('⏭️ Skipping portal-data reload: previous request still in progress');
+        return;
+    }
+    portalDataRequestInFlight = true;
+
     console.log('🚀 === LOADING DATA FROM DATABASE ===');
     console.log('📡 API Base URL:', CONFIG.API_BASE_URL);
 
@@ -122,6 +131,9 @@ function loadAllDataFromDatabase() {
 
             // Fallback: still load sidebar widgets even when portal-data fails.
             loadSidebarWidgets();
+        },
+        complete: function () {
+            portalDataRequestInFlight = false;
         }
     });
 }
@@ -253,6 +265,7 @@ function transformDatabaseResponse(dbResponse) {
             }
 
             const years = celebration.Years || 0;
+            const positionText = celebration.Position || celebration.position || celebration.Designation || celebration.designation || '';
 
             // Default messages similar to new joiner welcome text
             let descriptionText = '';
@@ -272,7 +285,7 @@ function transformDatabaseResponse(dbResponse) {
                 Department: celebration.Department || '',
                 ImageURL: celebration.ImageURL || '',
                 Title: '',
-                Position: '',
+                Position: positionText,
                 StartDate: '',
                 Description: descriptionText
             });
@@ -283,6 +296,7 @@ function transformDatabaseResponse(dbResponse) {
                 name: celebration.Name || '',
                 date: celebrationDate,
                 years: years,
+                position: positionText,
                 department: celebration.Department || '',
                 imageUrl: celebration.ImageURL || '',
                 description: descriptionText
@@ -844,6 +858,7 @@ function renderCarousel(slides) {
  */
 function renderTeamUpdates(joiners, celebrations) {
     const $container = $('#teamUpdatesContainer');
+    const $wrapper = $container.closest('.team-updates-scroll-wrapper');
     const $section = $('#teamUpdates');
     $container.empty();
 
@@ -963,6 +978,7 @@ function renderTeamUpdates(joiners, celebrations) {
                         ${imageHtml}
                         <div class="team-card-content">
                             <h4 class="team-card-name">${escapeHtml(celebration.name)}</h4>
+                            <p class="team-card-position">${escapeHtml(celebration.position) || 'Position TBD'}</p>
                             ${celebration.department ? `<p class="team-card-department">${escapeHtml(celebration.department)}</p>` : ''}
                             <div class="team-card-date">
                                 <i class="bi bi-calendar3"></i>
@@ -979,7 +995,27 @@ function renderTeamUpdates(joiners, celebrations) {
     }
 
     // Duplicate content for smooth infinite scrolling
-    $container.html(cardsHtml + cardsHtml);
+    const baseLoopBlock = cardsHtml + cardsHtml;
+    $container.html(baseLoopBlock);
+
+    // In TV mode with very few cards, one loop block can be narrower than the viewport.
+    // That causes a visible blank area near the end of the animation. Repeat the block
+    // enough times so each half of the animated track is wider than the viewport.
+    if (tvModeEnabled && $wrapper.length) {
+        window.requestAnimationFrame(function () {
+            const containerEl = $container.get(0);
+            const wrapperEl = $wrapper.get(0);
+            if (!containerEl || !wrapperEl) return;
+
+            const initialHalfWidth = containerEl.scrollWidth / 2;
+            const minHalfWidth = wrapperEl.clientWidth + 40;
+
+            if (initialHalfWidth > 0 && initialHalfWidth < minHalfWidth) {
+                const repeats = Math.ceil(minHalfWidth / initialHalfWidth);
+                $container.html(baseLoopBlock.repeat(repeats));
+            }
+        });
+    }
 }
 
 function deduplicateItems(items, keyBuilder) {
@@ -1000,7 +1036,7 @@ function deduplicateItems(items, keyBuilder) {
 function renderHolidays(holidays) {
     const $container = $('#holidaysContainer');
     const $section = $('#holidays');
-    $container.empty();
+    const previousSignature = $container.data('holidaysSignature') || '';
 
     const uniqueHolidays = deduplicateItems(holidays, holiday => {
         return `${holiday.id || ''}|${holiday.title || ''}|${holiday.date || ''}`;
@@ -1020,10 +1056,20 @@ function renderHolidays(holidays) {
 
     if (filteredHolidays.length === 0) {
         $section.addClass('no-data');
+        $container.data('holidaysSignature', '');
         return;
     }
 
     $section.removeClass('no-data');
+
+    const currentSignature = filteredHolidays.map(h => {
+        return `${h.id || ''}|${h.title || ''}|${h.date || ''}|${h.description || ''}`;
+    }).join('||');
+
+    // Skip DOM updates when data is unchanged to prevent visible flicker in kiosk mode.
+    if (currentSignature === previousSignature) {
+        return;
+    }
 
     // Show ALL upcoming holidays — no artificial cap
     let cardsHtml = '';
@@ -1050,6 +1096,7 @@ function renderHolidays(holidays) {
     });
 
     $container.html(cardsHtml);
+    $container.data('holidaysSignature', currentSignature);
 
     // Clear any previous auto-scroll interval (no longer used, but clean up if exists)
     const containerEl = $container.get(0);
@@ -1598,6 +1645,9 @@ function isRecentDate(dateString, days) {
     if (isNaN(date.getTime())) return false;
 
     const today = new Date();
+    date.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
     const diffTime = today - date;
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
@@ -1712,10 +1762,20 @@ function initTVMode() {
  * Enter TV/Kiosk Mode
  */
 function enterTVMode() {
+    if (tvModeEnabled) {
+        return;
+    }
+
     tvModeEnabled = true;
     $('body').addClass('tv-mode');
     $('body').addClass('tv-carousel-phase'); // hide main during carousel phase
     $('#tvHeader').show();
+
+    // Ensure normal-mode auto refresh does not compete with TV-mode refresh loop.
+    if (appAutoRefreshInterval) {
+        clearInterval(appAutoRefreshInterval);
+        appAutoRefreshInterval = null;
+    }
 
     // Update TV header clock immediately and then every second
     updateTVHeaderClock();
@@ -1734,11 +1794,19 @@ function enterTVMode() {
 
     // Start clock update
     updateTVClock();
+    if (tvClockInterval) {
+        clearInterval(tvClockInterval);
+        tvClockInterval = null;
+    }
     tvClockInterval = setInterval(updateTVClock, 1000);
 
     // Start auto-refresh countdown
     tvRefreshCountdown = 60;
     updateRefreshTimer();
+    if (tvRefreshInterval) {
+        clearInterval(tvRefreshInterval);
+        tvRefreshInterval = null;
+    }
     tvRefreshInterval = setInterval(function () {
         tvRefreshCountdown--;
         updateRefreshTimer();
@@ -1836,6 +1904,9 @@ function enterTVMode() {
     if (positionsData && positionsData.length > 0) {
         renderPositions(positionsData);
     }
+
+    // Re-render team updates in TV mode so its track layout matches TV animation rules.
+    renderTeamUpdates(window.joinersData || [], window.celebrationsData || []);
 
     debugLog('TV Mode enabled - showing carousel with stats and upcoming event');
 }
@@ -2035,7 +2106,7 @@ function getTVContentSections() {
     }
 
     // Always show Quotes at the end of TV section rotation.
-    candidates.push({ id: '#quotes', label: 'Famous Quotes', icon: 'bi-quote' });
+    candidates.push({ id: '#quotes', label: 'Quote of the Day', icon: 'bi-quote' });
 
     const result = candidates.filter(s => {
         const $el = $(s.id);
@@ -2146,7 +2217,7 @@ function showNextContentSection() {
         sectionDuration = 25000;
     } else if (section.id === '#quotes') {
         // Show quote like a kiosk card before carousel restarts.
-        sectionDuration = 10000;
+        sectionDuration = 25000;
     } else if (section.id === '#announcements') {
         // 7 s per card, clamped to [10s … 60s]
         const cardCount = Math.max(1, $('#announcementsContainer .announcement-card').length);
@@ -2493,6 +2564,9 @@ function restartCarouselCycle() {
     if (positionsData && positionsData.length > 0) {
         renderPositions(positionsData);
     }
+
+    // Re-render team updates in TV mode so short lists keep a seamless loop.
+    renderTeamUpdates(window.joinersData || [], window.celebrationsData || []);
 }
 
 /**
@@ -2579,6 +2653,11 @@ function exitTVMode() {
 
     // Restore holidays to normal vertical layout if it was set up for TV
     teardownTVHolidaysHorizontal();
+
+    // Restore normal auto refresh after leaving TV mode.
+    if (CONFIG.AUTO_REFRESH_MINUTES > 0 && !appAutoRefreshInterval) {
+        appAutoRefreshInterval = setInterval(loadAllDataFromDatabase, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
+    }
 
     debugLog('TV Mode disabled');
 }

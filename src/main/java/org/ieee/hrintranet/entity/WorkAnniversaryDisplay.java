@@ -54,6 +54,9 @@ public class WorkAnniversaryDisplay {
 
     @Transient
     private String experienceLabel;
+
+    @Transient
+    private String profileImageUrl;
     
     @Column(name = "is_published")
     private Boolean isPublished = true;
