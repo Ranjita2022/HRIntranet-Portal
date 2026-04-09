@@ -41,8 +41,6 @@ public class DatabaseStartupValidator implements CommandLineRunner {
             // Count records in all tables
             long employeeCount = employeeRepository.count();
             long announcementCount = announcementRepository.count();
-            Long workAnniversaryCountObj = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM work_anniversaries", Long.class);
-            long workAnniversaryCount = workAnniversaryCountObj != null ? workAnniversaryCountObj : 0L;
             long carouselCount = carouselSlideRepository.count();
             long galleryCount = galleryImageRepository.count();
             long quickLinkCount = quickLinkRepository.count();
@@ -54,7 +52,6 @@ public class DatabaseStartupValidator implements CommandLineRunner {
             logger.info("Table Record Counts:");
             logger.info("  └─ employees: {}", employeeCount);
             logger.info("  └─ announcements: {}", announcementCount);
-            logger.info("  └─ work_anniversaries: {}", workAnniversaryCount);
             logger.info("  └─ carousel_slides: {}", carouselCount);
             logger.info("  └─ gallery_images: {}", galleryCount);
             logger.info("  └─ quick_links: {}", quickLinkCount);
@@ -76,13 +73,6 @@ public class DatabaseStartupValidator implements CommandLineRunner {
                 allValid = false;
             } else {
                 logger.info("✓ Announcement count: {}", announcementCount);
-            }
-            
-            if (workAnniversaryCount != 12) {
-                logger.warn("⚠ Expected 12 work anniversaries, found {}", workAnniversaryCount);
-                allValid = false;
-            } else {
-                logger.info("✓ Work anniversary count: {} (Expected: 12)", workAnniversaryCount);
             }
             
             if (carouselCount != 5) {
