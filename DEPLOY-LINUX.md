@@ -1,9 +1,13 @@
 # IEEE HR Intranet Portal — Linux Server Deployment Guide
 
-> **Target environments:** Ubuntu 22.04 LTS / Ubuntu 20.04 LTS / CentOS 8+ / RHEL 8+  
+> **Target environment:** Ubuntu 22.04 LTS (single server · 100 GB HDD)  
 > **Application:** IEEE HR Intranet Portal v1.0.0  
 > **Architecture:** Spring Boot WAR → Tomcat 10 → Nginx (reverse proxy) → HTTPS  
 > **Last updated:** March 2026
+
+> **Scope of this guide:** All software (Java 17, MySQL 8.0, Tomcat 10, Nginx) is installed
+> on the **same Ubuntu server**. Gallery images, employee photos, database, and logs all
+> reside on the server's **100 GB HDD**.
 
 ---
 
@@ -67,31 +71,50 @@ Internet / Internal Network
 
 ## 2. Prerequisites & Server Sizing
 
-### Minimum Server Requirements
+### Server Specification (Your Setup)
 
-| Resource | Minimum | Recommended |
+| Resource | Your Server |
+|---|---|
+| OS | **Ubuntu 22.04 LTS** (64-bit) |
+| CPU | 2–4 vCPUs |
+| RAM | 4 GB (minimum 2 GB) |
+| Disk | **100 GB HDD** |
+
+### Recommended Disk Layout (100 GB HDD)
+
+Use this as a guide when partitioning or planning directory usage:
+
+| Mount / Directory | Suggested Size | Purpose |
 |---|---|---|
-| CPU | 2 vCPUs | 4 vCPUs |
-| RAM | 2 GB | 4 GB |
-| Disk | 20 GB SSD | 50 GB SSD |
-| OS | Ubuntu 22.04 LTS | Ubuntu 22.04 LTS |
+| `/` (root partition) | 30 GB | OS, packages, Tomcat, Java, Nginx |
+| `/opt/hrintranet/` | — (on root) | App user home, backups, uploads |
+| `/opt/tomcat/` | — (on root) | Tomcat server |
+| `/var/lib/mysql/` | 20 GB | MySQL data files |
+| `/opt/hrintranet/uploads/` | 20 GB | Employee photos (uploaded via admin panel) |
+| `/opt/hrintranet/gallery/` | 20 GB | Gallery event photos (managed on disk) |
+| `/opt/hrintranet/backups/` | 10 GB | DB dumps + upload tarballs |
+| **Total** | **~100 GB** | |
 
-### Required Software
+> **Tip:** If you are using a single partition (common for a fresh VPS/server), all these directories
+> will share the same 100 GB. Create them as described in the steps below. You can monitor
+> disk usage with: `df -h` and `du -sh /opt/hrintranet/*`
+
+### Required Software (installed on the Ubuntu server)
 
 | Software | Version | Notes |
 |---|---|---|
-| Java JDK | **17** (LTS) | OpenJDK or Eclipse Temurin |
-| MySQL | **8.0** | MariaDB is not tested |
+| Java JDK | **17** (LTS) | OpenJDK — installed via `apt` |
+| MySQL | **8.0** | Installed via `apt`, runs on `localhost` only |
 | Apache Tomcat | **10.1.x** | Matches Spring Boot 3.x |
 | Nginx | Latest stable | Reverse proxy + HTTPS |
 | Certbot | Latest | Let's Encrypt SSL |
-| Maven | **3.6+** | Only needed on build machine |
+| Maven | **3.6+** | Only needed on **your Windows build machine**, not on the server |
 
 ### Assumptions
 
 - You have SSH access with `sudo` privileges
-- A domain name (e.g., `hr.yourcompany.com`) is pointed at this server's IP
-- Ports 22, 80, and 443 are reachable from your network
+- The server is on your internal network (intranet); Ports 22, 80, and 443 are reachable
+- DNS or a static IP is assigned to the server (e.g., `10.240.147.x`)
 
 ---
 
@@ -101,16 +124,12 @@ Internet / Internal Network
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-# For CentOS/RHEL:
-# sudo dnf update -y
 ```
 
 ### 1.2 Install essential utilities
 
 ```bash
-sudo apt install -y curl wget unzip git nano ufw
-# For CentOS/RHEL:
-# sudo dnf install -y curl wget unzip git nano firewalld
+sudo apt install -y curl wget unzip git nano ufw htop
 ```
 
 ### 1.3 Create a dedicated application user
@@ -122,28 +141,43 @@ sudo useradd -m -d /opt/hrintranet -s /bin/bash hrintranet
 sudo passwd hrintranet          # Set a strong password
 ```
 
+### 1.4 Create the persistent directory structure on the 100 GB HDD
+
+All application data that must survive re-deployments lives under `/opt/hrintranet/`:
+
+```bash
+# Uploads: employee photos uploaded through the admin panel
+sudo mkdir -p /opt/hrintranet/uploads/images
+
+# Gallery: event/album photos managed on disk
+sudo mkdir -p /opt/hrintranet/gallery
+
+# Logs: application log files
+sudo mkdir -p /opt/hrintranet/logs
+
+# Backups: automated database dumps and upload tarballs
+sudo mkdir -p /opt/hrintranet/backups/mysql
+sudo mkdir -p /opt/hrintranet/backups/gallery
+
+# Set ownership so the 'hrintranet' user can read/write
+sudo chown -R hrintranet:hrintranet /opt/hrintranet
+sudo chmod -R 755 /opt/hrintranet
+```
+
+> **Why separate directories?**
+> - `/opt/hrintranet/uploads/images` — employee photos uploaded via admin panel (Spring config: `app.upload.dir`)
+> - `/opt/hrintranet/gallery` — event gallery albums served via Spring resource handler; **no symlink needed** (Spring config: `app.gallery.dir`)
+> - `/opt/hrintranet/logs` — app.log written here (Spring config: `logging.file.name`)
+> - `/opt/hrintranet/backups` — nightly backup destination (cron job in [Backup & Recovery](#backup--recovery))
+
 ---
 
 ## Step 2 — Install Java 17
 
-### Ubuntu 22.04
+### Ubuntu 22.04 LTS
 
 ```bash
 sudo apt install -y openjdk-17-jdk
-```
-
-### Ubuntu 20.04 (if openjdk-17 is not available)
-
-```bash
-sudo add-apt-repository ppa:linuxuprising/java -y
-sudo apt update
-sudo apt install -y openjdk-17-jdk
-```
-
-### CentOS / RHEL 8+
-
-```bash
-sudo dnf install -y java-17-openjdk-devel
 ```
 
 ### Verify installation
@@ -157,9 +191,6 @@ java -version
 ### Set JAVA_HOME system-wide
 
 ```bash
-# Find the JDK location
-sudo update-alternatives --config java
-
 # Add to /etc/environment
 echo 'JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' | sudo tee -a /etc/environment
 echo 'PATH=$PATH:$JAVA_HOME/bin' | sudo tee -a /etc/environment
@@ -167,9 +198,8 @@ source /etc/environment
 
 # Verify
 echo $JAVA_HOME
+# Expected: /usr/lib/jvm/java-17-openjdk-amd64
 ```
-
-> **CentOS:** The JDK path is typically `/usr/lib/jvm/java-17-openjdk`
 
 ---
 
@@ -190,25 +220,17 @@ mvn -version
 
 ## Step 4 — Install & Secure MySQL 8.0
 
-### 4.1 Install MySQL
+MySQL will be installed on the **same Ubuntu server** as Tomcat. It only listens on `localhost` — no external access is needed.
 
-**Ubuntu:**
+### 4.1 Install MySQL on Ubuntu 22.04 LTS
 
 ```bash
 sudo apt install -y mysql-server
 sudo systemctl start mysql
 sudo systemctl enable mysql
-```
 
-**CentOS / RHEL:**
-
-```bash
-sudo dnf install -y mysql-server
-sudo systemctl start mysqld
-sudo systemctl enable mysqld
-
-# Get the temporary root password
-sudo grep 'temporary password' /var/log/mysqld.log
+# Verify MySQL is running
+sudo systemctl status mysql
 ```
 
 ### 4.2 Run the security script
@@ -390,13 +412,55 @@ sudo chmod -R 750 /opt/tomcat
 sudo chmod +x /opt/tomcat/bin/*.sh
 ```
 
-### 7.4 Create uploads directory
+### 7.4 Create persistent directories (uploads, gallery, logs)
+
+These directories live **outside** the WAR on the 100 GB HDD and survive re-deployments.
 
 ```bash
-sudo mkdir -p /opt/tomcat/uploads/images
-sudo chown -R hrintranet:hrintranet /opt/tomcat/uploads
-sudo chmod 755 /opt/tomcat/uploads/images
+# ── Employee photo uploads (admin panel → "Upload Photo") ─────────────────────
+sudo mkdir -p /opt/hrintranet/uploads/images
+sudo chown -R hrintranet:hrintranet /opt/hrintranet/uploads
+sudo chmod 755 /opt/hrintranet/uploads/images
+
+# ── Gallery event albums ──────────────────────────────────────────────────────
+# Each sub-folder is one album (e.g. christmas, picnic, diwali).
+# Add albums here; filenames must match the folder_name in the gallery_folders DB table.
+sudo mkdir -p /opt/hrintranet/gallery
+sudo chown -R hrintranet:hrintranet /opt/hrintranet/gallery
+sudo chmod 755 /opt/hrintranet/gallery
+
+# Create your initial album folders (add as many as you need):
+sudo -u hrintranet mkdir -p /opt/hrintranet/gallery/christmas
+sudo -u hrintranet mkdir -p /opt/hrintranet/gallery/picnic
+sudo -u hrintranet mkdir -p /opt/hrintranet/gallery/diwali
+# sudo -u hrintranet mkdir -p /opt/hrintranet/gallery/team-outing
+
+# ── Application log directory ────────────────────────────────────────────────
+sudo mkdir -p /opt/hrintranet/logs
+sudo chown -R hrintranet:hrintranet /opt/hrintranet/logs
+sudo chmod 755 /opt/hrintranet/logs
+
+# ── Backup directory ─────────────────────────────────────────────────────────
+sudo mkdir -p /opt/hrintranet/backups/mysql
+sudo mkdir -p /opt/hrintranet/backups/gallery
+sudo chown -R hrintranet:hrintranet /opt/hrintranet/backups
 ```
+
+> **How gallery serving works (no symlink needed):**
+>
+> Spring's `WebConfig.java` registers a resource handler that serves
+> `GET /images/gallery/**` directly from `app.gallery.dir` (`/opt/hrintranet/gallery/`)
+> on the server HDD. The WAR never needs to contain gallery images.
+>
+> **Workflow for adding a new album:**
+> 1. Create a sub-folder under `/opt/hrintranet/gallery/`:
+>    ```bash
+>    sudo -u hrintranet mkdir -p /opt/hrintranet/gallery/team-outing
+>    ```
+> 2. Upload photos into that folder via SCP or SFTP.
+> 3. In the Admin Panel → Gallery, click **"Scan Folders"** to register the album in the database.
+>
+> **On every re-deployment:** gallery photos are untouched — they live outside the WAR.
 
 ### 7.5 Configure Tomcat to bind to localhost only
 
@@ -463,7 +527,29 @@ sleep 5
 
 The app is now extracted to `/opt/tomcat/webapps/ROOT/`.
 
-### 9.2 Edit the production configuration
+### 9.2 Seed the gallery directory (first deploy only)
+
+The WAR ships with sample album folders (`christmas`, `picnic`, `diwali`, …) bundled inside
+`webapps/ROOT/images/gallery/`. On first deploy, copy them to the **persistent HDD directory**
+so they are served by Spring's resource handler and survive future re-deployments.
+
+```bash
+# Copy every bundled album folder to the persistent gallery directory
+sudo -u hrintranet cp -r /opt/tomcat/webapps/ROOT/images/gallery/. /opt/hrintranet/gallery/
+
+# Verify the copy
+ls -la /opt/hrintranet/gallery/
+# Expected: christmas/  picnic/  diwali/  (and any other bundled albums)
+
+# The images/gallery/ folder inside the WAR is no longer used for serving —
+# Spring's WebConfig.java routes /images/gallery/** directly to /opt/hrintranet/gallery/.
+# You can leave the WAR copy in place; it is simply ignored at runtime.
+```
+
+> **On every subsequent re-deployment:** nothing to do here. The `app.gallery.dir` property
+> always points Tomcat to `/opt/hrintranet/gallery/` which is outside the WAR.
+
+### 9.3 Edit the production configuration
 
 ```bash
 sudo nano /opt/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
@@ -496,10 +582,15 @@ logging.level.com.company.hrintranet=INFO
 logging.level.org.springframework.web=WARN
 logging.level.org.hibernate.SQL=WARN
 
-# File Uploads — store in a persistent directory outside the WAR
-app.upload.dir=/opt/tomcat/uploads/images
+# File Uploads — employee photos stored outside the WAR (persistent HDD)
+app.upload.dir=/opt/hrintranet/uploads/images
 spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=10MB
+
+# Gallery — album folders stored outside the WAR (persistent HDD).
+# Spring serves GET /images/gallery/** from this path via WebConfig.java resource handler.
+# No symlink or WAR bundling required.
+app.gallery.dir=/opt/hrintranet/gallery
 
 # JWT — CHANGE THIS SECRET! Generate a strong random string.
 app.jwt.secret=ChangeThisToAStrongRandomSecretKeyAtLeast64CharactersLong!IEEE2026Portal
@@ -523,7 +614,7 @@ spring.jackson.serialization.write-dates-as-timestamps=false
 > - ✅ Update `app.cors.allowed-origins` to your actual domain
 > - ✅ Set `spring.jpa.show-sql=false` (prevents SQL in logs)
 
-### 9.3 Update the frontend API URL
+### 9.4 Update the frontend API URL
 
 Edit the JavaScript config to point to your production domain:
 
@@ -654,18 +745,8 @@ Nginx acts as a reverse proxy: it receives external HTTP/HTTPS traffic and forwa
 
 ### 11.1 Install Nginx
 
-**Ubuntu:**
-
 ```bash
 sudo apt install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
-```
-
-**CentOS / RHEL:**
-
-```bash
-sudo dnf install -y nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
 ```
@@ -676,9 +757,7 @@ sudo systemctl enable nginx
 sudo nano /etc/nginx/sites-available/hrintranet
 ```
 
-> **CentOS:** Create the file at `/etc/nginx/conf.d/hrintranet.conf` instead.
-
-Paste this configuration (replace `hr.yourcompany.com` with your actual domain):
+Paste this configuration (replace `hr.yourcompany.com` or the IP with your actual server address):
 
 ```nginx
 # ============================================================
@@ -802,17 +881,10 @@ sudo systemctl reload nginx
 
 ### 12.1 Install Certbot
 
-**Ubuntu:**
-
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
 ```
 
-**CentOS / RHEL:**
-
-```bash
-sudo dnf install -y certbot python3-certbot-nginx
-```
 
 ### 12.2 Obtain an SSL certificate
 
@@ -848,23 +920,20 @@ sudo systemctl reload nginx
 
 ---
 
-## Step 13 — Configure Firewall
-
-### Ubuntu — using `ufw`
+## Step 13 — Configure Firewall (Ubuntu `ufw`)
 
 ```bash
-# Allow SSH (important — do this FIRST or you'll lock yourself out)
+# Allow SSH (do this FIRST — or you'll lock yourself out)
 sudo ufw allow 22/tcp
 
-# Allow HTTP and HTTPS
+# Allow HTTP and HTTPS (Nginx)
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 
-# Block direct access to Tomcat (8080) from outside — Nginx handles it
-# (8080 is already bound to 127.0.0.1 so external access is blocked anyway)
+# Block direct access to Tomcat from outside — Nginx handles all traffic
+# (Port 8080 is already bound to 127.0.0.1, so external access is already blocked)
 
-# Block MySQL from outside
-# (MySQL is already localhost-only, but just in case:)
+# Explicitly deny MySQL from external access (it's localhost-only anyway)
 sudo ufw deny 3306/tcp
 
 # Enable the firewall
@@ -874,24 +943,6 @@ sudo ufw enable
 sudo ufw status verbose
 ```
 
-### CentOS / RHEL — using `firewalld`
-
-```bash
-sudo systemctl start firewalld
-sudo systemctl enable firewalld
-
-# Allow SSH, HTTP, HTTPS
-sudo firewall-cmd --permanent --add-service=ssh
-sudo firewall-cmd --permanent --add-service=http
-sudo firewall-cmd --permanent --add-service=https
-
-# Block Tomcat direct access
-sudo firewall-cmd --permanent --remove-port=8080/tcp
-
-# Apply
-sudo firewall-cmd --reload
-sudo firewall-cmd --list-all
-```
 
 ---
 
@@ -1013,7 +1064,7 @@ scp target\ROOT.war youruser@your-server-ip:/tmp/ROOT.war
 # Stop the application
 sudo systemctl stop hrintranet
 
-# Backup the old deployment (optional but recommended)
+# Backup the old deployment
 sudo mv /opt/tomcat/webapps/ROOT /opt/tomcat/webapps/ROOT.backup.$(date +%Y%m%d_%H%M%S)
 sudo mv /opt/tomcat/webapps/ROOT.war /opt/tomcat/webapps/ROOT.war.bak
 
@@ -1021,13 +1072,18 @@ sudo mv /opt/tomcat/webapps/ROOT.war /opt/tomcat/webapps/ROOT.war.bak
 sudo cp /tmp/ROOT.war /opt/tomcat/webapps/ROOT.war
 sudo chown hrintranet:hrintranet /opt/tomcat/webapps/ROOT.war
 
-# Start the application (Tomcat will auto-extract the WAR)
+# Start the application — Tomcat extracts the WAR automatically
 sudo systemctl start hrintranet
 
 # Watch the startup log
 sudo -u hrintranet tail -f /opt/tomcat/logs/catalina.out
 # Wait for: INFO: Server startup in [XXXX] milliseconds
+# Then press Ctrl+C
 ```
+
+> **Gallery images are safe during re-deployment.**  
+> Spring's resource handler (`WebConfig.java`) serves `/images/gallery/**` directly from
+> `/opt/hrintranet/gallery/` on the HDD — outside the WAR. No symlink or restore step needed.
 
 ### Step 4 — Update production config (if needed)
 
@@ -1111,12 +1167,27 @@ gunzip < /opt/hrintranet/backups/mysql/hr_intranet_portal_20260101_020000.sql.gz
   | mysql -u hrportal -p hr_intranet_portal
 ```
 
-### Backup Uploaded Images
+### Backup Uploaded Images & Gallery Photos
 
 ```bash
-# Back up user-uploaded files
-tar czf /opt/hrintranet/backups/uploads_$(date +%Y%m%d).tar.gz \
-  /opt/tomcat/uploads/
+# Back up employee photos (uploaded via admin panel)
+tar czf /opt/hrintranet/backups/gallery/uploads_$(date +%Y%m%d).tar.gz \
+  /opt/hrintranet/uploads/
+
+# Back up gallery event albums
+tar czf /opt/hrintranet/backups/gallery/gallery_$(date +%Y%m%d).tar.gz \
+  /opt/hrintranet/gallery/
+
+# Delete upload/gallery backups older than 30 days
+find /opt/hrintranet/backups/gallery -name "*.tar.gz" -mtime +30 -delete
+```
+
+Add to cron (runs daily at 2:30 AM, after the DB backup at 2:00 AM):
+
+```bash
+(sudo crontab -u hrintranet -l 2>/dev/null; \
+ echo "30 2 * * * tar czf /opt/hrintranet/backups/gallery/uploads_\$(date +\%Y\%m\%d).tar.gz /opt/hrintranet/uploads/ && tar czf /opt/hrintranet/backups/gallery/gallery_\$(date +\%Y\%m\%d).tar.gz /opt/hrintranet/gallery/ >> /opt/hrintranet/backup.log 2>&1") \
+ | sudo crontab -u hrintranet -
 ```
 
 ---
@@ -1187,16 +1258,20 @@ sudo nginx -t
 
 ### Images not loading after deployment
 
-The upload directory must be persistent across deployments:
+Employee photo uploads and gallery images are stored outside the WAR and survive re-deployments automatically:
 
 ```bash
 # Verify the upload dir is correct in application.properties
 grep app.upload.dir /opt/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
-# Should be: app.upload.dir=/opt/tomcat/uploads/images
+# Should be: app.upload.dir=/opt/hrintranet/uploads/images
+
+grep app.gallery.dir /opt/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+# Should be: app.gallery.dir=/opt/hrintranet/gallery
 
 # Check permissions
-ls -la /opt/tomcat/uploads/images
-# Should be owned by hrintranet:hrintranet
+ls -la /opt/hrintranet/uploads/images
+ls -la /opt/hrintranet/gallery/
+# Both should be owned by hrintranet:hrintranet
 ```
 
 ### Admin login fails
@@ -1234,45 +1309,54 @@ sudo systemctl restart hrintranet
 ## Quick Reference Card
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  IEEE HR INTRANET PORTAL — SERVER QUICK REFERENCE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Ubuntu 22.04 LTS · 100 GB HDD · Single-Server
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
- Tomcat home:   /opt/tomcat/
- App deployed:  /opt/tomcat/webapps/ROOT/
- App config:    /opt/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
- JS config:     /opt/tomcat/webapps/ROOT/js/config.js
- Uploads:       /opt/tomcat/uploads/images/
- Tomcat logs:   /opt/tomcat/logs/catalina.out
+ Tomcat home:      /opt/tomcat/
+ App deployed:     /opt/tomcat/webapps/ROOT/
+ App config:       /opt/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+ JS config:        /opt/tomcat/webapps/ROOT/js/config.js
+ Tomcat logs:      /opt/tomcat/logs/catalina.out
 
- DB name:       hr_intranet_portal
- DB user:       hrportal
- DB host:       localhost:3306
+ Uploads (photos): /opt/hrintranet/uploads/images/      ← persistent on 100 GB HDD
+ Gallery albums:   /opt/hrintranet/gallery/              ← persistent on 100 GB HDD
+ App log:          /opt/hrintranet/logs/app.log          ← persistent on 100 GB HDD
+ DB backups:       /opt/hrintranet/backups/mysql/        ← persistent on 100 GB HDD
+ Gallery backups:  /opt/hrintranet/backups/gallery/      ← persistent on 100 GB HDD
 
- Nginx config:  /etc/nginx/sites-available/hrintranet
- Nginx logs:    /var/log/nginx/hrintranet_*.log
+ DB name:          hr_intranet_portal
+ DB user:          hrportal
+ DB host:          localhost:3306
 
- Service name:  hrintranet
- Run as user:   hrintranet
+ Nginx config:     /etc/nginx/sites-available/hrintranet
+ Nginx logs:       /var/log/nginx/hrintranet_*.log
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Service name:     hrintranet
+ Run as user:      hrintranet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  COMMON COMMANDS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Start app:     sudo systemctl start hrintranet
- Stop app:      sudo systemctl stop hrintranet
- Restart app:   sudo systemctl restart hrintranet
- App status:    sudo systemctl status hrintranet
- App logs:      sudo tail -f /opt/tomcat/logs/catalina.out
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Start app:        sudo systemctl start hrintranet
+ Stop app:         sudo systemctl stop hrintranet
+ Restart app:      sudo systemctl restart hrintranet
+ App status:       sudo systemctl status hrintranet
+ App logs:         sudo tail -f /opt/tomcat/logs/catalina.out
+                   sudo tail -f /opt/hrintranet/logs/app.log
 
- Reload Nginx:  sudo systemctl reload nginx
- Nginx test:    sudo nginx -t
+ Reload Nginx:     sudo systemctl reload nginx
+ Nginx test:       sudo nginx -t
 
- DB connect:    mysql -u hrportal -p hr_intranet_portal
- DB backup:     /opt/hrintranet/backup-db.sh
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DB connect:       mysql -u hrportal -p hr_intranet_portal
+ DB backup:        /opt/hrintranet/backup-db.sh
+
+ Disk usage:       df -h
+                   du -sh /opt/hrintranet/*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
 *Last updated: March 2026 · IEEE HR Department*
-

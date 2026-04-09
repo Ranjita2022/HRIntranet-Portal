@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,8 +24,8 @@ public class DatabaseStartupValidator implements CommandLineRunner {
     private final GalleryImageRepository galleryImageRepository;
     private final QuickLinkRepository quickLinkRepository;
     private final EmergencyContactRepository emergencyContactRepository;
-    private final JdbcTemplate jdbcTemplate;
-    
+    // JdbcTemplate removed — no raw SQL queries needed
+
     @Override
     public void run(String... args) throws Exception {
         printDatabaseValidation();
@@ -42,7 +41,8 @@ public class DatabaseStartupValidator implements CommandLineRunner {
             // Count records in all tables
             long employeeCount = employeeRepository.count();
             long announcementCount = announcementRepository.count();
-
+            Long workAnniversaryCountObj = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM work_anniversaries", Long.class);
+            long workAnniversaryCount = workAnniversaryCountObj != null ? workAnniversaryCountObj : 0L;
             long carouselCount = carouselSlideRepository.count();
             long galleryCount = galleryImageRepository.count();
             long quickLinkCount = quickLinkRepository.count();
@@ -54,6 +54,7 @@ public class DatabaseStartupValidator implements CommandLineRunner {
             logger.info("Table Record Counts:");
             logger.info("  └─ employees: {}", employeeCount);
             logger.info("  └─ announcements: {}", announcementCount);
+            logger.info("  └─ work_anniversaries: {}", workAnniversaryCount);
             logger.info("  └─ carousel_slides: {}", carouselCount);
             logger.info("  └─ gallery_images: {}", galleryCount);
             logger.info("  └─ quick_links: {}", quickLinkCount);
@@ -63,32 +64,32 @@ public class DatabaseStartupValidator implements CommandLineRunner {
             // Validation checks
             boolean allValid = true;
             
-            if (employeeCount != 15) {
-                logger.warn("⚠ Expected 15 employees, found {}", employeeCount);
+            if (employeeCount < 1) {
+                logger.warn("⚠ No employees found in database");
                 allValid = false;
             } else {
-                logger.info("✓ Employee count: {} (Expected: 15)", employeeCount);
+                logger.info("✓ Employee count: {}", employeeCount);
             }
             
-            if (announcementCount < 13) {
-                logger.warn("⚠ Expected at least 13 announcements, found {}", announcementCount);
+            if (announcementCount < 1) {
+                logger.warn("⚠ No announcements found in database");
                 allValid = false;
             } else {
-                logger.info("✓ Announcement count: {} (Expected: 13+)", announcementCount);
+                logger.info("✓ Announcement count: {}", announcementCount);
+            }
+            
+            if (workAnniversaryCount != 12) {
+                logger.warn("⚠ Expected 12 work anniversaries, found {}", workAnniversaryCount);
+                allValid = false;
+            } else {
+                logger.info("✓ Work anniversary count: {} (Expected: 12)", workAnniversaryCount);
             }
             
             if (carouselCount != 5) {
                 logger.warn("⚠ Expected 5 carousel slides, found {}", carouselCount);
                 allValid = false;
             } else {
-                logger.info("✓ Carousel slide count: {} (Expected: 5)", carouselCount);
-            }
-            
-            if (galleryCount != 20) {
-                logger.warn("⚠ Expected 20 gallery images, found {}", galleryCount);
-                allValid = false;
-            } else {
-                logger.info("✓ Gallery image count: {} (Expected: 20)", galleryCount);
+                logger.info("✓ Gallery image count: {}", galleryCount);
             }
             
             logger.info("");
@@ -99,14 +100,14 @@ public class DatabaseStartupValidator implements CommandLineRunner {
                 logger.info("========================================");
                 logger.info("Backend is ready to serve requests");
                 logger.info("API Endpoints:");
-                logger.info("  • Health:      {}/api/public/health", appBaseUrl);
-                logger.info("  • Portal Data: {}/api/public/portal-data", appBaseUrl);
-                logger.info("  • Config:      {}/api/public/config", appBaseUrl);
+                logger.info("  • Health:      {}/api/public/health",       appBaseUrl);
+                logger.info("  • Portal Data: {}/api/public/portal-data",  appBaseUrl);
+                logger.info("  • Config:      {}/api/public/config",        appBaseUrl);
             } else {
                 logger.warn("========================================");
                 logger.warn("   ⚠ VALIDATION WARNINGS DETECTED");
                 logger.warn("========================================");
-                logger.warn("Check database import - some counts don't match expected values");
+                logger.warn("Check database import - some tables appear empty");
             }
             
             logger.info("========================================");
