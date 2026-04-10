@@ -18,3 +18,10 @@ Thumbs.db
 git-pull.bat
 git-pull.sh
 
+# Sample/temp data files — local use only
+*.csv
+*.xlsx
+*.xls
+
+# Deploy docs with sensitive server details
+DEPLOY-VM-*.md
