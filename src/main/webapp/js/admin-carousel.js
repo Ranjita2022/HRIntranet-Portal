@@ -311,25 +311,26 @@ function getApiErrorMessage(error) {
 function getCarouselImageUrl(slide) {
     if (!slide) return '';
 
-    if (slide.image && slide.image.imageUrl) {
+    // 1. Explicit imageUrl field (full http URL only)
+    if (slide.image && slide.image.imageUrl && slide.image.imageUrl.startsWith('http')) {
         return slide.image.imageUrl;
     }
 
-    if (slide.imageUrl) {
-        if (slide.imageUrl.startsWith('http') || slide.imageUrl.startsWith('/')) {
-            return slide.imageUrl;
-        }
-        return `${CONFIG.API_BASE_URL}/uploads/${slide.imageUrl}`;
+    // 2. Slide-level imageUrl (full http URL only)
+    if (slide.imageUrl && slide.imageUrl.startsWith('http')) {
+        return slide.imageUrl;
     }
 
-    if (slide.image && slide.image.filePath) {
-        if (slide.image.filePath.startsWith('http') || slide.image.filePath.startsWith('/')) {
-            return slide.image.filePath;
-        }
-    }
-
+    // 3. Build URL from filename — ALWAYS preferred over filePath.
+    //    filePath stores the OS filesystem path (e.g. /opt/hrintranet/uploads/images/UUID.jpg
+    //    on the Ubuntu server, or C:\...\UUID.jpg on Windows dev), NOT a URL.
     if (slide.image && slide.image.filename) {
         return `${CONFIG.API_BASE_URL}/uploads/${slide.image.filename}`;
+    }
+
+    // 4. Last resort: only use filePath if it is already a full http URL
+    if (slide.image && slide.image.filePath && slide.image.filePath.startsWith('http')) {
+        return slide.image.filePath;
     }
 
     return '';
