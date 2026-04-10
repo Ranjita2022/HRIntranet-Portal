@@ -1,4 +1,4 @@
-x/**
+/**
  * admin-open-positions.js
  * IEEE HR Intranet Portal — Admin Open Positions Management
  */
