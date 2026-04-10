@@ -2203,14 +2203,14 @@ function showNextContentSection() {
             setTimeout(() => {
                 const trackWidth = $track[0].scrollWidth;
                 const originalWidth = trackWidth / 2;
-                const animSecs = Math.max(10, originalWidth / 90);
+                const animSecs = Math.max(20, originalWidth / 45);  // 45px/s — slower, easier to read
                 $track.css('animation-duration', animSecs + 's');
                 console.log(`TV ${section.label}: width=${originalWidth}px, anim=${animSecs.toFixed(1)}s`);
             }, 300);
 
             const cardCount = ($track.children('.team-card-wrapper, .position-card-wrapper').length) / 2 || 4;
-            const estimatedSecs = (cardCount * 420) / 90;
-            sectionDuration = Math.max(20000, estimatedSecs * 1000);
+            const estimatedSecs = (cardCount * 420) / 45;  // match 45px/s speed
+            sectionDuration = Math.max(30000, estimatedSecs * 1000);
         }
     } else if (section.id === '#countdownBanner') {
         // Full-screen countdown — show for 25 seconds
@@ -2219,9 +2219,9 @@ function showNextContentSection() {
         // Show quote like a kiosk card before carousel restarts.
         sectionDuration = 25000;
     } else if (section.id === '#announcements') {
-        // 7 s per card, clamped to [10s … 60s]
+        // 10 s per card, clamped to [15s … 60s]
         const cardCount = Math.max(1, $('#announcementsContainer .announcement-card').length);
-        sectionDuration = Math.min(60000, Math.max(10000, cardCount * 7000));
+        sectionDuration = Math.min(60000, Math.max(15000, cardCount * 10000));
     } else if (section.id === '#holidays') {
         // 4s per card, minimum 15s
         const cardCount = $('#holidaysContainer .holiday-card').length;

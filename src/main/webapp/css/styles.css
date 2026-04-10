@@ -2602,7 +2602,7 @@ body.tv-mode .tv-position-visible {
 }
 
 body.tv-mode .positions-scroll-track {
-    animation: scrollPositions 30s linear infinite;
+    animation: scrollPositions 60s linear infinite;
     display: flex;
     width: max-content;
 }
