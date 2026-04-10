@@ -25,3 +25,12 @@ git-pull.sh
 
 # Deploy docs with sensitive server details
 DEPLOY-VM-*.md
+DEPLOY-LINUX.md
+DEPLOY-*.md
+
+# Uploaded user content - never commit
+uploads/
+uploads/images/
+
+# Sample data files - local use only
+open-positions-sample.*
