@@ -305,8 +305,11 @@ async function saveEmployee(event) {
             if (photoFile) {
                 try {
                     const uploadResponse = await AdminAPI.employees.uploadPhoto(empId, photoFile);
-                    if (!uploadResponse || !uploadResponse.id) {
-                        showError('Employee saved but photo upload failed');
+                    // Backend returns { message: "Photo uploaded successfully", image: {...} }
+                    // NOT { id: ... } — so check for message or image, not .id
+                    if (!uploadResponse || uploadResponse.error || (!uploadResponse.message && !uploadResponse.image)) {
+                        const errMsg = (uploadResponse && uploadResponse.error) ? uploadResponse.error : 'Unknown error';
+                        showError('Employee saved but photo upload failed: ' + errMsg);
                         await loadEmployees();
                         bootstrap.Modal.getInstance(document.getElementById('employeeModal')).hide();
                         return;
