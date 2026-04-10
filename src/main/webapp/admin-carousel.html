@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,27 +10,55 @@
     <link rel="stylesheet" href="css/admin-common.css">
     <style>
         .slide-thumb {
-            width: 72px; height: 45px;
+            width: 64px; height: 40px;
             object-fit: cover;
             border-radius: 4px;
             border: 1px solid #dee2e6;
         }
         .slide-thumb-placeholder {
-            width: 72px; height: 45px;
+            width: 64px; height: 40px;
             background: #f0f2f5;
             border-radius: 4px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: #adb5bd;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             border: 1px solid #dee2e6;
         }
         .order-badge {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px;
+            width: 26px; height: 26px;
             background: #e7f3ff; color: #00629B;
-            border-radius: 50%; font-weight: 700; font-size: 0.8rem;
+            border-radius: 50%; font-weight: 700; font-size: 0.75rem;
+        }
+        /* Compact table */
+        #carouselTableBody td,
+        table thead th {
+            vertical-align: middle;
+            padding: 0.4rem 0.55rem;
+            font-size: 0.85rem;
+        }
+        .slide-title-cell {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+            color: #212529;
+        }
+        .slide-subtitle-cell {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+        table .btn-sm {
+            padding: 0.2rem 0.42rem;
+            font-size: 0.78rem;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -106,17 +134,17 @@
                     <span class="record-count" id="recordCount">Loading…</span>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover table-sm mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th width="55">#</th>
-                                <th width="90">Preview</th>
+                                <th style="width:36px">#</th>
+                                <th style="width:75px">Preview</th>
                                 <th>Title</th>
                                 <th>Subtitle</th>
-                                <th width="90" class="text-center">Order</th>
-                                <th width="100">Status</th>
-                                <th width="110">Created By</th>
-                                <th width="100" class="text-center">Actions</th>
+                                <th style="width:65px" class="text-center">Order</th>
+                                <th style="width:80px">Status</th>
+                                <th style="width:100px">Created By</th>
+                                <th style="width:85px" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="carouselTableBody">

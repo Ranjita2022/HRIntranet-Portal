@@ -65,15 +65,25 @@ function renderCarouselTable() {
                     ? `<img src="${escapeHtml(getCarouselImageUrl(slide))}" alt="Preview" class="slide-thumb">`
                     : '<span class="slide-thumb-placeholder"><i class="bi bi-image"></i></span>'}
             </td>
-            <td><span class="fw-semibold">${escapeHtml(slide.title || '—')}</span></td>
-            <td class="text-muted small">${escapeHtml(slide.subtitle || '—')}</td>
+            <td style="max-width:0">
+                <span class="slide-title-cell d-block" title="${escapeHtml(slide.title || '')}">
+                    ${escapeHtml(slide.title || '—')}
+                </span>
+            </td>
+            <td style="max-width:0">
+                <span class="slide-subtitle-cell d-block" title="${escapeHtml(slide.subtitle || '')}">
+                    ${escapeHtml(slide.subtitle || '—')}
+                </span>
+            </td>
             <td class="text-center"><span class="order-badge">${slide.displayOrder}</span></td>
             <td>
                 <span class="badge ${slide.isActive ? 'bg-success' : 'bg-secondary'}">
                     ${slide.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td class="text-muted small">${escapeHtml(slide.createdBy || '—')}</td>
+            <td class="text-muted small text-truncate" style="max-width:100px" title="${escapeHtml(slide.createdBy || '')}">
+                ${escapeHtml(slide.createdBy || '—')}
+            </td>
             <td class="text-center">
                 <div class="d-flex gap-1 justify-content-center">
                     <button class="btn btn-sm btn-outline-primary" onclick="editCarouselSlide(${slide.id})" title="Edit">
