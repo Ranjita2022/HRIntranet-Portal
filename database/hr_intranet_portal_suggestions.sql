@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS suggestions (
     submitted_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Add public_note if upgrading an existing installation
-ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS public_note VARCHAR(500) NULL COMMENT 'HR response shown on public status board'
-  AFTER admin_notes;
+-- Add public_note if upgrading an existing installation (MySQL 8.0+)
+-- If on older MySQL, run manually: ALTER TABLE suggestions ADD COLUMN public_note VARCHAR(500) NULL AFTER admin_notes;
+-- ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS public_note VARCHAR(500) NULL AFTER admin_notes;
 
 
