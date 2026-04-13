@@ -11,6 +11,20 @@ let editingEmployeeId = null;
  */
 async function initEmployees() {
     await loadEmployees();
+
+    // Whenever the employee modal is fully hidden (closed via X, Cancel, backdrop click,
+    // or after a successful save) clear the photo file input so a stale selected file
+    // can never be accidentally uploaded to the next employee that is created/edited.
+    const employeeModalEl = document.getElementById('employeeModal');
+    if (employeeModalEl) {
+        employeeModalEl.addEventListener('hidden.bs.modal', () => {
+            const photoInput = document.getElementById('employeePhoto');
+            if (photoInput) photoInput.value = '';
+            document.getElementById('photoPreviewContainer').style.display = 'none';
+            document.getElementById('employeePhotoPreview').src = '';
+            editingEmployeeId = null;
+        });
+    }
 }
 
 /**
@@ -152,6 +166,9 @@ function showAddEmployeeModal() {
     // Clear photo preview
     document.getElementById('photoPreviewContainer').style.display = 'none';
     document.getElementById('employeePhotoPreview').src = '';
+    // Also explicitly clear file input in case form.reset() didn't fully clear it
+    const photoInput = document.getElementById('employeePhoto');
+    if (photoInput) photoInput.value = '';
     
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
     modal.show();
@@ -180,13 +197,19 @@ async function showEditEmployeeModal(id) {
     document.getElementById('employeeStatus').value = employee.status;
     // Populate birth date for edit if available
     document.getElementById('employeeBirthDate').value = employee.birthDate || employee.birthdate || '';
-    
+
+    // Always clear the file input to prevent a previously selected photo
+    // (from a prior add/edit session) from being accidentally uploaded
+    const photoInput = document.getElementById('employeePhoto');
+    if (photoInput) photoInput.value = '';
+
     // Show photo preview if exists
     if (employee.profileImageUrl) {
         document.getElementById('photoPreviewContainer').style.display = 'block';
         document.getElementById('employeePhotoPreview').src = employee.profileImageUrl;
     } else {
         document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
     }
     
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
