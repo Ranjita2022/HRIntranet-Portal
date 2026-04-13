@@ -18,6 +18,9 @@ Thumbs.db
 git-pull.bat
 git-pull.sh
 
+# Deploy credentials — NEVER commit these
+deploy-config.txt
+
 # Sample/temp data files — local use only
 *.csv
 *.xlsx
