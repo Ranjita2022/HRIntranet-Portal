@@ -116,7 +116,12 @@
 
             <div class="menu-section">System</div>
             
-            <a href="admin-audit.html" class="menu-item">
+            <a href="admin-users.html" class="menu-item super-admin-only">
+                <i class="bi bi-person-gear"></i>
+                <span>User Management</span>
+            </a>
+
+            <a href="admin-audit.html" class="menu-item admin-only">
                 <i class="bi bi-journal-text"></i>
                 <span>Audit Logs</span>
             </a>
@@ -732,6 +737,16 @@
                         'Content-Type': 'application/json'
                     }
                 });
+
+                // HR_STAFF doesn't have access to audit logs - show friendly message
+                if (response.status === 403) {
+                    document.getElementById('recentActivity').innerHTML = `
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-lock"></i> Recent activity is available for Admin and Super Admin roles
+                        </div>
+                    `;
+                    return;
+                }
 
                 if (response.ok) {
                     const data = await response.json();
