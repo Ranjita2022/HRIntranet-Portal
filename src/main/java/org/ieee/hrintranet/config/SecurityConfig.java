@@ -64,7 +64,7 @@ public class SecurityConfig {
                 // Admin and protected endpoints
                 .requestMatchers("/api/admin/**", "/api/employees/**").authenticated()
                 // Static resources - CSS, JS, HTML files, images at root and in subdirectories
-                .requestMatchers("/", "/index.html", "/admin-login.html", "/admin-*.html", "/gallery.html", "/kiosk.html", "/shoutouts.html", "/shoutouts-kiosk.html").permitAll()
+                .requestMatchers("/", "/index.html", "/admin-login.html", "/admin-*.html", "/gallery.html", "/kiosk.html", "/shoutouts.html", "/shoutouts-kiosk.html", "/suggestion-box.html").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/vendor/**").permitAll()
                 // All other endpoints allowed (for now - adjust as needed)
                 .anyRequest().permitAll()

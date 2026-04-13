@@ -456,6 +456,23 @@ const AdminAPI = {
         async getAll() {
             return AdminAPI.fetch('/admin/shoutouts');
         }
+    },
+
+    // === SUGGESTIONS API ===
+    suggestions: {
+        async getAll(status) {
+            const qs = status && status !== 'ALL' ? `?status=${status}` : '';
+            return AdminAPI.fetch(`/admin/suggestions${qs}`);
+        },
+        async update(id, payload) {
+            return AdminAPI.fetch(`/admin/suggestions/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+        },
+        async delete(id) {
+            return AdminAPI.fetch(`/admin/suggestions/${id}`, { method: 'DELETE' });
+        }
     }
 };
 
