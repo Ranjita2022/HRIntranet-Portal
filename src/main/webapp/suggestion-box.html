@@ -8,11 +8,11 @@
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <style>
-        body { background: linear-gradient(135deg, #1a3a5c 0%, #2e6da4 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; font-family: 'Roboto', sans-serif; }
-        .suggestion-card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 2.5rem 2rem; max-width: 560px; width: 100%; }
-        .page-icon { font-size: 3.5rem; color: #2e6da4; }
-        .page-title { color: #1a3a5c; font-weight: 700; font-size: 1.8rem; }
-        .page-subtitle { color: #6c757d; }
+        body { background: linear-gradient(135deg, #1a3a5c 0%, #2e6da4 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; font-family: 'Roboto', sans-serif; }
+        .suggestion-card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 1.5rem 2rem; max-width: 640px; width: 100%; }
+        .page-icon { font-size: 2.5rem; color: #2e6da4; }
+        .page-title { color: #1a3a5c; font-weight: 700; font-size: 1.5rem; }
+        .page-subtitle { color: #6c757d; font-size: 0.95rem; }
         .category-pill { display: inline-block; padding: 0.45rem 1rem; margin: 0.25rem; border-radius: 50px; border: 2px solid #2e6da4; background: white; color: #2e6da4; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; user-select: none; }
         .category-pill:hover, .category-pill.active { background: #2e6da4; color: white; }
         .btn-submit { background: linear-gradient(135deg, #1a3a5c, #2e6da4); border: none; padding: 0.8rem 2rem; font-size: 1.05rem; font-weight: 600; border-radius: 10px; }
@@ -50,9 +50,9 @@
 
         <!-- Form state -->
         <div id="formSection">
-            <div class="text-center mb-4">
+            <div class="text-center mb-3">
                 <i class="bi bi-lightbulb-fill page-icon"></i>
-                <h1 class="page-title mt-2">Suggestion Box</h1>
+                <h1 class="page-title mt-1">Suggestion Box</h1>
                 <p class="page-subtitle">Share your ideas to make our workplace better</p>
             </div>
 
@@ -90,9 +90,9 @@
                 </div>
 
                 <!-- Suggestion text -->
-                <div class="mb-4">
+                <div class="mb-3">
                     <label for="suggestionText" class="form-label"><i class="bi bi-chat-square-text-fill text-info me-1"></i>Your Suggestion <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="suggestionText" rows="5"
+                    <textarea class="form-control" id="suggestionText" rows="3"
                         placeholder="Describe your idea or suggestion in detail..."
                         maxlength="2000" required></textarea>
                     <div class="d-flex justify-content-end mt-1">
