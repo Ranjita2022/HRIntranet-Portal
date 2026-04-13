@@ -35,6 +35,9 @@ public class Suggestion {
     @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
 
+    @Column(name = "public_note", length = 500)
+    private String publicNote;
+
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
@@ -53,4 +56,3 @@ public class Suggestion {
         WORKPLACE, BENEFITS, CULTURE, PROCESS, TECHNOLOGY, OTHER
     }
 }
-

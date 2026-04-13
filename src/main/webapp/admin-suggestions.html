@@ -124,7 +124,7 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>#</th>
+                            <th>Ref #</th>
                             <th>Submitted By</th>
                             <th>Category</th>
                             <th>Suggestion</th>
@@ -163,15 +163,19 @@
             </div>
             <div class="modal-body">
                 <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1">Reference #</label>
+                        <div class="fw-bold text-primary" id="modalRefNumber">—</div>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Submitted By</label>
                         <div class="fw-semibold" id="modalSubmitter">—</div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Category</label>
                         <div id="modalCategory">—</div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Submitted At</label>
                         <div class="text-muted small" id="modalSubmittedAt">—</div>
                     </div>
@@ -201,8 +205,21 @@
                 </div>
 
                 <div class="mt-3">
-                    <label class="form-label fw-semibold" for="modalAdminNotes">Admin Notes <span class="text-muted fw-normal">(internal only)</span></label>
-                    <textarea class="form-control" id="modalAdminNotes" rows="3"
+                    <label class="form-label fw-semibold" for="modalPublicNote">
+                        <i class="bi bi-globe me-1 text-success"></i>Public Note
+                        <span class="text-muted fw-normal">(shown on the public Status Board)</span>
+                    </label>
+                    <textarea class="form-control border-success" id="modalPublicNote" rows="2"
+                        placeholder="e.g. Great idea! We are implementing this in Q3 2026."></textarea>
+                    <div class="form-text"><i class="bi bi-eye me-1"></i>This note is visible to everyone on the status board. Leave blank to show nothing.</div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label fw-semibold" for="modalAdminNotes">
+                        <i class="bi bi-lock me-1 text-danger"></i>Internal Notes
+                        <span class="text-muted fw-normal">(admin only — never shown publicly)</span>
+                    </label>
+                    <textarea class="form-control" id="modalAdminNotes" rows="2"
                         placeholder="Add internal notes about this suggestion…"></textarea>
                 </div>
             </div>

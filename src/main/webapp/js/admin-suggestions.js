@@ -77,12 +77,13 @@ function renderTable() {
         const preview = (s.suggestionText || '').length > 80
             ? escHtml(s.suggestionText.substring(0, 80)) + '…'
             : escHtml(s.suggestionText || '');
+        const ref = s.refNumber || '—';
         return `
         <tr>
-            <td class="text-muted small">${i + 1}</td>
+            <td class="text-muted small fw-semibold" style="white-space:nowrap;">${ref}</td>
             <td>${submitter}</td>
             <td><span class="badge bg-light text-dark border">${CATEGORY_LABELS[s.category] || s.category}</span></td>
-            <td class="small" style="max-width:280px;word-break:break-word;">${preview}</td>
+            <td class="small" style="max-width:260px;word-break:break-word;">${preview}</td>
             <td>${STATUS_BADGES[s.status] || s.status}</td>
             <td class="text-muted small">${formatDateTime(s.submittedAt)}</td>
             <td class="text-center">
@@ -104,14 +105,16 @@ function openViewModal(id) {
     if (!currentSuggestion) return;
 
     const s = currentSuggestion;
+    setEl('modalRefNumber',  s.refNumber || '—');
     setEl('modalSubmitter',  s.isAnonymous ? 'Anonymous' : (s.submitterName || '—'));
     setEl('modalCategory',   CATEGORY_LABELS[s.category] || s.category);
     setEl('modalSubmittedAt', formatDateTime(s.submittedAt));
     setEl('modalSuggestionText', s.suggestionText || '');
     setEl('modalReviewedBy', s.reviewedBy ? `${s.reviewedBy} on ${formatDateTime(s.reviewedAt)}` : '—');
 
-    document.getElementById('modalStatus').value  = s.status;
+    document.getElementById('modalStatus').value     = s.status;
     document.getElementById('modalAdminNotes').value = s.adminNotes || '';
+    document.getElementById('modalPublicNote').value = s.publicNote || '';
 
     const modal = new bootstrap.Modal(document.getElementById('viewModal'));
     modal.show();
@@ -120,14 +123,15 @@ function openViewModal(id) {
 async function saveModalChanges() {
     if (!currentSuggestion) return;
 
-    const status    = document.getElementById('modalStatus').value;
+    const status     = document.getElementById('modalStatus').value;
     const adminNotes = document.getElementById('modalAdminNotes').value.trim();
+    const publicNote = document.getElementById('modalPublicNote').value.trim();
 
     try {
         document.getElementById('saveModalBtn').disabled = true;
         await AdminAPI.fetch(`/admin/suggestions/${currentSuggestion.id}`, {
             method: 'PUT',
-            body: JSON.stringify({ status, adminNotes })
+            body: JSON.stringify({ status, adminNotes, publicNote })
         });
         showAdminSuccess('Suggestion updated successfully');
         bootstrap.Modal.getInstance(document.getElementById('viewModal')).hide();
