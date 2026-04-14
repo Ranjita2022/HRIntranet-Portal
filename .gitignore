@@ -18,8 +18,14 @@ Thumbs.db
 git-pull.bat
 git-pull.sh
 
-# Deploy credentials — NEVER commit these
+# Deploy scripts & credentials — NEVER commit these
 deploy-config.txt
+deploy.bat
+fix-deploy.sh
+start-app.bat
+
+# AI usage report — local/internal only
+AI-USAGE-REPORT.md
 
 # Jasypt master password — NEVER commit this
 jasypt-master-password.txt
