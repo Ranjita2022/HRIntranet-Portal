@@ -7,62 +7,87 @@ import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
  * Utility to encrypt/decrypt sensitive property values using Jasypt.
  *
  * Usage:
- *   1. Run this class with: mvn compile exec:java
- *        -Dexec.mainClass="org.ieee.hrintranet.util.JasyptEncryptUtil"
- *   2. It prints encrypted versions of each sensitive value.
- *   3. Copy the ENC(...) values into your .properties files.
+ *   1. Set the master password as an environment variable:
+ *        $env:JASYPT_ENCRYPTOR_PASSWORD = "your-master-password"
  *
- * The MASTER_PASSWORD must match:
- *   - Environment variable JASYPT_ENCRYPTOR_PASSWORD on the server
- *   - Or JVM arg: -Djasypt.encryptor.password=YOUR_MASTER_KEY
+ *   2. Run with values to encrypt:
+ *        mvn compile exec:java -Dexec.mainClass="org.ieee.hrintranet.util.JasyptEncryptUtil" \
+ *            -Dexec.args="value1 value2 value3" -DskipTests
+ *
+ *   3. Or run without args to enter interactive mode (prompts for input).
+ *
+ *   4. Copy the ENC(...) output into your .properties files.
+ *
+ * The master password MUST match the JASYPT_ENCRYPTOR_PASSWORD env var
+ * used on the server (set in systemd service or application.properties).
+ *
+ * IMPORTANT: Never hardcode passwords in this file — it is committed to Git.
  */
 public class JasyptEncryptUtil {
 
-    // ╔═══════════════════════════════════════════════════════════════╗
-    // ║  MASTER PASSWORD — change this and keep it SECRET            ║
-    // ║  Set as env var on the server: JASYPT_ENCRYPTOR_PASSWORD     ║
-    // ╚═══════════════════════════════════════════════════════════════╝
-    private static final String MASTER_PASSWORD = "IEEE-HR-Portal-Secret-2026";
-
     public static void main(String[] args) {
+        // Read master password from environment variable — NEVER hardcode it
+        String masterPassword = System.getenv("JASYPT_ENCRYPTOR_PASSWORD");
+
+        if (masterPassword == null || masterPassword.isBlank()) {
+            System.err.println("ERROR: Environment variable JASYPT_ENCRYPTOR_PASSWORD is not set.");
+            System.err.println();
+            System.err.println("Set it first:");
+            System.err.println("  PowerShell:  $env:JASYPT_ENCRYPTOR_PASSWORD = \"your-master-password\"");
+            System.err.println("  Linux/Mac:   export JASYPT_ENCRYPTOR_PASSWORD=your-master-password");
+            System.err.println();
+            System.err.println("Then re-run this tool.");
+            System.exit(1);
+        }
+
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("  Jasypt Property Encryption Tool");
-        System.out.println("  Master Password: " + MASTER_PASSWORD);
+        System.out.println("  Master Password: ******** (from JASYPT_ENCRYPTOR_PASSWORD env var)");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-        // === Values to encrypt ===
-        String[] labels = {
-            "DB Password (prod/devserver)",
-            "JWT Secret (prod)",
-            "JWT Secret (devserver)",
-            "DB Password (dev - root)"
-        };
-        String[] plainValues = {
-            "HRPortal@2026!",
-            "/DoMnlbFXRYK+4ZEa0yE9DUc1eDShmHGKp3hlUzstTGA457XpY4CZPXfxn7kbfj64MhQZ+5f7K1jI/z2r5NjXw==",
-            "/DoMnlbFXRYK+4ZEa0yE9DUc1eDShmHGKp3hlUzstTGA457XpY4CZPXfxn7kbfj64MhQZ+5f7K1jI/z2r5NjXw==",
-            "root"
-        };
+        PooledPBEStringEncryptor encryptor = createEncryptor(masterPassword);
 
-        PooledPBEStringEncryptor encryptor = createEncryptor(MASTER_PASSWORD);
+        if (args.length > 0) {
+            // Encrypt values passed as command-line arguments
+            for (String plainValue : args) {
+                encryptAndPrint(encryptor, plainValue);
+            }
+        } else {
+            // Interactive mode — read from stdin
+            System.out.println();
+            System.out.println("No arguments provided. Enter values to encrypt (one per line).");
+            System.out.println("Type 'quit' or press Ctrl+C to exit.");
+            System.out.println();
 
-        System.out.println();
-        for (int i = 0; i < labels.length; i++) {
-            String encrypted = encryptor.encrypt(plainValues[i]);
-            // Verify it decrypts correctly
-            String decrypted = encryptor.decrypt(encrypted);
-            boolean ok = decrypted.equals(plainValues[i]);
-
-            System.out.println("┌─ " + labels[i]);
-            System.out.println("│  Plain:     " + plainValues[i]);
-            System.out.println("│  Encrypted: ENC(" + encrypted + ")");
-            System.out.println("│  Verify:    " + (ok ? "✅ OK" : "❌ MISMATCH"));
-            System.out.println("└───────────────────────────────────────────────");
+            try (java.util.Scanner scanner = new java.util.Scanner(System.in)) {
+                while (true) {
+                    System.out.print("Enter value to encrypt: ");
+                    String line = scanner.nextLine().trim();
+                    if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
+                        break;
+                    }
+                    if (!line.isEmpty()) {
+                        encryptAndPrint(encryptor, line);
+                    }
+                }
+            }
         }
 
         System.out.println();
         System.out.println("Copy the ENC(...) values into your .properties files.");
-        System.out.println("Set JASYPT_ENCRYPTOR_PASSWORD=" + MASTER_PASSWORD + " on the server.");
+    }
+
+    private static void encryptAndPrint(PooledPBEStringEncryptor encryptor, String plainValue) {
+        String encrypted = encryptor.encrypt(plainValue);
+        // Verify round-trip
+        String decrypted = encryptor.decrypt(encrypted);
+        boolean ok = decrypted.equals(plainValue);
+
+        System.out.println();
+        System.out.println("┌─ Input: " + plainValue);
+        System.out.println("│  Encrypted: ENC(" + encrypted + ")");
+        System.out.println("│  Verify:    " + (ok ? "✅ OK" : "❌ MISMATCH"));
+        System.out.println("└───────────────────────────────────────────────");
     }
 
     /**
@@ -83,4 +108,3 @@ public class JasyptEncryptUtil {
         return encryptor;
     }
 }
-
