@@ -268,7 +268,7 @@ function transformDatabaseResponse(dbResponse) {
             const positionText = celebration.Position || celebration.position || celebration.Designation || celebration.designation || '';
 
             // Default messages similar to new joiner welcome text
-            let descriptionText = '';
+            let descriptionText;
             if (isBirthday) {
                 descriptionText = celebration.Description || `Happy Birthday, ${celebration.Name || 'colleague'}! Wishing you a wonderful day and year ahead.`;
             } else {
@@ -1211,36 +1211,6 @@ function updateStats(joiners, holidays, announcements, birthdays) {
 }
 
 /**
- * Process celebrations data (birthdays & anniversaries)
- */
-function processCelebrationsData(data) {
-    const celebrations = data
-        .map(row => ({
-            id: row.ID,
-            type: (row.Type || '').toLowerCase(),
-            name: row.Name,
-            date: row.Date,
-            years: row.Years,
-            department: row.Department,
-            imageUrl: row.ImageURL
-        }))
-        .filter(item => item.type !== 'birthday' || isCurrentMonthDate(item.date));
-
-    // Sort by date
-    celebrations.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateA - dateB;
-    });
-
-    renderCelebrations(celebrations);
-
-    // Update birthday count in stats
-    const birthdayCount = celebrations.filter(c => c.type === 'birthday').length;
-    animateNumber('#birthdayCount', birthdayCount);
-}
-
-/**
  * Render celebrations (birthdays & anniversaries)
  */
 function renderCelebrations(celebrations) {
@@ -1713,7 +1683,6 @@ let tvClockInterval = null;
 let tvRefreshCountdown = 60; // seconds
 let carouselCompletedOnce = false;
 let carouselCycleCount = 0;
-let totalCarouselSlides = 0;
 let currentContentSection = 0; // Track which content section to show (0=announcements, 1=team updates, 2=holidays)
 let contentRotationTimer = null;
 let tvScrollAnimationId = null;
@@ -2274,40 +2243,6 @@ function startTVHorizontalScroll(sectionId, duration) {
     }
 }
 
-/**
- * Convert the holidays list to a horizontal infinite scroll strip for TV mode.
- * Duplicates holiday cards and applies scrollHolidays CSS animation.
- */
-function setupTVHolidaysHorizontal() {
-    const $container = $('#holidaysContainer');
-    if (!$container.length) return;
-    if ($container.data('tv-horizontal')) return; // already set up
-
-    // Save original HTML for teardown
-    const originalHtml = $container.html();
-    $container.data('tv-horizontal-original', originalHtml);
-    $container.data('tv-horizontal', true);
-
-    // Duplicate for seamless loop
-    $container.html(originalHtml + originalHtml);
-
-    // Measure and apply animation duration after paint
-    requestAnimationFrame(() => {
-        const totalW = $container[0].scrollWidth;
-        const halfW   = totalW / 2;
-        const speed   = 90; // px per second
-        const secs    = Math.max(12, halfW / speed);
-
-        $container.css({
-            'animation-name':            'scrollHolidays',
-            'animation-duration':         secs + 's',
-            'animation-timing-function': 'linear',
-            'animation-iteration-count': 'infinite',
-            'animation-play-state':      'running'
-        });
-        console.log(`TV Holidays horizontal: ${halfW}px wide → ${secs.toFixed(1)}s animation`);
-    });
-}
 
 /**
  * Restore holidays list to original state after TV mode hides it.
@@ -2329,87 +2264,6 @@ function teardownTVHolidaysHorizontal() {
     console.log('TV Holidays: restored to vertical layout');
 }
 
-/**
- * Create an infinite upward-scrolling effect for a section's content.
- * Duplicates the content, wraps it in a scrolling container, and uses
- * CSS transform animation to scroll up continuously.
- */
-function  startTVInfiniteScroll(sectionId, duration) {
-    const $section = $(sectionId);
-    if (!$section.length) return;
-
-    // Team updates/positions have their own CSS scroll; announcements and holidays are intentionally static.
-    if (sectionId === '#teamUpdates' || sectionId === '#positions' || sectionId === '#announcements' || sectionId === '#holidays') return;
-
-    // Find the inner content container
-    const $inner = $section.find('[id$="Container"]').first();
-    if (!$inner.length) return;
-
-    const contentHeight = $inner[0].scrollHeight;
-    const viewportHeight = window.innerHeight;
-
-    // If content fits in viewport, no need to scroll
-    if (contentHeight <= viewportHeight * 0.6) return;
-
-    // Save originals before modifying
-    const $wrapper = $inner.parent();
-    const $scrollArea = $wrapper.is('section') ? $inner : $wrapper;
-
-    $section.data('tv-original-section-style', $section.attr('style') || '');
-    $scrollArea.data('tv-original-wrapper-style', $scrollArea.attr('style') || '');
-
-    // Make section a flex column so heading stays fixed at top
-    $section.css({
-        'display': 'flex',
-        'flex-direction': 'column',
-        'height': (viewportHeight - 80) + 'px',
-        'overflow': 'hidden'
-    });
-    $section.addClass('tv-section-scroll-active');
-
-    // Wrapper fills remaining space and clips the scrolling content
-    $scrollArea.css({
-        'flex': '1',
-        'overflow': 'hidden',
-        'min-height': '0'
-    });
-
-    // Save original HTML for restoration later
-    const originalHtml = $inner.html();
-    $inner.data('tv-original-html', originalHtml);
-
-    // Defer creation and measurement to next frame to ensure layout is stable
-    window.requestAnimationFrame(function () {
-        // Create a scrolling track inside the container so the container
-        // stays fixed (with overflow: hidden) and only the track moves.
-        const $track = $('<div class="tv-scroll-track"></div>');
-        $track.html(originalHtml + originalHtml); // duplicate for seamless loop
-        $inner.empty().append($track);
-
-        // Recompute height after DOM update
-        const measuredHeight = $track[0].scrollHeight / 2; // one copy height
-
-        // Calculate scroll speed: make it content-size aware so long lists
-        // scroll more slowly and are fully visible. Use pixels/sec heuristic.
-        const originalHeight = measuredHeight;
-        const pixelsPerSecond = 30; // slower readable vertical speed
-        // duration param is a baseline (in ms). Compute seconds required by content.
-        const baselineSecs = Math.max(1, duration / 1000);
-        const neededSecs = Math.max(3, originalHeight / pixelsPerSecond);
-        const scrollDurationSecs = Math.max(baselineSecs, Math.min(neededSecs, 240));
-
-        // Debug logging to help diagnose second-cycle issues
-        console.log(`TV Mode: startTVInfiniteScroll(${sectionId}) contentHeight=${originalHeight}px, baseline=${baselineSecs}s, needed=${neededSecs}s, applied=${scrollDurationSecs}s`);
-
-        // Apply CSS animation to the inner track only
-        $track.css({
-            'animation': `tvInfiniteScrollUp ${scrollDurationSecs}s linear infinite`,
-            'will-change': 'transform'
-        });
-
-        $inner.addClass('tv-infinite-scrolling');
-    });
-}
 
 /**
  * Stop any running TV auto-scroll animation and restore content

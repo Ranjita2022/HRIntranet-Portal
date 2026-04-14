@@ -95,6 +95,12 @@ const CONFIG = {
     DEFAULT_HOLIDAY_IMAGE: '', // Leave empty for no image
     DEFAULT_CAROUSEL_IMAGE: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDEyMDAgNDAwIj48cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM2NjdlZWEiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkhSIFBvcnRhbDwvdGV4dD48L3N2Zz4=',
     
+    // ============================================
+    // GALLERY CONFIGURATION
+    // ============================================
+    ENABLE_RANDOM_GALLERY: false,      // Set to true to load random gallery images on homepage
+    RANDOM_GALLERY_COUNT: 20,          // Number of random gallery images to fetch
+
     // Auto-refresh interval in minutes (0 to disable)
     AUTO_REFRESH_MINUTES: 0,
     

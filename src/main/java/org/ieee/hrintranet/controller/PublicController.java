@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -59,8 +60,8 @@ public class PublicController {
                 .filter(emp -> !emp.getStartDate().isBefore(thirtyDaysAgo) && !emp.getStartDate().isAfter(today))
                 .sorted((e1, e2) -> e2.getStartDate().compareTo(e1.getStartDate()))
                 .limit(maxJoiners)
-                .collect(Collectors.toList());
-        
+                .toList();
+
         List<Map<String, Object>> joiners = recentJoiners.stream().map(emp -> {
             Map<String, Object> joiner = new HashMap<>();
             joiner.put("ID", emp.getId());
@@ -83,8 +84,8 @@ public class PublicController {
                 .stream()
             .filter(holiday -> holiday.getHolidayDate() != null)
                 .limit(maxHolidays)
-                .collect(Collectors.toList());
-        
+                .toList();
+
         List<Map<String, Object>> holidays = upcomingHolidays.stream().map(holiday -> {
             Map<String, Object> h = new HashMap<>();
             h.put("ID", holiday.getId());
@@ -114,8 +115,8 @@ public class PublicController {
             })
             .sorted((a1, a2) -> a2.getPublishDate().compareTo(a1.getPublishDate()))
             .limit(maxAnnouncements)
-            .collect(Collectors.toList());
-        
+            .toList();
+
         // Get active events (show future events and past 30 days)
         LocalDate thirtyDaysFromNow = today.plusDays(30);
         List<Map<String, Object>> events = announcementRepository.findAll().stream()
@@ -123,7 +124,7 @@ public class PublicController {
             .filter(ann -> ann.getType() == Announcement.AnnouncementType.EVENT)
             .filter(ann -> ann.getPublishDate() != null)
                 .filter(ann -> !ann.getPublishDate().isAfter(thirtyDaysFromNow))  // Show events up to 30 days in future
-                .sorted((a1, a2) -> a1.getPublishDate().compareTo(a2.getPublishDate()))  // Sort by date ascending
+                .sorted(Comparator.comparing(Announcement::getPublishDate))  // Sort by date ascending
                 .map(ann -> {
                     Map<String, Object> e = new HashMap<>();
                     e.put("ID", ann.getId());
@@ -172,8 +173,8 @@ public class PublicController {
                 .findByIsActiveOrderByDisplayOrderAscCreatedAtDesc(true)
                 .stream()
                 .limit(maxCarousel)
-                .collect(Collectors.toList());
-        
+                .toList();
+
         List<Map<String, Object>> carousel = carouselSlides.stream().map(slide -> {
             Map<String, Object> c = new HashMap<>();
             c.put("ID", slide.getId());
@@ -200,7 +201,7 @@ public class PublicController {
         List<Employee> allEmployees = employeeRepository.findAll();
         List<Employee> allActiveEmployees = allEmployees.stream()
             .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
-            .collect(Collectors.toList());
+            .toList();
 
         for (Employee emp : allActiveEmployees) {
             LocalDate startDate = emp.getStartDate();
@@ -496,9 +497,9 @@ public class PublicController {
     public ResponseEntity<List<Map<String, String>>> getActiveEmployees() {
         List<Employee> activeEmployees = employeeRepository.findAll().stream()
                 .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
-                .sorted((e1, e2) -> e1.getFullName().compareTo(e2.getFullName()))
-                .collect(Collectors.toList());
-        
+                .sorted(Comparator.comparing(Employee::getFullName))
+                .toList();
+
         List<Map<String, String>> employees = activeEmployees.stream().map(emp -> {
             Map<String, String> employee = new HashMap<>();
             employee.put("id", emp.getId().toString());
@@ -550,6 +551,7 @@ public class PublicController {
         }
 
         if (!configured.exists()) {
+            //noinspection ResultOfMethodCallIgnored
             configured.mkdirs();
         }
 
