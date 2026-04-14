@@ -46,7 +46,7 @@ const CONFIG = {
     
     // Production API URL (update this for your production environment)
     PRODUCTION_API_URL: 'http://10.240.150.65/api',
-    
+
     // Development API URL
     // Works for both Maven Spring Boot and Tomcat WAR (when deployed as ROOT.war
     DEVELOPMENT_API_URL: 'http://localhost:8080/api',
