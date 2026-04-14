@@ -21,6 +21,9 @@ git-pull.sh
 # Deploy credentials — NEVER commit these
 deploy-config.txt
 
+# Jasypt master password — NEVER commit this
+jasypt-master-password.txt
+
 # Sample/temp data files — local use only
 *.csv
 *.xlsx
