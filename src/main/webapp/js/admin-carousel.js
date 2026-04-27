@@ -65,15 +65,34 @@ function renderCarouselTable() {
                     ? `<img src="${escapeHtml(getCarouselImageUrl(slide))}" alt="Preview" class="slide-thumb">`
                     : '<span class="slide-thumb-placeholder"><i class="bi bi-image"></i></span>'}
             </td>
+<<<<<<< HEAD
             <td><span class="fw-semibold">${escapeHtml(slide.title || '—')}</span></td>
             <td class="text-muted small">${escapeHtml(slide.subtitle || '—')}</td>
+=======
+            <td style="max-width:0">
+                <span class="slide-title-cell d-block" title="${escapeHtml(slide.title || '')}">
+                    ${escapeHtml(slide.title || '—')}
+                </span>
+            </td>
+            <td style="max-width:0">
+                <span class="slide-subtitle-cell d-block" title="${escapeHtml(slide.subtitle || '')}">
+                    ${escapeHtml(slide.subtitle || '—')}
+                </span>
+            </td>
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             <td class="text-center"><span class="order-badge">${slide.displayOrder}</span></td>
             <td>
                 <span class="badge ${slide.isActive ? 'bg-success' : 'bg-secondary'}">
                     ${slide.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
+<<<<<<< HEAD
             <td class="text-muted small">${escapeHtml(slide.createdBy || '—')}</td>
+=======
+            <td class="text-muted small text-truncate" style="max-width:100px" title="${escapeHtml(slide.createdBy || '')}">
+                ${escapeHtml(slide.createdBy || '—')}
+            </td>
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             <td class="text-center">
                 <div class="d-flex gap-1 justify-content-center">
                     <button class="btn btn-sm btn-outline-primary" onclick="editCarouselSlide(${slide.id})" title="Edit">
@@ -311,6 +330,7 @@ function getApiErrorMessage(error) {
 function getCarouselImageUrl(slide) {
     if (!slide) return '';
 
+<<<<<<< HEAD
     if (slide.image && slide.image.imageUrl) {
         return slide.image.imageUrl;
     }
@@ -328,10 +348,33 @@ function getCarouselImageUrl(slide) {
         }
     }
 
+=======
+    // 1. Explicit imageUrl field (full http URL only)
+    if (slide.image && slide.image.imageUrl && slide.image.imageUrl.startsWith('http')) {
+        return slide.image.imageUrl;
+    }
+
+    // 2. Slide-level imageUrl (full http URL only)
+    if (slide.imageUrl && slide.imageUrl.startsWith('http')) {
+        return slide.imageUrl;
+    }
+
+    // 3. Build URL from filename — ALWAYS preferred over filePath.
+    //    filePath stores the OS filesystem path (e.g. /opt/hrintranet/uploads/images/UUID.jpg
+    //    on the Ubuntu server, or C:\...\UUID.jpg on Windows dev), NOT a URL.
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     if (slide.image && slide.image.filename) {
         return `${CONFIG.API_BASE_URL}/uploads/${slide.image.filename}`;
     }
 
+<<<<<<< HEAD
+=======
+    // 4. Last resort: only use filePath if it is already a full http URL
+    if (slide.image && slide.image.filePath && slide.image.filePath.startsWith('http')) {
+        return slide.image.filePath;
+    }
+
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     return '';
 }
 

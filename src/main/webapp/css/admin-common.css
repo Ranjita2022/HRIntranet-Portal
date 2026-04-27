@@ -49,11 +49,23 @@ body {
     position: relative;
     display: flex;
     align-items: center;
-    padding: 0.875rem 1.5rem;
+    padding: 0.7rem 1.5rem;
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     transition: all 0.2s ease;
     cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background-color 0.2s ease;
 }
 
 .menu-item::before {
@@ -87,9 +99,9 @@ body {
 }
 
 .menu-item i {
-    font-size: 1.25rem;
-    margin-right: 0.875rem;
-    width: 24px;
+    font-size: 1.1rem;
+    margin-right: 0.75rem;
+    width: 22px;
     text-align: center;
 }
 
@@ -129,7 +141,11 @@ body {
 
 .content-header h1,
 .content-header .page-title {
+<<<<<<< HEAD
     font-size: 1.6rem;
+=======
+    font-size: 1.35rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     font-weight: 600;
     color: #2c3e50;
     margin: 0;
@@ -176,7 +192,7 @@ body {
 }
 
 .content-body {
-    padding: 2rem;
+    padding: 1.25rem 1.5rem;
     flex: 1;
 }
 
@@ -184,8 +200,13 @@ body {
 .content-card {
     background: white;
     border-radius: 10px;
+<<<<<<< HEAD
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+=======
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
     border: 1px solid #edf0f4;
 }
@@ -228,10 +249,17 @@ body {
 /* Admin Footer - Sticky at Bottom */
 .admin-footer {
     background: white;
+<<<<<<< HEAD
     padding: 1.25rem 2rem;
     border-top: 1px solid #e9ecef;
     color: #6c757d;
     font-size: 0.85rem;
+=======
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    color: #6c757d;
+    font-size: 0.8rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     margin-top: auto;
 }
 
@@ -249,11 +277,15 @@ body {
 .table thead th {
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     letter-spacing: 0.5px;
     color: #6c757d;
     border-bottom: 2px solid #dee2e6;
     white-space: nowrap;
+<<<<<<< HEAD
+=======
+    padding: 0.5rem 0.75rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 }
 
 /* Badges */
@@ -335,31 +367,52 @@ body {
 /* ── Shared Stats Row ── */
 .stats-row {
     display: grid;
+<<<<<<< HEAD
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 1.25rem;
     margin-bottom: 1.75rem;
+=======
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 }
 
 .stat-card {
     background: white;
     border: 1px solid #e9ecef;
+<<<<<<< HEAD
     padding: 1.25rem 1.5rem;
+=======
+    padding: 0.875rem 1rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .stat-card h3 {
+<<<<<<< HEAD
     font-size: 2rem;
     font-weight: 700;
     color: #00629B;
     margin: 0 0 0.25rem 0;
+=======
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #00629B;
+    margin: 0 0 0.15rem 0;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 }
 
 .stat-card p {
     color: #6c757d;
     margin: 0;
+<<<<<<< HEAD
     font-size: 0.85rem;
+=======
+    font-size: 0.8rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     font-weight: 500;
 }
 
@@ -400,15 +453,27 @@ body {
 /* ── Table inside table-card ── */
 .table-card .table {
     margin: 0;
+<<<<<<< HEAD
+=======
+    font-size: 0.85rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 }
 
 .table-card .table thead th {
     background: #f8f9fa;
+<<<<<<< HEAD
     padding: 0.75rem 1rem;
 }
 
 .table-card .table tbody td {
     padding: 0.85rem 1rem;
+=======
+    padding: 0.5rem 0.75rem;
+}
+
+.table-card .table tbody td {
+    padding: 0.5rem 0.75rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     vertical-align: middle;
 }
 
@@ -446,6 +511,7 @@ body {
 
 /* related resource: admin-common.css:392:1 */
 .table-card .table tbody td { /* the element was td */
+<<<<<<< HEAD
   width: 100px;
   min-width: 50px;
   padding-left: 8px;
@@ -453,6 +519,14 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+=======
+  min-width: 50px;
+  padding: 0.5rem 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 }
 
 /* related resource: admin-common.css:383:1 */

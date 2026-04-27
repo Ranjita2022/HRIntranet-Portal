@@ -12,34 +12,46 @@
         .shoutout-page {
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem 0;
+            padding: 1rem 0;
+            display: flex;
+            align-items: center;
         }
         .shoutout-card {
+<<<<<<< HEAD
             max-width: 500px;
+=======
+            max-width: 640px;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+<<<<<<< HEAD
             padding: 1rem;
             height: auto; 
+=======
+            padding: 1.5rem 2rem;
+            height: auto;
+>>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
         }
         .shoutout-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
         }
         .shoutout-header h1 {
             color: #667eea;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
+            font-size: 1.6rem;
         }
         .shoutout-header p {
             color: #666;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
         .shoutout-icon {
-            font-size: 4rem;
+            font-size: 2.5rem;
             color: #667eea;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
         .category-badge {
             display: inline-block;
@@ -110,24 +122,24 @@
                     </div>
 
                     <form id="submitShoutoutForm">
-                        <!-- From (Who is giving the shoutout) -->
-                        <div class="mb-4">
-                            <label for="fromEmployee" class="form-label"><i class="bi bi-person-fill text-primary"></i> Your Name</label>
-                            <select class="form-select form-select-lg" id="fromEmployee" required>
-                                <option value="">Who are you?</option>
-                            </select>
-                        </div>
-
-                        <!-- To (Who is receiving the shoutout) -->
-                        <div class="mb-4">
-                            <label for="toEmployee" class="form-label"><i class="bi bi-star-fill text-warning"></i> Shoutout To</label>
-                            <select class="form-select form-select-lg" id="toEmployee" required>
-                                <option value="">Who do you want to recognize?</option>
-                            </select>
+                        <!-- From / To side-by-side -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="fromEmployee" class="form-label"><i class="bi bi-person-fill text-primary"></i> Your Name</label>
+                                <select class="form-select" id="fromEmployee" required>
+                                    <option value="">Who are you?</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="toEmployee" class="form-label"><i class="bi bi-star-fill text-warning"></i> Shoutout To</label>
+                                <select class="form-select" id="toEmployee" required>
+                                    <option value="">Who do you want to recognize?</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Category -->
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label"><i class="bi bi-tag-fill text-success"></i> Category</label>
                             <div class="d-flex flex-wrap justify-content-center">
                                 <span class="category-badge" data-category="Teamwork">🤝 Teamwork</span>
@@ -140,12 +152,12 @@
                         </div>
 
                         <!-- Message -->
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="message" class="form-label"><i class="bi bi-chat-quote-fill text-info"></i> Your Message</label>
-                            <textarea class="form-control form-control-lg" id="message" rows="4" 
-                                placeholder="Write your appreciation message here..." 
+                            <textarea class="form-control" id="message" rows="3"
+                                placeholder="Write your appreciation message here..."
                                 maxlength="500" required></textarea>
-                            <div class="form-text text-end"><span id="charCount">0</span>/500 characters</div>
+                            <div class="form-text text-end" style="font-size:0.8rem;"><span id="charCount">0</span>/500</div>
                         </div>
 
                         <!-- Submit Button -->

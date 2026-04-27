@@ -38,6 +38,12 @@ public class AdminUser {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
     
+    @Column(name = "must_change_password", nullable = false)
+    private Boolean mustChangePassword = true;
+
+    @Column(name = "employee_id", length = 50)
+    private String employeeId;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
