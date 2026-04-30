@@ -47,7 +47,7 @@ CREATE TABLE `admin_users` (
 
 LOCK TABLES `admin_users` WRITE;
 /*!40000 ALTER TABLE `admin_users` DISABLE KEYS */;
-INSERT INTO `admin_users` VALUES (1,'admin','$2a$10$WtNpTzRWoeubxKxEVnL.Z.I93SW25zvj5pCZij58Qk8XW66saSu/O','System Administrator','admin@company.com','SUPER_ADMIN',1,'2026-03-24 00:30:40','2026-02-27 09:50:24','2026-03-24 00:30:40'),(2,'hradmin','$2a$10$XjJaAuijME0tvZfaHMr2FudUKYr6mCyaxVe.9fRD6rLb/U/w68iQG','HR Administrator','hradmin@company.com','ADMIN',1,'2026-03-02 22:26:33','2026-03-02 08:56:17','2026-03-02 22:26:33'),(3,'hrstaff','$2a$10$qgQwXoOo4u59vIdoLiCOourwtPRWOxChtFw7zLmJRc5jS8Ro3SPp2','HR Staff Member','hrstaff@company.com','HR_STAFF',1,'2026-03-02 05:20:17','2026-03-02 08:56:17','2026-03-02 05:20:17');
+INSERT INTO `admin_users` VALUES (1,'admin','$2a$10$slYQmyNdGzin7olVN3p5be4DlH.PKZbv5H8KnzzVgXXbVxzy71uFm','System Administrator','admin@company.com','SUPER_ADMIN',1,'2026-03-24 00:30:40','2026-02-27 09:50:24','2026-03-24 00:30:40'),(2,'hradmin','$2a$10$XjJaAuijME0tvZfaHMr2FudUKYr6mCyaxVe.9fRD6rLb/U/w68iQG','HR Administrator','hradmin@company.com','ADMIN',1,'2026-03-02 22:26:33','2026-03-02 08:56:17','2026-03-02 22:26:33'),(3,'hrstaff','$2a$10$qgQwXoOo4u59vIdoLiCOourwtPRWOxChtFw7zLmJRc5jS8Ro3SPp2','HR Staff Member','hrstaff@company.com','HR_STAFF',1,'2026-03-02 05:20:17','2026-03-02 08:56:17','2026-03-02 05:20:17');
 /*!40000 ALTER TABLE `admin_users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
