@@ -52,7 +52,8 @@ public class AuthController {
             response.put("username", user.getUsername());
             response.put("fullName", user.getFullName());
             response.put("role", user.getRole());
-            
+            response.put("mustChangePassword", Boolean.TRUE.equals(user.getMustChangePassword()));
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();

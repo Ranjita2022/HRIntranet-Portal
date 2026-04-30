@@ -1,7 +1,9 @@
 package org.ieee.hrintranet.controller;
 
 import org.ieee.hrintranet.entity.AdminUser;
+import org.ieee.hrintranet.entity.Employee;
 import org.ieee.hrintranet.repository.AdminUserRepository;
+import org.ieee.hrintranet.repository.EmployeeRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import java.util.Objects;
 public class AdminUserController {
     
     private final AdminUserRepository adminUserRepository;
+    private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     
     /**
@@ -193,11 +196,79 @@ public class AdminUserController {
                         .body(Map.of("error", "Current password is incorrect"));
                 }
                 
-                // Update to new password
+                // Update to new password and clear force-change flag
                 user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+                user.setMustChangePassword(false);
                 adminUserRepository.save(user);
                 
                 return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Create admin user from an existing employee (SUPER_ADMIN only)
+     * Auto-fills name and email from employee record
+     */
+    @PostMapping("/from-employee")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> createAdminFromEmployee(@RequestBody CreateFromEmployeeRequest request) {
+        // Find the employee
+        Employee employee = employeeRepository.findByEmployeeId(request.getEmployeeId()).orElse(null);
+        if (employee == null) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Employee not found with ID: " + request.getEmployeeId()));
+        }
+
+        // Check if employee already has an admin account
+        if (Boolean.TRUE.equals(adminUserRepository.existsByEmployeeId(request.getEmployeeId()))) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "This employee already has an admin account"));
+        }
+
+        // Validate username doesn't exist
+        if (Boolean.TRUE.equals(adminUserRepository.existsByUsername(request.getUsername()))) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Username already exists"));
+        }
+
+        // Validate email doesn't exist
+        if (Boolean.TRUE.equals(adminUserRepository.existsByEmail(employee.getEmail()))) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Email already exists for another admin user"));
+        }
+
+        // Create admin user linked to employee
+        AdminUser user = new AdminUser();
+        user.setUsername(request.getUsername());
+        user.setPasswordHash(passwordEncoder.encode(request.getTempPassword()));
+        user.setFullName(employee.getFullName());
+        user.setEmail(employee.getEmail());
+        user.setRole(request.getRole() != null ? request.getRole() : AdminUser.UserRole.HR_STAFF);
+        user.setIsActive(true);
+        user.setMustChangePassword(true);
+        user.setEmployeeId(request.getEmployeeId());
+
+        AdminUser savedUser = adminUserRepository.save(user);
+        savedUser.setPasswordHash("***");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+    }
+
+    /**
+     * Reset password for an admin user (SUPER_ADMIN only)
+     * Sets a temporary password and forces change on next login
+     */
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> resetPassword(@PathVariable int id, @RequestBody ResetPasswordRequest request) {
+        return adminUserRepository.findById(id)
+            .map(u -> {
+                AdminUser user = Objects.requireNonNull(u);
+                user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+                user.setMustChangePassword(true);
+                adminUserRepository.save(user);
+                return ResponseEntity.ok(Map.of("message", "Password reset successfully. User will be required to change password on next login."));
             })
             .orElse(ResponseEntity.notFound().build());
     }
@@ -227,3 +298,17 @@ class ChangePasswordRequest {
     private String oldPassword;
     private String newPassword;
 }
+
+@Data
+class CreateFromEmployeeRequest {
+    private String employeeId;
+    private String username;
+    private String tempPassword;
+    private AdminUser.UserRole role;
+}
+
+@Data
+class ResetPasswordRequest {
+    private String newPassword;
+}
+
