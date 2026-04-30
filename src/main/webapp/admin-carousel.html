@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,73 +10,27 @@
     <link rel="stylesheet" href="css/admin-common.css">
     <style>
         .slide-thumb {
-<<<<<<< HEAD
             width: 72px; height: 45px;
-=======
-            width: 64px; height: 40px;
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             object-fit: cover;
             border-radius: 4px;
             border: 1px solid #dee2e6;
         }
         .slide-thumb-placeholder {
-<<<<<<< HEAD
             width: 72px; height: 45px;
-=======
-            width: 64px; height: 40px;
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             background: #f0f2f5;
             border-radius: 4px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: #adb5bd;
-<<<<<<< HEAD
             font-size: 1.2rem;
-=======
-            font-size: 1.1rem;
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             border: 1px solid #dee2e6;
         }
         .order-badge {
             display: inline-flex; align-items: center; justify-content: center;
-<<<<<<< HEAD
             width: 28px; height: 28px;
             background: #e7f3ff; color: #00629B;
             border-radius: 50%; font-weight: 700; font-size: 0.8rem;
-=======
-            width: 26px; height: 26px;
-            background: #e7f3ff; color: #00629B;
-            border-radius: 50%; font-weight: 700; font-size: 0.75rem;
-        }
-        /* Compact table */
-        #carouselTableBody td,
-        table thead th {
-            vertical-align: middle;
-            padding: 0.4rem 0.55rem;
-            font-size: 0.85rem;
-        }
-        .slide-title-cell {
-            max-width: 180px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: 600;
-            color: #212529;
-        }
-        .slide-subtitle-cell {
-            max-width: 200px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #6c757d;
-            font-size: 0.8rem;
-        }
-        table .btn-sm {
-            padding: 0.2rem 0.42rem;
-            font-size: 0.78rem;
-            line-height: 1.4;
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
         }
     </style>
 </head>
@@ -102,17 +56,9 @@
             <a href="admin-open-positions.html" class="menu-item"><i class="bi bi-briefcase-fill"></i><span>Open Positions</span></a>
 
         <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
-<<<<<<< HEAD
 
         
             <a href="admin-audit.html" class="menu-item"><i class="bi bi-journal-text"></i><span>Audit Logs</span></a>
-=======
-        <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
-
-        
-            <a href="admin-users.html" class="menu-item super-admin-only"><i class="bi bi-person-gear"></i><span>User Management</span></a>
-            <a href="admin-audit.html" class="menu-item admin-only"><i class="bi bi-journal-text"></i><span>Audit Logs</span></a>
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
             <div class="menu-item" onclick="window.open('index.html','_blank')"><i class="bi bi-eye-fill"></i><span>View Portal</span></div>
             <div class="menu-item" onclick="handleLogout()"><i class="bi bi-box-arrow-right"></i><span>Logout</span></div>
         </div>
@@ -160,7 +106,6 @@
                     <span class="record-count" id="recordCount">Loading…</span>
                 </div>
                 <div class="table-responsive">
-<<<<<<< HEAD
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
@@ -172,19 +117,6 @@
                                 <th width="100">Status</th>
                                 <th width="110">Created By</th>
                                 <th width="100" class="text-center">Actions</th>
-=======
-                    <table class="table table-hover table-sm mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width:36px">#</th>
-                                <th style="width:75px">Preview</th>
-                                <th>Title</th>
-                                <th>Subtitle</th>
-                                <th style="width:65px" class="text-center">Order</th>
-                                <th style="width:80px">Status</th>
-                                <th style="width:100px">Created By</th>
-                                <th style="width:85px" class="text-center">Actions</th>
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
                             </tr>
                         </thead>
                         <tbody id="carouselTableBody">

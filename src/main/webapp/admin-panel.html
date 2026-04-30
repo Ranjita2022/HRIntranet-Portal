@@ -107,10 +107,6 @@
                 <span>Open Positions</span>
             </a>
             <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
-<<<<<<< HEAD
-=======
-        <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 
             <a href="admin-emergency.html" class="menu-item">
                 <i class="bi bi-exclamation-triangle-fill"></i>
@@ -119,12 +115,7 @@
 
             <div class="menu-section">System</div>
             
-            <a href="admin-users.html" class="menu-item super-admin-only">
-                <i class="bi bi-person-gear"></i>
-                <span>User Management</span>
-            </a>
-
-            <a href="admin-audit.html" class="menu-item admin-only">
+            <a href="admin-audit.html" class="menu-item">
                 <i class="bi bi-journal-text"></i>
                 <span>Audit Logs</span>
             </a>
@@ -462,24 +453,24 @@
     <script>
         // Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('?? DOM loaded, initializing admin panel...');
+            console.log('🔄 DOM loaded, initializing admin panel...');
             
             // Initialize AdminAPI
             AdminAPI.init();
             
-            console.log('?? Checking authentication...');
+            console.log('🔍 Checking authentication...');
             console.log('Token from localStorage:', localStorage.getItem('admin_jwt_token'));
             console.log('AdminAPI.token:', AdminAPI.token);
             console.log('isAuthenticated:', AdminAPI.isAuthenticated());
             
             // Check authentication with redirect protection
             if (!AdminAPI.isAuthenticated()) {
-                console.error('? Not authenticated, redirecting to login...');
+                console.error('❌ Not authenticated, redirecting to login...');
                 // Prevent infinite redirects by checking if we just came from login
                 const justLoggedIn = sessionStorage.getItem('just_logged_in');
                 if (justLoggedIn) {
                     sessionStorage.removeItem('just_logged_in');
-                    console.error('? Authentication failed even after login.');
+                    console.error('❌ Authentication failed even after login.');
                     console.error('Token:', AdminAPI.token);
                     console.error('LocalStorage keys:', Object.keys(localStorage));
                     alert('Authentication failed. Please clear your browser cache and try logging in again.');
@@ -489,13 +480,13 @@
                     window.location.href = 'admin-login.html';
                 }, 100);
             } else {
-                console.log('? User authenticated, initializing admin panel...');
+                console.log('✅ User authenticated, initializing admin panel...');
                 // Clear the just_logged_in flag after successful auth
                 sessionStorage.removeItem('just_logged_in');
                 try {
                     initializeAdminPanel();
                 } catch (error) {
-                    console.error('? Error initializing admin panel:', error);
+                    console.error('❌ Error initializing admin panel:', error);
                     alert('Error loading admin panel: ' + error.message);
                 }
             }
@@ -503,7 +494,7 @@
         
         function initializeAdminPanel() {
             const user = AdminAPI.getCurrentUser();
-            console.log('?? Current user:', user);
+            console.log('👤 Current user:', user);
             
             if (!user || !user.username) {
                 throw new Error('User data is incomplete');
@@ -637,7 +628,7 @@
             try {
                 // Use AdminAPI token instead of manually getting from localStorage
                 if (!AdminAPI.isAuthenticated()) {
-                    console.error('? Not authenticated in loadDashboardStats');
+                    console.error('❌ Not authenticated in loadDashboardStats');
                     window.location.href = 'admin-login.html';
                     return;
                 }
@@ -740,16 +731,6 @@
                         'Content-Type': 'application/json'
                     }
                 });
-
-                // HR_STAFF doesn't have access to audit logs - show friendly message
-                if (response.status === 403) {
-                    document.getElementById('recentActivity').innerHTML = `
-                        <div class="text-center text-muted py-3">
-                            <i class="bi bi-lock"></i> Recent activity is available for Admin and Super Admin roles
-                        </div>
-                    `;
-                    return;
-                }
 
                 if (response.ok) {
                     const data = await response.json();

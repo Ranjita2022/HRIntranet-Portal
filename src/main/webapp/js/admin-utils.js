@@ -52,8 +52,7 @@ const AdminAPI = {
             localStorage.setItem('admin_username', data.username);
             localStorage.setItem('admin_fullname', data.fullName || data.username);
             localStorage.setItem('admin_role', data.role || 'USER');
-            localStorage.setItem('admin_must_change_password', data.mustChangePassword ? 'true' : 'false');
-
+            
             console.log('💾 Token saved to localStorage');
             console.log('✅ Login successful for:', data.username);
             console.log('🔍 Verification - Token in localStorage:', localStorage.getItem('admin_jwt_token') !== null);
@@ -74,7 +73,6 @@ const AdminAPI = {
         localStorage.removeItem('admin_username');
         localStorage.removeItem('admin_fullname');
         localStorage.removeItem('admin_role');
-        localStorage.removeItem('admin_must_change_password');
         console.log('🔓 Logged out');
     },
     
@@ -142,15 +140,9 @@ const AdminAPI = {
                 throw new Error('Session expired. Please login again.');
             }
             
-            // Handle 403 Forbidden - insufficient role
-            if (response.status === 403) {
-                throw new Error('Access denied. You do not have permission to access this resource.');
-            }
-
             if (!response.ok) {
                 const errorText = await response.text();
-                const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
-                throw new Error(cleanError.substring(0, 200) || `HTTP ${response.status}`);
+                throw new Error(errorText || `HTTP ${response.status}`);
             }
             
             // Return response for various content types
@@ -198,15 +190,9 @@ const AdminAPI = {
                 throw new Error('Session expired. Please login again.');
             }
             
-            // Handle 403 Forbidden - insufficient role
-            if (response.status === 403) {
-                throw new Error('Access denied. You do not have permission to access this resource.');
-            }
-            
             if (!response.ok) {
                 const errorText = await response.text();
-                const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
-                throw new Error(cleanError.substring(0, 200) || `HTTP ${response.status}`);
+                throw new Error(errorText || `HTTP ${response.status}`);
             }
             
             // Return response for various content types
@@ -470,72 +456,6 @@ const AdminAPI = {
         async getAll() {
             return AdminAPI.fetch('/admin/shoutouts');
         }
-<<<<<<< HEAD
-=======
-    },
-
-    // === SUGGESTIONS API ===
-    suggestions: {
-        async getAll(status) {
-            const qs = status && status !== 'ALL' ? `?status=${status}` : '';
-            return AdminAPI.fetch(`/admin/suggestions${qs}`);
-        },
-        async update(id, payload) {
-            return AdminAPI.fetch(`/admin/suggestions/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(payload)
-            });
-        },
-        async delete(id) {
-            return AdminAPI.fetch(`/admin/suggestions/${id}`, { method: 'DELETE' });
-        }
-    },
-
-    // === ADMIN USERS API ===
-    adminUsers: {
-        async getAll() {
-            return AdminAPI.fetch('/admin/users');
-        },
-        async getById(id) {
-            return AdminAPI.fetch(`/admin/users/${id}`);
-        },
-        async create(userData) {
-            return AdminAPI.fetch('/admin/users', {
-                method: 'POST',
-                body: JSON.stringify(userData)
-            });
-        },
-        async createFromEmployee(data) {
-            return AdminAPI.fetch('/admin/users/from-employee', {
-                method: 'POST',
-                body: JSON.stringify(data)
-            });
-        },
-        async update(id, userData) {
-            return AdminAPI.fetch(`/admin/users/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(userData)
-            });
-        },
-        async delete(id) {
-            return AdminAPI.fetch(`/admin/users/${id}`, { method: 'DELETE' });
-        },
-        async toggleActive(id) {
-            return AdminAPI.fetch(`/admin/users/${id}/toggle-active`, { method: 'PATCH' });
-        },
-        async resetPassword(id, newPassword) {
-            return AdminAPI.fetch(`/admin/users/${id}/reset-password`, {
-                method: 'POST',
-                body: JSON.stringify({ newPassword })
-            });
-        },
-        async changePassword(username, oldPassword, newPassword) {
-            return AdminAPI.fetch('/admin/users/change-password', {
-                method: 'POST',
-                body: JSON.stringify({ username, oldPassword, newPassword })
-            });
-        }
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
     }
 };
 
@@ -756,24 +676,6 @@ AdminAPI.init();
 document.addEventListener('DOMContentLoaded', restoreSidebarScrollPosition);
 document.addEventListener('DOMContentLoaded', activateCurrentMenu);
 document.addEventListener('DOMContentLoaded', revealActiveSidebarItem);
-<<<<<<< HEAD
-=======
-document.addEventListener('DOMContentLoaded', function() {
-    // Hide role-restricted menu items based on user role
-    const role = localStorage.getItem('admin_role');
-    if (role !== 'SUPER_ADMIN') {
-        document.querySelectorAll('.super-admin-only').forEach(el => {
-            el.style.display = 'none';
-        });
-    }
-    // Audit logs only available to ADMIN and SUPER_ADMIN
-    if (role !== 'SUPER_ADMIN' && role !== 'ADMIN') {
-        document.querySelectorAll('.admin-only').forEach(el => {
-            el.style.display = 'none';
-        });
-    }
-});
->>>>>>> 13f42c6766e9c314d120410f58c721731672f6ee
 
 // Make AdminAPI available globally
 window.AdminAPI = AdminAPI;
