@@ -44,8 +44,8 @@ const CONFIG = {
     // 'auto' will detect based on hostname
     ENVIRONMENT: 'auto',
     
-    // Production API URL (update this for your production environment)
-    PRODUCTION_API_URL: 'http://10.240.150.65/api',
+    // Production API URL — use relative path so it works on any port (8080 direct or 80 via Nginx)
+    PRODUCTION_API_URL: '/api',
 
     // Development API URL
     // Works for both Maven Spring Boot and Tomcat WAR (when deployed as ROOT.war

@@ -46,3 +46,8 @@ uploads/images/
 
 # Sample data files - local use only
 open-positions-sample.*
+
+# Presentation files
+*.pptx
+generate_ppt.py
+Presentation-Talking-Script.txt
