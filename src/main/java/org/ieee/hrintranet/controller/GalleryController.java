@@ -635,10 +635,6 @@ public class GalleryController {
         return configured;
     }
 
-    private File resolveFolderDirectory(String folderName) {
-        return resolveFolderDirectory(folderName, null);
-    }
-
     private File resolveFolderDirectory(String folderName, String folderPath) {
         return new File(getWritableGalleryRootDirectory(), folderName);
     }

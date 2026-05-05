@@ -57,7 +57,13 @@ public class PublicController {
                 .filter(emp -> emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
             .filter(emp -> emp.getStartDate() != null)
                 .filter(emp -> !emp.getStartDate().isBefore(thirtyDaysAgo) && !emp.getStartDate().isAfter(today))
-                .sorted((e1, e2) -> e2.getStartDate().compareTo(e1.getStartDate()))
+                .sorted((e1, e2) -> {
+                    int dateComparison = e1.getStartDate().compareTo(e2.getStartDate());
+                    if (dateComparison != 0) {
+                        return dateComparison;
+                    }
+                    return e1.getFullName().compareToIgnoreCase(e2.getFullName());
+                })
                 .limit(maxJoiners)
                 .collect(Collectors.toList());
         
@@ -262,6 +268,26 @@ public class PublicController {
                 celebrations.add(birthday);
             }
         }
+
+        celebrations.sort((c1, c2) -> {
+            LocalDate date1 = LocalDate.parse((String) c1.get("Date"));
+            LocalDate date2 = LocalDate.parse((String) c2.get("Date"));
+            int dateComparison = date1.compareTo(date2);
+            if (dateComparison != 0) {
+                return dateComparison;
+            }
+
+            String type1 = (String) c1.getOrDefault("Type", "");
+            String type2 = (String) c2.getOrDefault("Type", "");
+            int typeComparison = type1.compareToIgnoreCase(type2);
+            if (typeComparison != 0) {
+                return typeComparison;
+            }
+
+            String name1 = (String) c1.getOrDefault("Name", "");
+            String name2 = (String) c2.getOrDefault("Name", "");
+            return name1.compareToIgnoreCase(name2);
+        });
         
         response.put("joiners", joiners);
         response.put("holidays", holidays);

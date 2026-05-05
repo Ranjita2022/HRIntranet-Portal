@@ -1,5 +1,9 @@
 let shoutouts = [];
 
+// Pagination variables
+let shoutoutsCurrentPage = 1;
+let shoutoutsItemsPerPage = 15;
+
 async function initShoutoutsPage() {
     await loadShoutouts();
 }
@@ -19,6 +23,7 @@ async function loadShoutouts() {
 
     try {
         shoutouts = await AdminAPI.shoutouts.getAll();
+        shoutoutsCurrentPage = 1; // Reset pagination when loading fresh data
         renderShoutouts();
         recordCount.textContent = `${shoutouts.length} record(s)`;
     } catch (error) {
@@ -32,6 +37,7 @@ async function loadShoutouts() {
             </tr>
         `;
         recordCount.textContent = 'Error loading data';
+        updateShoutoutsPaginationControls(0);
     }
 }
 
@@ -47,10 +53,21 @@ function renderShoutouts() {
                 </td>
             </tr>
         `;
+        updateShoutoutsPaginationControls(0);
         return;
     }
 
-    tableBody.innerHTML = shoutouts.map((item) => {
+    // Calculate pagination
+    const totalPages = Math.ceil(shoutouts.length / shoutoutsItemsPerPage);
+    if (shoutoutsCurrentPage > totalPages) {
+        shoutoutsCurrentPage = Math.max(1, totalPages);
+    }
+
+    const startIndex = (shoutoutsCurrentPage - 1) * shoutoutsItemsPerPage;
+    const pageShoutouts = shoutouts.slice(startIndex, startIndex + shoutoutsItemsPerPage);
+
+    tableBody.innerHTML = pageShoutouts.map((item, index) => {
+        const rowNumber = startIndex + index + 1;
         const approvalClass = item.isApproved ? 'text-bg-success' : 'text-bg-secondary';
         const displayClass = item.isDisplayed ? 'text-bg-primary' : 'text-bg-warning';
 
@@ -69,6 +86,8 @@ function renderShoutouts() {
             </tr>
         `;
     }).join('');
+
+    updateShoutoutsPaginationControls(totalPages);
 }
 
 function formatDateTimeValue(value) {
@@ -94,6 +113,57 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+/**
+ * Shoutouts Pagination Functions
+ */
+function shoutsChangeItemsPerPage() {
+    const select = document.getElementById('shoutsItemsPerPageSelect');
+    shoutoutsItemsPerPage = parseInt(select.value);
+    shoutoutsCurrentPage = 1;
+    renderShoutouts();
+}
+
+function shoutsNextPage() {
+    const totalPages = Math.ceil(shoutouts.length / shoutoutsItemsPerPage);
+    if (shoutoutsCurrentPage < totalPages) {
+        shoutoutsCurrentPage++;
+        renderShoutouts();
+    }
+}
+
+function shoutoutsPreviousPage() {
+    if (shoutoutsCurrentPage > 1) {
+        shoutoutsCurrentPage--;
+        renderShoutouts();
+    }
+}
+
+function updateShoutoutsPaginationControls(totalPages) {
+    const paginationContainer = document.getElementById('shoutoutsPaginationContainer');
+    const currentPageInfo = document.getElementById('shoutsCurrentPageInfo');
+    const totalPagesInfo = document.getElementById('shoutsTotalPagesInfo');
+    const prevPageItem = document.getElementById('shoutsPrevPageItem');
+    const nextPageItem = document.getElementById('shoutsNextPageItem');
+
+    if (shoutouts.length <= shoutoutsItemsPerPage) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+
+    paginationContainer.style.display = 'flex';
+    
+    if (currentPageInfo) currentPageInfo.textContent = shoutoutsCurrentPage;
+    if (totalPagesInfo) totalPagesInfo.textContent = totalPages;
+
+    if (prevPageItem) {
+        prevPageItem.classList.toggle('disabled', shoutoutsCurrentPage <= 1);
+    }
+
+    if (nextPageItem) {
+        nextPageItem.classList.toggle('disabled', shoutoutsCurrentPage >= totalPages);
+    }
 }
 
 window.initShoutoutsPage = initShoutoutsPage;

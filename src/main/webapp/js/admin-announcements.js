@@ -7,6 +7,10 @@ let announcementsData = [];
 let editingAnnouncementId = null;
 let hasExistingImageInEdit = false;
 
+// Pagination variables
+let announcementsCurrentPage = 1;
+let announcementsItemsPerPage = 15;
+
 /**
  * Initialize announcements section
  */
@@ -48,6 +52,7 @@ function renderAnnouncementsTable() {
         emptyState.style.display = 'block';
         if (tableCard) tableCard.style.display = 'none';
         updateStats([], []);
+        updateAnnouncementsPaginationControls(0);
         return;
     }
 
@@ -71,6 +76,15 @@ function renderAnnouncementsTable() {
     const countEl = document.getElementById('recordCount');
     if (countEl) countEl.textContent = announcementsData.length + ' record' + (announcementsData.length !== 1 ? 's' : '');
 
+    // ── Pagination ──
+    const totalPages = Math.ceil(sortedAnnouncements.length / announcementsItemsPerPage);
+    if (announcementsCurrentPage > totalPages) {
+        announcementsCurrentPage = Math.max(1, totalPages);
+    }
+
+    const startIndex = (announcementsCurrentPage - 1) * announcementsItemsPerPage;
+    const pageAnnouncements = sortedAnnouncements.slice(startIndex, startIndex + announcementsItemsPerPage);
+
     // ── Type badge map ──
     const typeBadges = {
         'GENERAL': '<span class="badge badge-general">General</span>',
@@ -81,7 +95,8 @@ function renderAnnouncementsTable() {
         'EVENT':   '<span class="badge badge-event">Event</span>'
     };
 
-    tbody.innerHTML = sortedAnnouncements.map((announcement, index) => {
+    tbody.innerHTML = pageAnnouncements.map((announcement, index) => {
+        const rowNumber = startIndex + index + 1;
         const publishDate = formatDate(announcement.publishDate);
         const effectiveExpiryDate = getEffectiveAnnouncementExpiryDate(announcement);
         const expiryDate  = effectiveExpiryDate
@@ -107,7 +122,7 @@ function renderAnnouncementsTable() {
 
         return `
             <tr>
-                <td class="text-muted">${index + 1}</td>
+                <td class="text-muted">${rowNumber}</td>
                 <td>
                     <span class="announcement-title">${escapeHtml(announcement.title)}</span>
                     ${hasImage}${priorityBadge}
@@ -130,6 +145,8 @@ function renderAnnouncementsTable() {
             </tr>
         `;
     }).join('');
+
+    updateAnnouncementsPaginationControls(totalPages);
 }
 
 function getEffectiveAnnouncementExpiryDate(announcement) {
@@ -512,4 +529,55 @@ function showToast(message, type = 'info') {
     toastElement.addEventListener('hidden.bs.toast', () => {
         toastElement.remove();
     });
+}
+
+/**
+ * Announcements Pagination Functions
+ */
+function announcementsChangeItemsPerPage() {
+    const select = document.getElementById('announcementsItemsPerPageSelect');
+    announcementsItemsPerPage = parseInt(select.value);
+    announcementsCurrentPage = 1;
+    renderAnnouncementsTable();
+}
+
+function announcementsNextPage() {
+    const totalPages = Math.ceil(announcementsData.length / announcementsItemsPerPage);
+    if (announcementsCurrentPage < totalPages) {
+        announcementsCurrentPage++;
+        renderAnnouncementsTable();
+    }
+}
+
+function announcementsPreviousPage() {
+    if (announcementsCurrentPage > 1) {
+        announcementsCurrentPage--;
+        renderAnnouncementsTable();
+    }
+}
+
+function updateAnnouncementsPaginationControls(totalPages) {
+    const paginationContainer = document.getElementById('announcementsPaginationContainer');
+    const currentPageInfo = document.getElementById('announcementsCurrentPageInfo');
+    const totalPagesInfo = document.getElementById('announcementsTotalPagesInfo');
+    const prevPageItem = document.getElementById('announcementsPrevPageItem');
+    const nextPageItem = document.getElementById('announcementsNextPageItem');
+
+    if (announcementsData.length <= announcementsItemsPerPage) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+
+    paginationContainer.style.display = 'flex';
+    
+    if (currentPageInfo) currentPageInfo.textContent = announcementsCurrentPage;
+    if (totalPagesInfo) totalPagesInfo.textContent = totalPages;
+
+    if (prevPageItem) {
+        prevPageItem.classList.toggle('disabled', announcementsCurrentPage <= 1);
+    }
+
+    if (nextPageItem) {
+        nextPageItem.classList.toggle('disabled', announcementsCurrentPage >= totalPages);
+    }
 }

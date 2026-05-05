@@ -217,9 +217,6 @@
                 <select id="experienceFilter" class="form-select" style="width: 180px;">
                     <option value="">All Experience</option>
                 </select>
-                <button class="btn btn-secondary btn-sm" onclick="loadAnniversaries()">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh
-                </button>
                 <button class="btn btn-secondary btn-sm" onclick="exportToCSV()">
                     <i class="bi bi-download"></i> Export CSV
                 </button>
@@ -235,11 +232,6 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="currentTab" data-bs-toggle="tab" data-bs-target="#currentView" type="button" role="tab">
                         <i class="bi bi-calendar3"></i> This Month
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="groupedTab" data-bs-toggle="tab" data-bs-target="#groupedView" type="button" role="tab">
-                        <i class="bi bi-bar-chart"></i> Grouped by Experience
                     </button>
                 </li>
             </ul>
@@ -259,6 +251,15 @@
                     <div class="table-card">
                         <div class="table-card-header">
                             <h5><i class="bi bi-list-ul me-2 text-primary"></i>All Anniversaries</h5>
+                        </div>
+                        <div style="padding: 1rem; background: #f8f9fa; border-bottom: 1px solid #dee2e6; display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+                            <label for="allViewItemsPerPageSelect" class="form-label mb-0 me-2" style="display:inline;">Items per page:</label>
+                            <select id="allViewItemsPerPageSelect" class="form-select" style="width:auto;display:inline-block;" onchange="allViewChangeItemsPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
                         </div>
                         <div class="table-responsive">
                             <table id="anniversariesTable" class="table table-hover mb-0">
@@ -283,6 +284,23 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="table-pagination" id="allViewPaginationContainer" style="display:none; padding: 1rem; border-top: 1px solid #dee2e6; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <small class="text-muted">
+                                    Showing page <strong id="allViewCurrentPageInfo">1</strong> of <strong id="allViewTotalPagesInfo">1</strong>
+                                </small>
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination mb-0" id="allViewPaginationList">
+                                    <li class="page-item" id="allViewPrevPageItem">
+                                        <button class="page-link" onclick="allViewPreviousPage()"><i class="bi bi-chevron-left"></i> Previous</button>
+                                    </li>
+                                    <li class="page-item" id="allViewNextPageItem">
+                                        <button class="page-link" onclick="allViewNextPage()">Next <i class="bi bi-chevron-right"></i></button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
 
@@ -291,6 +309,14 @@
                     <div class="table-card">
                         <div class="table-card-header">
                             <h5><i class="bi bi-calendar3 me-2 text-primary"></i>This Month's Anniversaries</h5>
+                        </div>
+                        <div style="padding: 1rem; background: #f8f9fa; border-bottom: 1px solid #dee2e6; display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+                            <label for="currentMonthItemsPerPageSelect" class="form-label mb-0 me-2" style="display:inline;">Items per page:</label>
+                            <select id="currentMonthItemsPerPageSelect" class="form-select" style="width:auto;display:inline-block;" onchange="currentMonthChangeItemsPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                            </select>
                         </div>
                         <div class="table-responsive">
                             <table id="currentMonthTable" class="table table-hover mb-0">
@@ -313,13 +339,26 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="table-pagination" id="currentMonthPaginationContainer" style="display:none; padding: 1rem; border-top: 1px solid #dee2e6; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <small class="text-muted">
+                                    Showing page <strong id="currentMonthCurrentPageInfo">1</strong> of <strong id="currentMonthTotalPagesInfo">1</strong>
+                                </small>
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination mb-0" id="currentMonthPaginationList">
+                                    <li class="page-item" id="currentMonthPrevPageItem">
+                                        <button class="page-link" onclick="currentMonthPreviousPage()"><i class="bi bi-chevron-left"></i> Previous</button>
+                                    </li>
+                                    <li class="page-item" id="currentMonthNextPageItem">
+                                        <button class="page-link" onclick="currentMonthNextPage()">Next <i class="bi bi-chevron-right"></i></button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Grouped by Experience View -->
-                <div class="tab-pane fade" id="groupedView" role="tabpanel">
-                    <div id="groupedContainer"></div>
-                </div>
             </div>
         </div>
 
@@ -347,7 +386,12 @@
         const API_BASE_URL = CONFIG.API_BASE_URL;
         let allAnniversaries = [];
         let currentMonthAnniversaries = [];
-        let groupedAnniversaries = {};
+        
+        // Pagination variables
+        let allViewCurrentPage = 1;
+        let allViewItemsPerPage = 25;
+        let currentMonthCurrentPage = 1;
+        let currentMonthItemsPerPage = 25;
 
         $(document).ready(function() {
             initializePage();
@@ -415,22 +459,10 @@
                         return !Number.isNaN(date.getTime()) && date >= startOfMonth && date <= endOfMonth;
                     });
 
-                    // Group by experience label
-                    groupedAnniversaries = allAnniversaries.reduce((acc, item) => {
-                        const key = item.experienceSortValue || 0;
-                        acc[key] = acc[key] || {
-                            label: item.experienceLabel,
-                            items: []
-                        };
-                        acc[key].items.push(item);
-                        return acc;
-                    }, {});
-
                     displayAnniversaries();
                     populateYearFilter();
                     updateStats();
                     displayCurrentMonth();
-                    displayGrouped();
                 },
                 error: function(xhr) {
                     console.error('Failed to load work anniversaries:', xhr.status, xhr.responseText);
@@ -446,6 +478,7 @@
             if (allAnniversaries.length === 0) {
                 $('#emptyState').show();
                 $tbody.html('<tr><td colspan="9" class="text-center">No anniversaries found</td></tr>');
+                updateAllViewPaginationControls(0);
                 return;
             }
 
@@ -455,21 +488,32 @@
             const selectedExperience = $('#experienceFilter').val();
             let filtered = allAnniversaries;
             if (selectedExperience) {
-                filtered = allAnniversaries.filter(a => String(a.experienceSortValue) === selectedExperience);
+                filtered = allAnniversaries.filter(a => String(a.yearsOfExperience || 0) === selectedExperience);
             }
 
             if (filtered.length === 0) {
                 $tbody.html('<tr><td colspan="8" class="text-center">No anniversaries match the selected filter</td></tr>');
+                updateAllViewPaginationControls(0);
                 return;
             }
 
             // Sort by anniversary date
             filtered.sort((a, b) => new Date(a.anniversaryDate) - new Date(b.anniversaryDate));
 
-            filtered.forEach((anniversary, index) => {
+            // Calculate pagination
+            const totalPages = Math.ceil(filtered.length / allViewItemsPerPage);
+            if (allViewCurrentPage > totalPages) {
+                allViewCurrentPage = Math.max(1, totalPages);
+            }
+
+            const startIndex = (allViewCurrentPage - 1) * allViewItemsPerPage;
+            const pageAnniversaries = filtered.slice(startIndex, startIndex + allViewItemsPerPage);
+
+            pageAnniversaries.forEach((anniversary, index) => {
+                const rowNumber = startIndex + index + 1;
                 const row = `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td>${rowNumber}</td>
                         <td class="anniversary-employee-cell">
                             <div class="d-flex align-items-center gap-2">
                                 ${renderEmployeeAvatar(anniversary)}
@@ -486,6 +530,8 @@
                 `;
                 $tbody.append(row);
             });
+
+            updateAllViewPaginationControls(totalPages);
         }
 
         function displayCurrentMonth() {
@@ -494,13 +540,24 @@
 
             if (currentMonthAnniversaries.length === 0) {
                 $tbody.html('<tr><td colspan="7" class="text-center text-muted">No anniversaries this month</td></tr>');
+                updateCurrentMonthPaginationControls(0);
                 return;
             }
 
-            currentMonthAnniversaries.forEach((anniversary, index) => {
+            // Calculate pagination
+            const totalPages = Math.ceil(currentMonthAnniversaries.length / currentMonthItemsPerPage);
+            if (currentMonthCurrentPage > totalPages) {
+                currentMonthCurrentPage = Math.max(1, totalPages);
+            }
+
+            const startIndex = (currentMonthCurrentPage - 1) * currentMonthItemsPerPage;
+            const pageAnniversaries = currentMonthAnniversaries.slice(startIndex, startIndex + currentMonthItemsPerPage);
+
+            pageAnniversaries.forEach((anniversary, index) => {
+                const rowNumber = startIndex + index + 1;
                 const row = `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td>${rowNumber}</td>
                         <td class="anniversary-employee-cell">
                             <div class="d-flex align-items-center gap-2">
                                 ${renderEmployeeAvatar(anniversary)}
@@ -515,74 +572,19 @@
                 `;
                 $tbody.append(row);
             });
-        }
 
-        function displayGrouped() {
-            const $container = $('#groupedContainer');
-            $container.empty();
-
-            const keys = Object.keys(groupedAnniversaries).sort((a, b) => b - a);
-
-            if (keys.length === 0) {
-                $container.html('<p class="text-center text-muted">No work anniversaries data available</p>');
-                return;
-            }
-
-            keys.forEach(key => {
-                const group = groupedAnniversaries[key];
-                const employees = group.items;
-                const html = `
-                    <div class="card mb-3">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">
-                                <span class="anniversary-badge year-${key}">${escapeHtml(group.label)} of Experience</span>
-                                <span class="badge bg-primary float-end">${employees.length} employee${employees.length !== 1 ? 's' : ''}</span>
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Employee</th>
-                                            <th>Department</th>
-                                            <th>Position</th>
-                                            <th>Anniversary Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${employees.map(emp => `
-                                            <tr>
-                                                <td class="anniversary-employee-cell">
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        ${renderEmployeeAvatar(emp)}
-                                                        <strong>${escapeHtml(emp.employeeName)}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>${escapeHtml(emp.department)}</td>
-                                                <td>${escapeHtml(emp.position)}</td>
-                                                <td>${formatDate(emp.anniversaryDate)}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                $container.append(html);
-            });
+            updateCurrentMonthPaginationControls(totalPages);
         }
 
         function populateYearFilter() {
-            const experiences = [...new Map(allAnniversaries.map(a => [String(a.experienceSortValue), a])).values()]
-                .sort((a, b) => b.experienceSortValue - a.experienceSortValue);
+            const experiences = [...new Set(allAnniversaries.map(a => Number(a.yearsOfExperience || 0)))]
+                .sort((a, b) => b - a);
             const $select = $('#experienceFilter');
 
             $select.html('<option value="">All Experience</option>');
 
-            experiences.forEach(item => {
-                $select.append(`<option value="${item.experienceSortValue}">${escapeHtml(item.experienceLabel)}</option>`);
+            experiences.forEach(years => {
+                $select.append(`<option value="${years}">${years}</option>`);
             });
 
             $select.off('change').on('change', function() {
@@ -621,6 +623,27 @@
             return `<span class="badge ${cssClass}">${label}</span>`;
         }
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getEmployeeInitials(name) {
+            const normalizedName = (name || '').trim();
+            if (!normalizedName) {
+                return 'NA';
+            }
+
+            const parts = normalizedName.split(/\s+/).filter(Boolean);
+            if (parts.length === 1) {
+                return parts[0].charAt(0).toUpperCase();
+            }
+
+            return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+        }
+
         function renderEmployeeAvatar(employee) {
             const employeeName = employee && employee.employeeName ? employee.employeeName : '';
             const initials = getEmployeeInitials(employeeName);
@@ -640,39 +663,6 @@
                     ${escapeHtml(initials)}
                 </div>
             `;
-        }
-
-        function getEmployeeInitials(name) {
-            if (!name) return '?';
-
-            const parts = String(name)
-                .replace(/[^A-Za-z0-9\s.-]/g, ' ')
-                .trim()
-                .split(/\s+/)
-                .filter(Boolean);
-
-            if (parts.length === 0) {
-                return '?';
-            }
-
-            if (parts.length === 1) {
-                return parts[0].slice(0, 2).toUpperCase();
-            }
-
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         function exportToCSV() {
@@ -718,11 +708,115 @@
                 }
             });
         }
+
+        // All View Pagination Functions
+        function allViewChangeItemsPerPage() {
+            const select = document.getElementById('allViewItemsPerPageSelect');
+            allViewItemsPerPage = parseInt(select.value);
+            allViewCurrentPage = 1;
+            displayAnniversaries();
+        }
+
+        function allViewNextPage() {
+            const filtered = getFilteredAnniversaries();
+            const totalPages = Math.ceil(filtered.length / allViewItemsPerPage);
+            if (allViewCurrentPage < totalPages) {
+                allViewCurrentPage++;
+                displayAnniversaries();
+            }
+        }
+
+        function allViewPreviousPage() {
+            if (allViewCurrentPage > 1) {
+                allViewCurrentPage--;
+                displayAnniversaries();
+            }
+        }
+
+        function getFilteredAnniversaries() {
+            const selectedExperience = $('#experienceFilter').val();
+            let filtered = allAnniversaries;
+            if (selectedExperience) {
+                filtered = allAnniversaries.filter(a => String(a.yearsOfExperience || 0) === selectedExperience);
+            }
+            return filtered.sort((a, b) => new Date(a.anniversaryDate) - new Date(b.anniversaryDate));
+        }
+
+        function updateAllViewPaginationControls(totalPages) {
+            const paginationContainer = document.getElementById('allViewPaginationContainer');
+            const currentPageInfo = document.getElementById('allViewCurrentPageInfo');
+            const totalPagesInfo = document.getElementById('allViewTotalPagesInfo');
+            const prevPageItem = document.getElementById('allViewPrevPageItem');
+            const nextPageItem = document.getElementById('allViewNextPageItem');
+
+            const filtered = getFilteredAnniversaries();
+            if (filtered.length <= allViewItemsPerPage) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            paginationContainer.style.display = 'flex';
+            
+            if (currentPageInfo) currentPageInfo.textContent = allViewCurrentPage;
+            if (totalPagesInfo) totalPagesInfo.textContent = totalPages;
+
+            if (prevPageItem) {
+                prevPageItem.classList.toggle('disabled', allViewCurrentPage <= 1);
+            }
+
+            if (nextPageItem) {
+                nextPageItem.classList.toggle('disabled', allViewCurrentPage >= totalPages);
+            }
+        }
+
+        // Current Month Pagination Functions
+        function currentMonthChangeItemsPerPage() {
+            const select = document.getElementById('currentMonthItemsPerPageSelect');
+            currentMonthItemsPerPage = parseInt(select.value);
+            currentMonthCurrentPage = 1;
+            displayCurrentMonth();
+        }
+
+        function currentMonthNextPage() {
+            const totalPages = Math.ceil(currentMonthAnniversaries.length / currentMonthItemsPerPage);
+            if (currentMonthCurrentPage < totalPages) {
+                currentMonthCurrentPage++;
+                displayCurrentMonth();
+            }
+        }
+
+        function currentMonthPreviousPage() {
+            if (currentMonthCurrentPage > 1) {
+                currentMonthCurrentPage--;
+                displayCurrentMonth();
+            }
+        }
+
+        function updateCurrentMonthPaginationControls(totalPages) {
+            const paginationContainer = document.getElementById('currentMonthPaginationContainer');
+            const currentPageInfo = document.getElementById('currentMonthCurrentPageInfo');
+            const totalPagesInfo = document.getElementById('currentMonthTotalPagesInfo');
+            const prevPageItem = document.getElementById('currentMonthPrevPageItem');
+            const nextPageItem = document.getElementById('currentMonthNextPageItem');
+
+            if (currentMonthAnniversaries.length <= currentMonthItemsPerPage) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            paginationContainer.style.display = 'flex';
+            
+            if (currentPageInfo) currentPageInfo.textContent = currentMonthCurrentPage;
+            if (totalPagesInfo) totalPagesInfo.textContent = totalPages;
+
+            if (prevPageItem) {
+                prevPageItem.classList.toggle('disabled', currentMonthCurrentPage <= 1);
+            }
+
+            if (nextPageItem) {
+                nextPageItem.classList.toggle('disabled', currentMonthCurrentPage >= totalPages);
+            }
+        }
     </script>
 </body>
 </html>
-
-
-
-
-

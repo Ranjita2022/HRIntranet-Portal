@@ -227,6 +227,10 @@ const AdminAPI = {
             return AdminAPI.fetch('/admin/employees');
         },
         
+        async getDepartments() {
+            return AdminAPI.fetch('/admin/employees/departments');
+        },
+        
         async getById(id) {
             return AdminAPI.fetch(`/admin/employees/${id}`);
         },

@@ -1,6 +1,8 @@
 package org.ieee.hrintranet.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -24,24 +26,30 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
         
+        System.out.println("JwtTokenProvider: Generating token for user: " + username);
+        System.out.println("JwtTokenProvider: Token expiry time: " + expiryDate);
+        
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         
-        return Jwts.builder()
-                .subject(username)
+        String token = Jwts.builder()
+            .subject(username)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
+        
+        System.out.println("JwtTokenProvider: Token generated successfully");
+        return token;
     }
     
     public String getUsernameFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         
         Claims claims = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getBody();
         
         return claims.getSubject();
     }
@@ -50,6 +58,8 @@ public class JwtTokenProvider {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            // debug: token parsed successfully
+            System.out.println("JwtTokenProvider: token parsed successfully");
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
