@@ -270,6 +270,22 @@ public class PublicController {
         }
 
         celebrations.sort((c1, c2) -> {
+            // First, sort by type (birthday before anniversary)
+            String type1 = (String) c1.getOrDefault("Type", "");
+            String type2 = (String) c2.getOrDefault("Type", "");
+            int typeComparison;
+            if ("birthday".equals(type1) && !"birthday".equals(type2)) {
+                typeComparison = -1; // birthday comes first
+            } else if (!"birthday".equals(type1) && "birthday".equals(type2)) {
+                typeComparison = 1; // anniversary comes second
+            } else {
+                typeComparison = 0; // same type
+            }
+            if (typeComparison != 0) {
+                return typeComparison;
+            }
+
+            // Then, sort by date (ascending)
             LocalDate date1 = LocalDate.parse((String) c1.get("Date"));
             LocalDate date2 = LocalDate.parse((String) c2.get("Date"));
             int dateComparison = date1.compareTo(date2);
@@ -277,13 +293,7 @@ public class PublicController {
                 return dateComparison;
             }
 
-            String type1 = (String) c1.getOrDefault("Type", "");
-            String type2 = (String) c2.getOrDefault("Type", "");
-            int typeComparison = type1.compareToIgnoreCase(type2);
-            if (typeComparison != 0) {
-                return typeComparison;
-            }
-
+            // Finally, sort by name (alphabetically)
             String name1 = (String) c1.getOrDefault("Name", "");
             String name2 = (String) c2.getOrDefault("Name", "");
             return name1.compareToIgnoreCase(name2);

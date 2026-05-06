@@ -994,6 +994,9 @@ function renderTeamUpdates(joiners, celebrations) {
         });
     }
 
+    // Apply scroll-track class for CSS animation in TV mode
+    $container.addClass('team-updates-scroll-track');
+
     // Duplicate content for smooth infinite scrolling
     const baseLoopBlock = cardsHtml + cardsHtml;
     $container.html(baseLoopBlock);
