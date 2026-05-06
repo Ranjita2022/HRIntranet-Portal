@@ -117,7 +117,7 @@ function renderAnnouncementsTable() {
             ? `<span class="priority-badge ms-1"><i class="bi bi-arrow-up"></i>P${announcement.priority}</span>` : '';
 
         const descText = announcement.description
-            ? escapeHtml(announcement.description.substring(0, 55)) + (announcement.description.length > 55 ? '…' : '')
+            ? escapeHtml(announcement.description)
             : '<span class="text-muted fst-italic">No description</span>';
 
         return `

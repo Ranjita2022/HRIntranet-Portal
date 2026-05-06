@@ -10,7 +10,6 @@ async function initShoutoutsPage() {
 
 async function loadShoutouts() {
     const tableBody = document.getElementById('shoutoutsTableBody');
-    const recordCount = document.getElementById('recordCount');
 
     tableBody.innerHTML = `
         <tr>
@@ -25,7 +24,6 @@ async function loadShoutouts() {
         shoutouts = await AdminAPI.shoutouts.getAll();
         shoutoutsCurrentPage = 1; // Reset pagination when loading fresh data
         renderShoutouts();
-        recordCount.textContent = `${shoutouts.length} record(s)`;
     } catch (error) {
         console.error('Failed to load shoutouts:', error);
         tableBody.innerHTML = `
@@ -36,7 +34,6 @@ async function loadShoutouts() {
                 </td>
             </tr>
         `;
-        recordCount.textContent = 'Error loading data';
         updateShoutoutsPaginationControls(0);
     }
 }

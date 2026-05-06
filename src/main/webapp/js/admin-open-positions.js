@@ -100,16 +100,16 @@ function displayPositions() {
     $('#emptyState').hide();
     $('#tableContainer').show();
 
-    // Record count badge
-    const countEl = document.getElementById('positionsRecordCount');
-    if (countEl) countEl.textContent = allPositions.length + ' record' + (allPositions.length !== 1 ? 's' : '');
-
     // Apply status filter
     const selectedStatus = $('#statusFilter').val();
     let filtered = allPositions;
     if (selectedStatus) {
         filtered = allPositions.filter(p => p.status === selectedStatus);
     }
+
+    // Record count badge — show filtered count, not total
+    const countEl = document.getElementById('positionsRecordCount');
+    if (countEl) countEl.textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
 
     if (filtered.length === 0) {
         $tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No positions match the selected filter</td></tr>');
@@ -346,6 +346,13 @@ function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+/**
+ * Handler for status filter change — re-render table with filtered data
+ */
+function onStatusFilterChange() {
+    displayPositions();
 }
 
 function escapeHtml(text) {

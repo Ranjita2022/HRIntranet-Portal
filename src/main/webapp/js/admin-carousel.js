@@ -65,12 +65,12 @@ function renderCarouselTable() {
                     ? `<img src="${escapeHtml(getCarouselImageUrl(slide))}" alt="Preview" class="slide-thumb">`
                     : '<span class="slide-thumb-placeholder"><i class="bi bi-image"></i></span>'}
             </td>
-            <td style="max-width:0">
+            <td>
                 <span class="slide-title-cell d-block" title="${escapeHtml(slide.title || '')}">
                     ${escapeHtml(slide.title || '—')}
                 </span>
             </td>
-            <td style="max-width:0">
+            <td>
                 <span class="slide-subtitle-cell d-block" title="${escapeHtml(slide.subtitle || '')}">
                     ${escapeHtml(slide.subtitle || '—')}
                 </span>

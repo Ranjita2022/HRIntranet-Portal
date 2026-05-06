@@ -33,6 +33,22 @@
             background: #f0f2f5; color: #495057;
             border-radius: 50%; font-weight: 700; font-size: 0.8rem;
         }
+        .table-responsive .table {
+            margin: 0;
+            min-width: 970px;
+            table-layout: auto;
+        }
+        .table th:nth-child(4),
+        .table td:nth-child(4) {
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+            word-break: break-word !important;
+            word-wrap: break-word !important;
+            width: 28%;
+            min-width: 100px;
+            vertical-align: top;
+        }
+
     </style>
 </head>
 <body>
@@ -116,9 +132,9 @@
                                 <th width="55" class="text-center">Icon</th>
                                 <th>Title</th>
                                 <th>URL</th>
-                                <th width="120">Category</th>
+                                <th width="100">Category</th>
                                 <th width="75" class="text-center">Order</th>
-                                <th width="100">Status</th>
+                                <th width="90">Status</th>
                                 <th width="100" class="text-center">Actions</th>
                             </tr>
                         </thead>

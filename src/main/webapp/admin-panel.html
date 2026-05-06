@@ -14,7 +14,7 @@
             background: #00629B;
             color: white;
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 1rem;
             margin-bottom: 1rem;
             box-shadow: 0 2px 8px rgba(0,98,155,0.2);
         }
@@ -696,17 +696,17 @@
                 const statsHtml = `
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong><i class="bi bi-people-fill text-primary"></i> Active Employees:</strong> ${employees.filter(e => e.status === 'ACTIVE').length} / ${employees.length}</p>
-                            <p><strong><i class="bi bi-star-fill text-warning"></i> New Joiners (This Month):</strong> ${newJoinersThisMonth}</p>
-                            <p><strong><i class="bi bi-megaphone-fill text-info"></i> Active Announcements:</strong> ${activeAnnouncements} / ${announcements.length}</p>
-                            <p><strong><i class="bi bi-briefcase-fill text-primary"></i> Open Positions:</strong> ${openPositions} / ${positions.length}</p>
-                            <p><strong><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:</strong> ${upcomingHolidays} / ${holidays.length}</p>
+                            <p><i class="bi bi-people-fill text-primary">  </i>  Active Employees: <strong>${employees.filter(e => e.status === 'ACTIVE').length} / ${employees.length}</strong></p>
+                            <p><i class="bi bi-star-fill text-warning"></i> New Joiners (This Month):<strong> ${newJoinersThisMonth}</strong></p>
+                            <p><i class="bi bi-megaphone-fill text-info"></i> Active Announcements:<strong> ${activeAnnouncements} / ${announcements.length}</strong></p>
+                            <p><i class="bi bi-briefcase-fill text-primary"></i> Open Positions:<strong> ${openPositions} / ${positions.length}</strong></p>
+                            <p><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:<strong> ${upcomingHolidays} / ${holidays.length}</strong></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong><i class="bi bi-images text-purple"></i> Carousel Slides:</strong> ${activeCarouselSlides} / ${carousel.length}</p>
-                            <p><strong><i class="bi bi-link-45deg text-primary"></i> Quick Links:</strong> ${activeQuickLinks} / ${quickLinks.length}</p>
-                            <p><strong><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Contacts:</strong> ${emergencyContactsCount} / ${emergencyContacts.length}</p>
-                            <p><strong><i class="bi bi-folder2-open text-secondary"></i> Gallery Images:</strong> ${totalGalleryImages} in ${galleryFolders.length} folders</p>
+                            <p><i class="bi bi-images text-purple"></i> Carousel Slides:<strong> ${activeCarouselSlides} / ${carousel.length}</strong></p>
+                            <p><i class="bi bi-link-45deg text-primary"></i> Quick Links:<strong> ${activeQuickLinks} / ${quickLinks.length}</strong></p>
+                            <p><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Contacts:<strong> ${emergencyContactsCount} / ${emergencyContacts.length}</strong></p>
+                            <p><i class="bi bi-folder2-open text-secondary"></i> Gallery Images:<strong> ${totalGalleryImages} in ${galleryFolders.length} folders</strong></p>
                         </div>
                     </div>
                 `;
@@ -785,7 +785,7 @@
                                     <tr>
                                         <th width="100">Action</th>
                                         <th width="120">User</th>
-                                        <th>Resource</th>
+                                        <th width="200">Resource</th>
                                         <th width="150">Time</th>
                                     </tr>
                                 </thead>

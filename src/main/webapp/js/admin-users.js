@@ -125,7 +125,7 @@ function renderAdminUsersTable() {
                 <td>${statusBadge} ${mustChangePwd}</td>
                 <td class="text-muted small">${lastLogin}</td>
                 <td class="text-center">
-                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                    <div class="d-flex gap-1 justify-content-center">
                         <button class="btn btn-sm btn-outline-primary" onclick="showEditAdminUserModal(${user.id})" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </button>

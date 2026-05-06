@@ -8,6 +8,44 @@
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        /* Keep table rows on single line */
+        #adminUsersTable tbody tr {
+            white-space: nowrap;
+        }
+        
+        #adminUsersTable tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+        
+        /* Actions cell - keep buttons inline without wrapping */
+        #adminUsersTable td:last-child {
+            white-space: normal;
+        }
+        
+        #adminUsersTable td:last-child .d-flex {
+            flex-wrap: nowrap;
+            gap: 0.25rem;
+        }
+        
+        #adminUsersTable .btn-sm {
+            padding: 0.35rem 0.55rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Responsive table for horizontal scroll */
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-gutter: stable;
+        }
+        
+        #adminUsersTable {
+            min-width: 1100px;
+            table-layout: auto;
+        }
+    </style>
 </head>
 <body>
     <!-- Sidebar -->

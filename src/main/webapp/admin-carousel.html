@@ -26,11 +26,11 @@
             font-size: 1.1rem;
             border: 1px solid #dee2e6;
         }
-        .order-badge {
+         .order-badge {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 26px; height: 26px;
-            background: #e7f3ff; color: #00629B;
-            border-radius: 50%; font-weight: 700; font-size: 0.75rem;
+            width: 28px; height: 28px;
+            background: #f0f2f5; color: #495057;
+            border-radius: 50%; font-weight: 700; font-size: 0.8rem;
         }
         /* Compact table */
         #carouselTableBody td,
@@ -40,26 +40,25 @@
             font-size: 0.85rem;
         }
         .slide-title-cell {
-            max-width: 180px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: block;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
             font-weight: 600;
             color: #212529;
+            line-height: 1.35;
         }
         .slide-subtitle-cell {
-            max-width: 200px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #6c757d;
-            font-size: 0.8rem;
+            display: block;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            color: #495057;
+            line-height: 1.35;
         }
-        table .btn-sm {
-            padding: 0.2rem 0.42rem;
-            font-size: 0.78rem;
-            line-height: 1.4;
-        }
+       
     </style>
 </head>
 <body>
@@ -75,7 +74,7 @@
             <div class="menu-section">Content Management</div>
             <a href="admin-employees.html" class="menu-item"><i class="bi bi-people-fill"></i><span>Employees</span></a>
             <a href="admin-announcements.html" class="menu-item"><i class="bi bi-megaphone-fill"></i><span>Announcements</span>
-<a href="admin-holidays.html" class="menu-item"><i class="bi bi-calendar-event-fill"></i><span>Holidays</span></a>
+            <a href="admin-holidays.html" class="menu-item"><i class="bi bi-calendar-event-fill"></i><span>Holidays</span></a>
             <a href="admin-carousel.html" class="menu-item active"><i class="bi bi-images"></i><span>Carousel Slides</span></a>
             <a href="admin-gallery.html" class="menu-item"><i class="bi bi-folder2-open"></i><span>Gallery</span></a>
             <a href="admin-quick-links.html" class="menu-item"><i class="bi bi-link-45deg"></i><span>Quick Links</span></a>
@@ -136,17 +135,17 @@
                     <span class="record-count" id="recordCount">Loading…</span>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover table-sm mb-0">
+                    <table id="carouselTable" class="table table-hover table-sm mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th style="width:36px">#</th>
                                 <th style="width:75px">Preview</th>
-                                <th>Title</th>
+                                <th width="140">Title</th>
                                 <th>Subtitle</th>
-                                <th style="width:65px" class="text-center">Order</th>
-                                <th style="width:80px">Status</th>
-                                <th style="width:100px">Created By</th>
-                                <th style="width:85px" class="text-center">Actions</th>
+                                <th width="75" class="text-center">Order</th>
+                                <th width="100">Status</th>
+                                <th width="75">Created By</th>
+                                <th width="100" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="carouselTableBody">
