@@ -846,6 +846,169 @@ function activateCurrentMenu() {
     }
 }
 
+/**
+ * Mobile sidebar toggle with backdrop.
+ */
+function setupMobileSidebarToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+        return;
+    }
+
+    let toggleBtn = document.getElementById('sidebarToggleBtn');
+    if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.id = 'sidebarToggleBtn';
+        toggleBtn.className = 'sidebar-toggle-btn';
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('aria-label', 'Toggle Sidebar');
+        toggleBtn.setAttribute('title', 'Menu');
+        toggleBtn.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i>';
+        // If a page header exists, place the toggle inside the header so it does
+        // not float above and hide the page title when scrolling.
+        const header = document.querySelector('.content-header');
+        if (header) {
+            // Place the toggle *above* the header so it doesn't overlap the title.
+            toggleBtn.setAttribute('data-in-header', 'above');
+            toggleBtn.style.position = 'fixed';
+            toggleBtn.style.left = '0.75rem';
+            toggleBtn.style.top = '0.6rem';
+            toggleBtn.style.transform = '';
+            toggleBtn.style.zIndex = '1200';
+            // Insert before header to ensure logical order and enable header padding adjustment
+            header.parentNode.insertBefore(toggleBtn, header);
+            header.classList.add('has-toggle-above');
+        } else {
+            document.body.appendChild(toggleBtn);
+        }
+    }
+
+    let backdrop = document.getElementById('sidebarBackdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'sidebarBackdrop';
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+    const closeSidebar = () => {
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.remove('active');
+        // Show toggle button again when sidebar is closed
+        if (toggleBtn) {
+            toggleBtn.style.display = '';
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+    };
+
+    const openSidebar = () => {
+        sidebar.classList.add('mobile-open');
+        backdrop.classList.add('active');
+        // Hide the toggle while sidebar is open to avoid covering content
+        if (toggleBtn) {
+            toggleBtn.style.display = 'none';
+            toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+    };
+
+    toggleBtn.onclick = () => {
+        if (!isMobile()) {
+            return;
+        }
+        if (sidebar.classList.contains('mobile-open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    };
+
+    backdrop.onclick = closeSidebar;
+
+    sidebar.addEventListener('click', (event) => {
+        const clickedMenuItem = event.target.closest('.menu-item');
+        if (clickedMenuItem && isMobile()) {
+            closeSidebar();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            closeSidebar();
+        }
+    });
+}
+
+/**
+ * Allow collapsing sidebar sections on smaller screens.
+ */
+function setupSidebarCollapsibleSections() {
+    const sidebarMenu = document.querySelector('.sidebar-menu');
+    if (!sidebarMenu) {
+        return;
+    }
+
+    if (sidebarMenu.dataset.sectionized === 'true') {
+        return;
+    }
+
+    const children = Array.from(sidebarMenu.children);
+    let currentWrapper = null;
+
+    children.forEach((child) => {
+        if (child.classList.contains('menu-section')) {
+            child.classList.add('collapsible');
+            child.setAttribute('role', 'button');
+            child.setAttribute('tabindex', '0');
+
+            currentWrapper = document.createElement('div');
+            currentWrapper.className = 'menu-section-items';
+            child.insertAdjacentElement('afterend', currentWrapper);
+            return;
+        }
+
+        if (currentWrapper && child.classList.contains('menu-item')) {
+            currentWrapper.appendChild(child);
+        }
+    });
+
+    const sections = sidebarMenu.querySelectorAll('.menu-section.collapsible');
+    sections.forEach((section) => {
+        const wrapper = section.nextElementSibling;
+        if (!wrapper || !wrapper.classList.contains('menu-section-items')) {
+            return;
+        }
+
+        const sectionKey = `adminSidebarSection:${section.textContent.trim()}`;
+        const savedState = sessionStorage.getItem(sectionKey);
+
+        const hasActiveItem = Boolean(wrapper.querySelector('.menu-item.active'));
+        const shouldCollapse = savedState === 'collapsed' && !hasActiveItem;
+
+        if (shouldCollapse) {
+            section.classList.add('collapsed');
+            wrapper.classList.add('collapsed');
+        }
+
+        const toggleSection = () => {
+            const isCollapsed = section.classList.toggle('collapsed');
+            wrapper.classList.toggle('collapsed', isCollapsed);
+            sessionStorage.setItem(sectionKey, isCollapsed ? 'collapsed' : 'expanded');
+        };
+
+        section.addEventListener('click', toggleSection);
+        section.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleSection();
+            }
+        });
+    });
+
+    sidebarMenu.dataset.sectionized = 'true';
+}
+
 // Initialize API on load
 AdminAPI.init();
 
@@ -853,6 +1016,8 @@ AdminAPI.init();
 document.addEventListener('DOMContentLoaded', restoreSidebarScrollPosition);
 document.addEventListener('DOMContentLoaded', activateCurrentMenu);
 document.addEventListener('DOMContentLoaded', revealActiveSidebarItem);
+document.addEventListener('DOMContentLoaded', setupMobileSidebarToggle);
+document.addEventListener('DOMContentLoaded', setupSidebarCollapsibleSections);
 document.addEventListener('DOMContentLoaded', function() {
     // Hide role-restricted menu items based on user role
     const role = localStorage.getItem('admin_role');
@@ -883,3 +1048,5 @@ window.previewImage = previewImage;
 window.restoreSidebarScrollPosition = restoreSidebarScrollPosition;
 window.revealActiveSidebarItem = revealActiveSidebarItem;
 window.activateCurrentMenu = activateCurrentMenu;
+window.setupMobileSidebarToggle = setupMobileSidebarToggle;
+window.setupSidebarCollapsibleSections = setupSidebarCollapsibleSections;

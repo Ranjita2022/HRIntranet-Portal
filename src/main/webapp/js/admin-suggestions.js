@@ -47,8 +47,8 @@ async function loadSuggestions(statusFilter) {
         setEl('statImplemented', s.implemented || 0);
         setEl('statDismissed',   s.dismissed   || 0);
 
-        // Active filter button
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        // Active filter tab
+        document.querySelectorAll('.suggestion-tab').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
 

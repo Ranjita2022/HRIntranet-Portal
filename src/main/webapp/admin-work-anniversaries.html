@@ -10,11 +10,15 @@
     <link rel="stylesheet" href="css/admin-common.css">
     <style>
         .anniversary-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 90px;
+            padding: 0.5rem 0.75rem;
             border-radius: 20px;
             font-weight: 600;
             font-size: 0.9rem;
+            text-align: center;
         }
         
         .anniversary-badge.year-1 {
@@ -40,6 +44,66 @@
         .anniversary-badge.year-10 {
             background: #fce4ec;
             color: #e91e63;
+        }
+        
+        .anniversary-badge.year-4 {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .anniversary-badge.year-6 {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .anniversary-badge.year-7 {
+            background: #e0f2f1;
+            color: #00796b;
+        }
+        
+        .anniversary-badge.year-8 {
+            background: #ede7f6;
+            color: #512da8;
+        }
+        
+        .anniversary-badge.year-9 {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        
+        .anniversary-badge.year-11 {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+        
+        .anniversary-badge.year-12 {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .anniversary-badge.year-13 {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .anniversary-badge.year-15 {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .anniversary-badge.year-20 {
+            background: #fce4ec;
+            color: #ad1457;
+        }
+        
+        .anniversary-badge.year-25 {
+            background: #e7f3ff;
+            color: #003d99;
+        }
+        
+        .anniversary-badge.year-30 {
+            background: #f3e5f5;
+            color: #6a1b9a;
         }
         
         .filter-group {
@@ -172,6 +236,8 @@
 
         <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
         <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+
+            <div class="menu-section">System</div>
 
         
             <a href="admin-users.html" class="menu-item super-admin-only"><i class="bi bi-person-gear"></i><span>User Management</span></a>
