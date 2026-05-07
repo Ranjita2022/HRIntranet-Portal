@@ -619,8 +619,98 @@ function createToastContainer() {
 /**
  * Show confirmation dialog
  */
-function confirmAction(message) {
-    return confirm(message);
+function confirmAction(message, options = {}) {
+    const modalId = 'adminConfirmActionModal';
+    let modalElement = document.getElementById(modalId);
+
+    if (!modalElement) {
+        const modalHTML = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" style="display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title d-flex align-items-center gap-2" id="adminConfirmActionTitle">
+                                <i class="bi bi-exclamation-circle text-warning" style="font-size: 1.5rem;"></i>
+                                Confirm Action
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0" id="adminConfirmActionMessage"></p>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="adminConfirmActionCancelBtn">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </button>
+                            <button type="button" class="btn btn-danger" id="adminConfirmActionOkBtn">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalHTML;
+        modalElement = tempDiv.firstElementChild;
+        document.body.appendChild(modalElement);
+    }
+
+    const titleEl = modalElement.querySelector('#adminConfirmActionTitle');
+    const messageEl = modalElement.querySelector('#adminConfirmActionMessage');
+    const okBtn = modalElement.querySelector('#adminConfirmActionOkBtn');
+    const cancelBtn = modalElement.querySelector('#adminConfirmActionCancelBtn');
+
+    const title = options.title || 'Confirm Action';
+    const confirmText = options.confirmText || 'Delete';
+    const confirmIcon = options.confirmIcon || 'trash';
+
+    titleEl.innerHTML = `<i class="bi bi-exclamation-circle text-warning" style="font-size: 1.5rem;"></i><span></span>`;
+    titleEl.querySelector('span').textContent = title;
+    messageEl.textContent = message;
+    okBtn.innerHTML = `<i class="bi bi-${confirmIcon} me-1"></i> <span></span>`;
+    okBtn.querySelector('span').textContent = confirmText;
+
+    return new Promise((resolve) => {
+        let settled = false;
+
+        const cleanup = () => {
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            modalElement.removeEventListener('hidden.bs.modal', handleHidden);
+        };
+
+        const finish = (result) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            cleanup();
+            resolve(result);
+        };
+
+        const handleHidden = () => {
+            if (!settled) {
+                finish(false);
+            }
+        };
+
+        okBtn.onclick = () => {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
+            finish(true);
+        };
+
+        cancelBtn.onclick = () => {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
+            finish(false);
+        };
+
+        modalElement.addEventListener('hidden.bs.modal', handleHidden, { once: true });
+        bootstrap.Modal.getOrCreateInstance(modalElement).show();
+    });
 }
 
 /**

@@ -885,7 +885,7 @@ async function deleteEmployee(id) {
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete employee "${employee.fullName}" (${employee.employeeId})?`)) {
+    if (!(await confirmAction(`Are you sure you want to delete employee "${employee.fullName}" (${employee.employeeId})?`, { title: 'Delete Employee' }))) {
         return;
     }
     

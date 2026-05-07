@@ -68,17 +68,6 @@ body {
     transition: background-color 0.2s ease;
 }
 
-.menu-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: transparent;
-    transition: background-color 0.2s ease;
-}
-
 .menu-item:hover {
     background: rgba(255, 255, 255, 0.1);
     color: white;
@@ -315,6 +304,14 @@ body {
 }
 
 /* Modals - IEEE Theme */
+.modal {
+    z-index: 2000;
+}
+
+.modal-backdrop {
+    z-index: 1990;
+}
+
 .modal-header {
     background: #00629B;
     color: white;
@@ -371,10 +368,6 @@ body {
         z-index: 1102;
     }
 
-    /* Make room for the inline toggle so the page title isn't covered */
-    .content-header.has-inline-toggle .page-title {
-        margin-left: 56px;
-    }
     /* When the toggle is placed above the header, add extra top padding so the
        header content (title) is not overlapped by the fixed toggle. */
     .content-header.has-toggle-above {

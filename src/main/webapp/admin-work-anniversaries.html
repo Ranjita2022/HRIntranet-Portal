@@ -9,101 +9,23 @@
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="css/admin-common.css">
     <style>
-        .anniversary-badge {
+        .experience-cell {
+            background: #f8f9fa;
+            font-weight: 700;
+            color: #2c3e50;
+            border-radius: 999px;
+            padding: 0.45rem 0.75rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             min-width: 90px;
-            padding: 0.5rem 0.75rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
             text-align: center;
+            box-shadow: inset 0 0 0 1px #e9ecef;
         }
-        
-        .anniversary-badge.year-1 {
-            background: #e7f3ff;
-            color: #0066cc;
-        }
-        
-        .anniversary-badge.year-2 {
-            background: #fff3e0;
-            color: #ff9800;
-        }
-        
-        .anniversary-badge.year-3 {
-            background: #f3e5f5;
-            color: #9c27b0;
-        }
-        
-        .anniversary-badge.year-5 {
-            background: #e8f5e9;
-            color: #4caf50;
-        }
-        
-        .anniversary-badge.year-10 {
-            background: #fce4ec;
-            color: #e91e63;
-        }
-        
-        .anniversary-badge.year-4 {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-        
-        .anniversary-badge.year-6 {
-            background: #e8f5e9;
-            color: #388e3c;
-        }
-        
-        .anniversary-badge.year-7 {
-            background: #e0f2f1;
-            color: #00796b;
-        }
-        
-        .anniversary-badge.year-8 {
-            background: #ede7f6;
-            color: #512da8;
-        }
-        
-        .anniversary-badge.year-9 {
-            background: #fce4ec;
-            color: #c2185b;
-        }
-        
-        .anniversary-badge.year-11 {
-            background: #e7f3ff;
-            color: #0066cc;
-        }
-        
-        .anniversary-badge.year-12 {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-        
-        .anniversary-badge.year-13 {
-            background: #fff3e0;
-            color: #e65100;
-        }
-        
-        .anniversary-badge.year-15 {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .anniversary-badge.year-20 {
-            background: #fce4ec;
-            color: #ad1457;
-        }
-        
-        .anniversary-badge.year-25 {
-            background: #e7f3ff;
-            color: #003d99;
-        }
-        
-        .anniversary-badge.year-30 {
-            background: #f3e5f5;
-            color: #6a1b9a;
+
+        .experience-column {
+            text-align: center;
+            white-space: nowrap;
         }
         
         .filter-group {
@@ -199,7 +121,8 @@
             <a href="admin-announcements.html" class="menu-item">
                 <i class="bi bi-megaphone-fill"></i>
                 <span>Announcements</span>
-<a href="admin-holidays.html" class="menu-item">
+            </a>
+            <a href="admin-holidays.html" class="menu-item">
                 <i class="bi bi-calendar-event-fill"></i>
                 <span>Holidays</span>
             </a>
@@ -610,7 +533,7 @@
                         <td>${escapeHtml(anniversary.position)}</td>
                         <td>${formatDate(anniversary.startDate)}</td>
                         <td>${formatDate(anniversary.anniversaryDate)}</td>
-                        <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${escapeHtml(anniversary.experienceLabel)}</span></td>
+                        <td class="experience-column"><span class="experience-cell">${escapeHtml(anniversary.experienceLabel)}</span></td>
                         <td>${renderStatusBadge(anniversary.employeeStatus)}</td>
                     </tr>
                 `;
@@ -652,7 +575,7 @@
                         </td>
                         <td>${escapeHtml(anniversary.department)}</td>
                         <td>${formatDate(anniversary.anniversaryDate)}</td>
-                        <td><span class="anniversary-badge year-${anniversary.yearsOfExperience}">${escapeHtml(anniversary.experienceLabel)}</span></td>
+                        <td class="experience-column"><span class="experience-cell">${escapeHtml(anniversary.experienceLabel)}</span></td>
                         <td>${renderStatusBadge(anniversary.employeeStatus)}</td>
                     </tr>
                 `;

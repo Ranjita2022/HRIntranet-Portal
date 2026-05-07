@@ -307,7 +307,7 @@ function getAnnouncementImageUrl(announcement) {
 async function removeAnnouncementImage() {
     if (!editingAnnouncementId) return;
 
-    if (!confirm('Remove the current announcement image?')) {
+    if (!(await confirmAction('Do you want to remove the current announcement image?', { title: 'Remove Announcement Image', confirmText: 'Remove', confirmIcon: 'trash' }))) {
         return;
     }
 
@@ -426,7 +426,7 @@ async function deleteAnnouncement(id) {
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete the announcement "${announcement.title}"?`)) {
+    if (!(await confirmAction(`Are you sure you want to delete the announcement "${announcement.title}"?`, { title: 'Delete Announcement' }))) {
         return;
     }
     

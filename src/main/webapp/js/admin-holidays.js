@@ -224,7 +224,7 @@ async function deleteHoliday(id) {
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete the holiday "${holiday.title}"?`)) {
+    if (!(await confirmAction(`Are you sure you want to delete the holiday "${holiday.title}"?`, { title: 'Delete Holiday' }))) {
         return;
     }
     

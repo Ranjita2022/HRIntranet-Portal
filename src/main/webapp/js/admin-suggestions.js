@@ -147,7 +147,7 @@ async function deleteSuggestion(id) {
     const s = suggestionsData.find(x => x.id === id);
     if (!s) return;
     const name = s.isAnonymous ? 'Anonymous' : (s.submitterName || 'Unknown');
-    if (!confirm(`Delete suggestion from "${name}"?\n\nThis cannot be undone.`)) return;
+    if (!(await confirmAction(`Delete suggestion from "${name}"?\n\nThis cannot be undone.`, { title: 'Delete Suggestion' }))) return;
 
     try {
         await AdminAPI.fetch(`/admin/suggestions/${id}`, { method: 'DELETE' });

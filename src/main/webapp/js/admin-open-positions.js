@@ -286,8 +286,8 @@ function editPosition(id) {
     }
 }
 
-function deletePosition(id) {
-    if (!confirm('Are you sure you want to delete this position?')) return;
+async function deletePosition(id) {
+    if (!(await confirmAction('Are you sure you want to delete this position?', { title: 'Delete Open Position' }))) return;
 
     // Check if user is authenticated
     if (!AdminAPI || !AdminAPI.isAuthenticated()) {
@@ -296,17 +296,16 @@ function deletePosition(id) {
         return;
     }
 
-    AdminAPI.fetch(`/admin/positions/${id}`, {
-        method: 'DELETE'
-    })
-    .then(() => {
+    try {
+        await AdminAPI.fetch(`/admin/positions/${id}`, {
+            method: 'DELETE'
+        });
         loadPositions();
         showToast('Position deleted successfully!', 'success');
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error deleting position:', error);
         showToast('Error deleting position: ' + error.message, 'danger');
-    });
+    }
 }
 
 function showToast(message, type = 'info') {

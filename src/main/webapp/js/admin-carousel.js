@@ -217,7 +217,7 @@ function editCarouselSlide(id) {
 
 // Delete carousel slide
 async function deleteCarouselSlide(id) {
-    if (!confirm('Are you sure you want to delete this carousel slide?')) {
+    if (!(await confirmAction('Are you sure you want to delete this carousel slide?', { title: 'Delete Carousel Slide' }))) {
         return;
     }
     
