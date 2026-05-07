@@ -37,8 +37,19 @@ const AdminAPI = {
             });
             
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(error || 'Login failed');
+                const errorText = await response.text();
+                let errorMessage = 'Login failed';
+                
+                // Try to parse as JSON and extract error message
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.message || 'Invalid username or password';
+                } catch {
+                    // If not JSON, use the text as-is (but only if it looks like a message)
+                    errorMessage = errorText && errorText.length < 200 ? errorText : 'Invalid username or password';
+                }
+                
+                throw new Error(errorMessage);
             }
             
             const data = await response.json();
@@ -149,8 +160,19 @@ const AdminAPI = {
 
             if (!response.ok) {
                 const errorText = await response.text();
-                const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
-                throw new Error(cleanError.substring(0, 200) || `HTTP ${response.status}`);
+                let errorMessage = `HTTP ${response.status}`;
+                
+                // Try to parse as JSON and extract error message
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.message || `HTTP ${response.status}`;
+                } catch {
+                    // If not JSON, strip HTML tags and use the text
+                    const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
+                    errorMessage = cleanError.substring(0, 200) || `HTTP ${response.status}`;
+                }
+                
+                throw new Error(errorMessage);
             }
             
             // Return response for various content types
@@ -205,8 +227,19 @@ const AdminAPI = {
             
             if (!response.ok) {
                 const errorText = await response.text();
-                const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
-                throw new Error(cleanError.substring(0, 200) || `HTTP ${response.status}`);
+                let errorMessage = `HTTP ${response.status}`;
+                
+                // Try to parse as JSON and extract error message
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.message || `HTTP ${response.status}`;
+                } catch {
+                    // If not JSON, strip HTML tags and use the text
+                    const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
+                    errorMessage = cleanError.substring(0, 200) || `HTTP ${response.status}`;
+                }
+                
+                throw new Error(errorMessage);
             }
             
             // Return response for various content types
@@ -262,6 +295,12 @@ const AdminAPI = {
             return AdminAPI.fetch(`/admin/employees/${id}/upload-photo`, {
                 method: 'POST',
                 body: formData
+            });
+        },
+        
+        async deletePhoto(id) {
+            return AdminAPI.fetch(`/admin/employees/${id}/photo`, {
+                method: 'DELETE'
             });
         }
     },
@@ -711,6 +750,63 @@ function revealActiveSidebarItem() {
 }
 
 /**
+ * Show user-friendly logout confirmation dialog
+ */
+function showLogoutConfirmation() {
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal fade" id="logoutConfirmationModal" tabindex="-1" style="display: none;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-circle text-warning" style="font-size: 1.5rem;"></i>
+                            Confirm Logout
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">
+                            <i class="bi bi-info-circle text-primary"></i>
+                            Are you sure you want to logout? You will need to login again to access the admin panel.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" id="confirmLogoutBtn">
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Check if modal already exists
+    let modalElement = document.getElementById('logoutConfirmationModal');
+    if (!modalElement) {
+        // Create modal element
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalHTML;
+        modalElement = tempDiv.firstElementChild;
+        document.body.appendChild(modalElement);
+    }
+    
+    // Set up logout button click handler
+    const confirmBtn = modalElement.querySelector('#confirmLogoutBtn');
+    confirmBtn.onclick = () => {
+        AdminAPI.logout();
+        window.location.href = 'admin-login.html';
+    };
+    
+    // Show modal
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+/**
  * Activate sidebar menu item based on current page URL.
  * Runs automatically on every admin page — no need to hardcode active class.
  */
@@ -777,6 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.AdminAPI = AdminAPI;
 window.showToast = showToast;
 window.confirmAction = confirmAction;
+window.showLogoutConfirmation = showLogoutConfirmation;
 window.formatDate = formatDate;
 window.formatDateTime = formatDateTime;
 window.showLoading = showLoading;

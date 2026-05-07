@@ -228,11 +228,11 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="employeeId" class="form-label">Employee ID <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="employeeId" required placeholder="e.g., EMP001">
+                                <input type="text" class="form-control" id="employeeId" placeholder="e.g., 100840">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="employeeStatus" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select" id="employeeStatus" required>
+                                <select class="form-select" id="employeeStatus">
                                     <option value="ACTIVE">Active</option>
                                     <option value="INACTIVE">Inactive</option>
                                     <option value="TERMINATED">Terminated</option>
@@ -242,39 +242,40 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="employeeFirstName" class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="employeeFirstName" required placeholder="First name">
+                                <input type="text" class="form-control" id="employeeFirstName" placeholder="First name">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="employeeLastName" class="form-label">Last Name</label>
                                 <input type="text" class="form-control" id="employeeLastName" placeholder="Optional">
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="employeeEmail" class="form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="employeeEmail" required placeholder="email@company.com">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeBirthDate" class="form-label">Birth Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="employeeBirthDate" placeholder="e.g., 01-01-1111">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="employeeEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="employeeEmail" placeholder="email@company.com">
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="employeePosition" class="form-label">Position <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="employeePosition" required placeholder="e.g., Software Engineer">
+                                <input type="text" class="form-control" id="employeePosition" placeholder="e.g., Software Engineer">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="employeeDepartment" class="form-label">Department <span class="text-danger">*</span></label>
-                                <select class="form-select" id="employeeDepartment" required>
+                                <select class="form-select" id="employeeDepartment">
                                     <option value="">Loading departments…</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="employeeBirthDate" class="form-label">Birth Date</label>
-                            <input type="date" class="form-control" id="employeeBirthDate">
-                            <small class="text-muted">Optional — used for birthday celebrations on the portal</small>
-                        </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="employeeStartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="employeeStartDate" required>
-                                <small class="text-muted">Employees who joined within last 30 days appear as "New Joiners"</small>
+                                <input type="date" class="form-control" id="employeeStartDate">
+                                <small class="text-muted">Enter join date</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="employeeEndDate" class="form-label">End Date</label>
@@ -286,10 +287,15 @@
                             <label for="employeePhoto" class="form-label">Profile Photo</label>
                             <input type="file" class="form-control" id="employeePhoto" accept="image/*"
                                    onchange="handleEmployeePhotoSelect(event)">
-                            <small class="text-muted">Maximum 2 MB — JPG, PNG, or GIF</small>
+                            <small class="text-muted d-block">Maximum 2 MB • Dimensions: 100×100px to 4000×4000px • JPG, PNG, GIF, or WebP</small>
                             <div id="photoPreviewContainer" class="mt-3" style="display:none;">
                                 <img id="employeePhotoPreview" src="" alt="Preview"
                                      style="max-width:150px;max-height:150px;border-radius:50%;object-fit:cover;border:2px solid #dee2e6;">
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeEmployeePhoto()">
+                                        <i class="bi bi-trash me-1"></i> Remove Photo
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -320,10 +326,7 @@
             initEmployees();
         }
         function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                AdminAPI.logout();
-                window.location.href = 'admin-login.html';
-            }
+            showLogoutConfirmation();
         }
     </script>
 </body>

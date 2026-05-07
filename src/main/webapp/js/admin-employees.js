@@ -10,6 +10,8 @@ let currentPage = 1;
 let itemsPerPage = 25;
 let searchQuery = '';
 let selectedDepartment = 'ALL';
+let photoValidationError = false;  // Track photo validation state
+let removePhotoOnSave = false;  // Track if user wants to remove existing photo
 
 const DEFAULT_DEPARTMENTS = [
     'Information Technology (IT)',
@@ -53,9 +55,13 @@ async function initEmployees() {
     if (employeeModalEl) {
         employeeModalEl.addEventListener('hidden.bs.modal', () => {
             const photoInput = document.getElementById('employeePhoto');
+            const photoFileName = document.getElementById('photoFileName');
             if (photoInput) photoInput.value = '';
             document.getElementById('photoPreviewContainer').style.display = 'none';
             document.getElementById('employeePhotoPreview').src = '';
+            if (photoFileName) photoFileName.style.display = 'none';
+            photoValidationError = false;  // Reset photo validation error
+            removePhotoOnSave = false;  // Reset remove photo flag
             editingEmployeeId = null;
         });
     }
@@ -469,6 +475,7 @@ function updateEmployeeStats(active, inactive, newJoiners) {
  */
 function showAddEmployeeModal() {
     editingEmployeeId = null;
+    photoValidationError = false;  // Reset photo validation error
     document.getElementById('employeeModalTitle').textContent = 'Add Employee';
     document.getElementById('employeeForm').reset();
     document.getElementById('employeeStatus').value = 'ACTIVE';
@@ -479,14 +486,20 @@ function showAddEmployeeModal() {
     // Clear birth date when adding
     document.getElementById('employeeBirthDate').value = '';
     
-    // Clear photo preview
+    // Clear photo preview and filename
     document.getElementById('photoPreviewContainer').style.display = 'none';
     document.getElementById('employeePhotoPreview').src = '';
+    const photoFileName = document.getElementById('photoFileName');
+    if (photoFileName) photoFileName.style.display = 'none';
+    
     // Also explicitly clear file input in case form.reset() didn't fully clear it
     const photoInput = document.getElementById('employeePhoto');
     populateDepartmentDropdowns();
     document.getElementById('employeeDepartment').value = '';
     if (photoInput) photoInput.value = '';
+    
+    // Setup name auto-capitalization
+    setupNameCapitalization();
     
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
     modal.show();
@@ -503,6 +516,7 @@ async function showEditEmployeeModal(id) {
     }
     
     editingEmployeeId = id;
+    photoValidationError = false;  // Reset photo validation error
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
     document.getElementById('employeeId').value = employee.employeeId;
     document.getElementById('employeeFirstName').value = employee.firstName;
@@ -520,7 +534,9 @@ async function showEditEmployeeModal(id) {
     // Always clear the file input to prevent a previously selected photo
     // (from a prior add/edit session) from being accidentally uploaded
     const photoInput = document.getElementById('employeePhoto');
+    const photoFileName = document.getElementById('photoFileName');
     if (photoInput) photoInput.value = '';
+    if (photoFileName) photoFileName.style.display = 'none';
 
     // Show photo preview if exists
     if (employee.profileImageUrl) {
@@ -531,6 +547,9 @@ async function showEditEmployeeModal(id) {
         document.getElementById('employeePhotoPreview').src = '';
     }
     
+    // Setup name auto-capitalization
+    setupNameCapitalization();
+    
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
     modal.show();
 }
@@ -540,29 +559,163 @@ async function showEditEmployeeModal(id) {
  */
 function handleEmployeePhotoSelect(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    const photoFileName = document.getElementById('photoFileName');
+    const photoFileNameText = document.getElementById('photoFileNameText');
+    
+    // If no file selected, reset error flag and hide preview/filename
+    if (!file) {
+        photoValidationError = false;
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        return;
+    }
+    
+    // Show filename
+    if (photoFileNameText) {
+        photoFileNameText.textContent = file.name;
+    }
+    if (photoFileName) {
+        photoFileName.style.display = 'block';
+    }
     
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-        showError('Please select a valid image file');
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        showError('Invalid image type. Please use JPG, PNG, GIF, or WebP images only');
         event.target.value = '';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        photoValidationError = true;
         return;
     }
     
     // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-        showError('Image size must be less than 2MB');
+    const maxSizeMB = 2;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        showError(`Image size is ${fileSizeMB}MB. Maximum allowed is ${maxSizeMB}MB`);
         event.target.value = '';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        photoValidationError = true;
         return;
     }
     
-    // Show preview
+    // Validate image dimensions
     const reader = new FileReader();
     reader.onload = (e) => {
-        document.getElementById('photoPreviewContainer').style.display = 'block';
-        document.getElementById('employeePhotoPreview').src = e.target.result;
+        const img = new Image();
+        img.onload = () => {
+            const minDimension = 100;
+            const maxDimension = 4000;  // Match backend limit
+            
+            // Check minimum dimensions
+            if (img.width < minDimension || img.height < minDimension) {
+                showError(`Image dimensions are ${img.width}×${img.height}px. Minimum size is ${minDimension}×${minDimension}px`);
+                event.target.value = '';
+                document.getElementById('photoPreviewContainer').style.display = 'none';
+                document.getElementById('employeePhotoPreview').src = '';
+                if (photoFileName) photoFileName.style.display = 'none';
+                photoValidationError = true;
+                return;
+            }
+            
+            // Check maximum dimensions
+            if (img.width > maxDimension || img.height > maxDimension) {
+                showError(`Image dimensions are ${img.width}×${img.height}px. Maximum allowed is ${maxDimension}×${maxDimension}px`);
+                event.target.value = '';
+                document.getElementById('photoPreviewContainer').style.display = 'none';
+                document.getElementById('employeePhotoPreview').src = '';
+                if (photoFileName) photoFileName.style.display = 'none';
+                photoValidationError = true;
+                return;
+            }
+            
+            // All validations passed, show preview
+            photoValidationError = false;
+            document.getElementById('photoPreviewContainer').style.display = 'block';
+            document.getElementById('employeePhotoPreview').src = e.target.result;
+        };
+        
+        img.onerror = () => {
+            showError('Unable to read image file. Please ensure it is a valid image');
+            event.target.value = '';
+            document.getElementById('photoPreviewContainer').style.display = 'none';
+            document.getElementById('employeePhotoPreview').src = '';
+            if (photoFileName) photoFileName.style.display = 'none';
+            photoValidationError = true;
+        };
+        
+        img.src = e.target.result;
     };
+    
+    reader.onerror = () => {
+        showError('Unable to load image file');
+        event.target.value = '';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        photoValidationError = true;
+    };
+    
     reader.readAsDataURL(file);
+}
+
+/**
+ * Remove employee photo
+ */
+function removeEmployeePhoto() {
+    // Mark for removal
+    removePhotoOnSave = true;
+    
+    // Clear preview
+    document.getElementById('photoPreviewContainer').style.display = 'none';
+    document.getElementById('employeePhotoPreview').src = '';
+    
+    // Clear file input
+    const photoInput = document.getElementById('employeePhoto');
+    if (photoInput) photoInput.value = '';
+    
+    // Clear filename display if exists
+    const photoFileName = document.getElementById('photoFileName');
+    if (photoFileName) photoFileName.style.display = 'none';
+    
+    showToast('Photo will be removed when you save', 'success');
+}
+
+/**
+ * Capitalize first letter of a word
+ */
+function capitalizeFirstLetter(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Setup name auto-capitalization
+ */
+function setupNameCapitalization() {
+    const firstNameInput = document.getElementById('employeeFirstName');
+    const lastNameInput = document.getElementById('employeeLastName');
+    
+    if (firstNameInput) {
+        firstNameInput.addEventListener('blur', (e) => {
+            if (e.target.value.trim()) {
+                e.target.value = capitalizeFirstLetter(e.target.value.trim());
+            }
+        });
+    }
+    
+    if (lastNameInput) {
+        lastNameInput.addEventListener('blur', (e) => {
+            if (e.target.value.trim()) {
+                e.target.value = capitalizeFirstLetter(e.target.value.trim());
+            }
+        });
+    }
 }
 
 /**
@@ -570,6 +723,13 @@ function handleEmployeePhotoSelect(event) {
  */
 async function saveEmployee(event) {
     event.preventDefault();
+    
+    // Check if photo validation has errors (only if user tried to upload an image)
+    const photoFile = document.getElementById('employeePhoto').files[0];
+    if (photoValidationError && photoFile) {
+        showError('Please fix the image issues before saving');
+        return;
+    }
     
     const employeeId = document.getElementById('employeeId').value.trim();
     const firstName = document.getElementById('employeeFirstName').value.trim();
@@ -581,50 +741,68 @@ async function saveEmployee(event) {
     const endDate = document.getElementById('employeeEndDate').value;
     const birthDate = document.getElementById('employeeBirthDate').value;
     const status = document.getElementById('employeeStatus').value;
-    const photoFile = document.getElementById('employeePhoto').files[0];
     
-    // Validation
+    // Validation with user-friendly messages
     if (!employeeId) {
-        showError('Employee ID is required');
+        showError('Please enter an Employee ID');
         return;
     }
     
     if (!firstName) {
-        showError('First name is required');
+        showError('Please enter the Employee\'s First Name');
+        return;
+    }
+    
+    if (firstName.length < 2) {
+        showError('First Name must be at least 2 characters long');
         return;
     }
     
     if (!email) {
-        showError('Email is required');
+        showError('Please enter an Email address');
         return;
     }
     
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        showError('Please enter a valid email address');
+        showError('Please enter a valid email address (e.g., user@company.com)');
         return;
     }
     
-    if (!position || !department) {
-        showError('Position and department are required');
+    if (!position) {
+        showError('Please enter the Employee\'s Position');
+        return;
+    }
+    
+    if (!department || department === '') {
+        showError('Please select a Department');
         return;
     }
     
     if (!startDate) {
-        showError('Start date is required');
+        showError('Please select a Start Date');
+        return;
+    }
+    
+    if (!birthDate) {
+        showError('Please enter a Birth Date');
         return;
     }
     
     if (status === 'TERMINATED' && !endDate) {
-        showError('End date is required for terminated employees');
+        showError('Please enter an End Date for terminated employees');
         return;
     }
     
+    // Auto-capitalize first and last names
+    const capitalizedFirstName = capitalizeFirstLetter(firstName);
+    const capitalizedLastName = lastName ? capitalizeFirstLetter(lastName) : '';
+    
     const employeeData = {
         employeeId,
-        firstName,
-        lastName,
+        firstName: capitalizedFirstName,
+        lastName: capitalizedLastName,
         email,
         position,
         department,
@@ -647,6 +825,22 @@ async function saveEmployee(event) {
         // API returns the employee object directly
         if (response && response.id) {
             const empId = editingEmployeeId || response.id;
+            
+            // Delete photo if user requested removal
+            if (removePhotoOnSave && editingEmployeeId) {
+                try {
+                    const deleteResponse = await AdminAPI.employees.deletePhoto(empId);
+                    if (!deleteResponse || deleteResponse.error) {
+                        const errMsg = (deleteResponse && deleteResponse.error) ? deleteResponse.error : 'Unknown error';
+                        showError('Employee saved but photo deletion failed: ' + errMsg);
+                        return;
+                    }
+                } catch (deleteError) {
+                    showError('Employee saved but photo deletion failed: ' + deleteError.message);
+                    return;
+                }
+                removePhotoOnSave = false;  // Reset the flag
+            }
             
             // Upload photo if selected
             if (photoFile) {

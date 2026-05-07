@@ -386,10 +386,7 @@ function exportToCSV() {
 }
 
 function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        AdminAPI.logout();
-        window.location.href = 'admin-login.html';
-    }
+    showLogoutConfirmation();
 }
 
 function setupAutoMenuHighlight() {

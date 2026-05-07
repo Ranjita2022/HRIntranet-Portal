@@ -180,6 +180,28 @@ public class EmployeeController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{id}/photo")
+    public ResponseEntity<?> deleteEmployeePhoto(@PathVariable int id, Authentication authentication) {
+        try {
+            Employee employee = employeeRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            if (employee.getProfileImage() == null) {
+                return ResponseEntity.ok(Map.of("message", "No photo to delete"));
+            }
+
+            int imageId = employee.getProfileImage().getId();
+            fileStorageService.deleteImage(imageId);
+            employee.setProfileImage(null);
+            employeeRepository.save(employee);
+
+            auditService.logAction(authentication.getName(), "DELETE", "employee_photo", employee.getId(), null, employee);
+            return ResponseEntity.ok(Map.of("message", "Photo deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
     
     @GetMapping("/departments")
     public ResponseEntity<List<String>> getDepartments() {
