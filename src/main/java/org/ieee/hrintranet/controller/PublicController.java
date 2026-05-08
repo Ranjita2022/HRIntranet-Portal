@@ -503,6 +503,7 @@ public class PublicController {
         List<Map<String, String>> employees = activeEmployees.stream().map(emp -> {
             Map<String, String> employee = new HashMap<>();
             employee.put("id", emp.getId().toString());
+            employee.put("employeeId", emp.getEmployeeId());
             employee.put("name", emp.getFullName());
             employee.put("department", emp.getDepartment());
             employee.put("position", emp.getPosition());
@@ -511,7 +512,26 @@ public class PublicController {
         
         return ResponseEntity.ok(employees);
     }
-    
+
+    @PostMapping("/validate-employee")
+    public ResponseEntity<Map<String, Object>> validateEmployee(@RequestBody Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        String employeeId = body.get("employeeId");
+        String name = body.get("name");
+        if (employeeId == null || name == null || employeeId.isBlank() || name.isBlank()) {
+            response.put("valid", false);
+            response.put("message", "Employee ID and name are required.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        boolean valid = employeeRepository.findByEmployeeId(employeeId.trim().toUpperCase())
+                .map(emp -> emp.getFullName().equalsIgnoreCase(name.trim())
+                        && emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
+                .orElse(false);
+        response.put("valid", valid);
+        response.put("message", valid ? "Verified" : "Employee ID does not match the selected name. Please check and try again.");
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
         Map<String, String> status = new HashMap<>();

@@ -35,6 +35,16 @@ async function loadShoutouts() {
     }
 }
 
+function parseShoutoutDate(value) {
+    if (!value) return new Date(0);
+    // Java LocalDateTime serializes as array [year,month,day,hour,min,sec] or string
+    if (Array.isArray(value)) {
+        // month is 1-based in Java, 0-based in JS Date
+        return new Date(value[0], value[1] - 1, value[2], value[3] || 0, value[4] || 0, value[5] || 0);
+    }
+    return new Date(value);
+}
+
 function renderShoutouts() {
     const tableBody = document.getElementById('shoutoutsTableBody');
 
@@ -50,13 +60,15 @@ function renderShoutouts() {
         return;
     }
 
-    tableBody.innerHTML = shoutouts.map((item) => {
+    tableBody.innerHTML = [...shoutouts]
+        .sort((a, b) => parseShoutoutDate(b.createdAt) - parseShoutoutDate(a.createdAt))
+        .map((item) => {
         const approvalClass = item.isApproved ? 'text-bg-success' : 'text-bg-secondary';
         const displayClass = item.isDisplayed ? 'text-bg-primary' : 'text-bg-warning';
 
         return `
             <tr>
-                <td>${item.id ?? ''}</td>
+                <td class="d-none">${item.id ?? ''}</td>
                 <td>${escapeHtml(item.fromName)}</td>
                 <td>${escapeHtml(item.toName)}</td>
                 <td class="message-cell" title="${escapeHtml(item.message)}">${escapeHtml(item.message)}</td>

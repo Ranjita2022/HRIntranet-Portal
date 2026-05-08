@@ -54,11 +54,10 @@ function renderAnnouncementsTable() {
     emptyState.style.display = 'none';
     if (tableCard) tableCard.style.display = '';
 
-    // Sort by priority (highest first) then by publish date (newest first)
-    const sortedAnnouncements = [...announcementsData].sort((a, b) => {
-        if (b.priority !== a.priority) return b.priority - a.priority;
-        return new Date(b.publishDate) - new Date(a.publishDate);
-    });
+    // Sort by publish date (newest first)
+    const sortedAnnouncements = [...announcementsData].sort((a, b) =>
+        new Date(b.publishDate) - new Date(a.publishDate)
+    );
 
     // ── Stats ──
     const now = new Date();

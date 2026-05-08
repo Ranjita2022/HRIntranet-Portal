@@ -939,59 +939,70 @@ function renderTeamUpdates(joiners, celebrations) {
         }
     }
 
-    // Add CELEBRATIONS banner and cards
-    if (celebrations.length > 0) {
+    // Split celebrations into anniversaries and birthdays
+    const anniversaries = celebrations.filter(c => c.type !== 'birthday')
+        .sort((a, b) => (b.years || 0) - (a.years || 0));
+    const birthdays = celebrations.filter(c => c.type === 'birthday');
+
+    // Helper to build a celebration card
+    function buildCelebrationCard(celebration) {
+        const isBirthday = celebration.type === 'birthday';
+        const typeClass = isBirthday ? 'birthday' : 'anniversary';
+        const icon = isBirthday ? 'bi-cake-fill' : 'bi-award-fill';
+        const yearText = celebration.years === 1 ? 'Year' : 'Years';
+        const badgeText = isBirthday ? '🎂 Birthday' : `🎉 ${celebration.years} ${yearText}`;
+        const fixedImageUrl = celebration.imageUrl ? fixDriveImageUrl(celebration.imageUrl) : null;
+        let fileId = null;
+        if (celebration.imageUrl) {
+            const match = celebration.imageUrl.match(/[?&/]([a-zA-Z0-9_-]{20,})/);
+            if (match) fileId = match[1];
+        }
+        const imageHtml = fixedImageUrl
+            ? `<img src="${escapeHtml(fixedImageUrl)}" class="team-card-image" alt="${escapeHtml(celebration.name)}" data-file-id="${fileId || ''}" data-type="${typeClass}"
+                    onerror="if(this.dataset.fileId) { handleDriveImageError(this, this.dataset.fileId); } else { const icon = this.dataset.type === 'birthday' ? 'bi-cake-fill' : 'bi-award-fill'; this.parentElement.innerHTML = '<div class=\\'team-card-image-placeholder ' + this.dataset.type + '\\'><i class=\\'bi ' + icon + '\\'></i></div>'; }">`
+            : `<div class="team-card-image-placeholder ${typeClass}"><i class="bi ${icon}"></i></div>`;
+        const dateStr = formatShortDate(celebration.date);
+        return `
+            <div class="team-card-wrapper tv-celebration-item">
+                <div class="team-card ${typeClass} position-relative h-100">
+                    <span class="celebration-badge-top ${typeClass}">${badgeText}</span>
+                    ${imageHtml}
+                    <div class="team-card-content">
+                        <h4 class="team-card-name">${escapeHtml(celebration.name)}</h4>
+                        <p class="team-card-position">${escapeHtml(celebration.position) || 'Position TBD'}</p>
+                        ${celebration.department ? `<p class="team-card-department">${escapeHtml(celebration.department)}</p>` : ''}
+                        <div class="team-card-date"><i class="bi bi-calendar3"></i> ${dateStr}</div>
+                        ${celebration.description ? `<p class="team-card-description">${escapeHtml(celebration.description)}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Add WORK ANNIVERSARIES banner and cards (separate section)
+    if (anniversaries.length > 0) {
+        cardsHtml += `
+            <div class="team-card-wrapper section-banner-card tv-celebration-item">
+                <div class="section-banner">
+                    <i class="bi bi-award-fill"></i>
+                    <h3>Work Anniversaries</h3>
+                </div>
+            </div>
+        `;
+        anniversaries.forEach(c => { cardsHtml += buildCelebrationCard(c); });
+    }
+
+    // Add BIRTHDAYS banner and cards (separate section)
+    if (birthdays.length > 0) {
         cardsHtml += `
             <div class="team-card-wrapper section-banner-card tv-celebration-item">
                 <div class="section-banner">
                     <i class="bi bi-cake-fill"></i>
-                    <h3>Birthdays & Celebrations</h3>
+                    <h3>Birthdays</h3>
                 </div>
             </div>
         `;
-
-        celebrations.forEach(celebration => {
-            const isBirthday = celebration.type === 'birthday';
-            const typeClass = isBirthday ? 'birthday' : 'anniversary';
-            const icon = isBirthday ? 'bi-cake-fill' : 'bi-award-fill';
-            const yearText = celebration.years === 1 ? 'Year' : 'Years';
-            const badgeText = isBirthday ? '🎂 Birthday' : `🎉 ${celebration.years} ${yearText}`;
-
-            const fixedImageUrl = celebration.imageUrl ? fixDriveImageUrl(celebration.imageUrl) : null;
-            let fileId = null;
-            if (celebration.imageUrl) {
-                const match = celebration.imageUrl.match(/[?&/]([a-zA-Z0-9_-]{20,})/);
-                if (match) fileId = match[1];
-            }
-
-            const imageHtml = fixedImageUrl
-                ? `<img src="${escapeHtml(fixedImageUrl)}" class="team-card-image" alt="${escapeHtml(celebration.name)}" data-file-id="${fileId || ''}" data-type="${typeClass}"
-                        onerror="if(this.dataset.fileId) { handleDriveImageError(this, this.dataset.fileId); } else { const icon = this.dataset.type === 'birthday' ? 'bi-cake-fill' : 'bi-award-fill'; this.parentElement.innerHTML = '<div class=\\'team-card-image-placeholder ' + this.dataset.type + '\\'><i class=\\'bi ' + icon + '\\'></i></div>'; }">`
-                : `<div class="team-card-image-placeholder ${typeClass}"><i class="bi ${icon}"></i></div>`;
-
-            const dateStr = formatShortDate(celebration.date);
-
-            cardsHtml += `
-                <div class="team-card-wrapper tv-celebration-item">
-                    <div class="team-card ${typeClass} position-relative h-100">
-                        <span class="celebration-badge-top ${typeClass}">${badgeText}</span>
-                        ${imageHtml}
-                        <div class="team-card-content">
-                            <h4 class="team-card-name">${escapeHtml(celebration.name)}</h4>
-                            <p class="team-card-position">${escapeHtml(celebration.position) || 'Position TBD'}</p>
-                            ${celebration.department ? `<p class="team-card-department">${escapeHtml(celebration.department)}</p>` : ''}
-                            <div class="team-card-date">
-                                <i class="bi bi-calendar3"></i>
-                                ${dateStr}
-                            </div>
-                            ${celebration.description ? `
-                            <p class="team-card-description">${escapeHtml(celebration.description)}</p>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
+        birthdays.forEach(c => { cardsHtml += buildCelebrationCard(c); });
     }
 
     // Duplicate content for smooth infinite scrolling
@@ -1123,11 +1134,11 @@ function renderAnnouncements(announcements) {
     });
 
     if (uniqueAnnouncements.length === 0) {
-        $section.addClass('no-data');
+        $section.hide();
         return;
     }
 
-    $section.removeClass('no-data');
+    $section.show().removeClass('no-data');
 
     const maxAnnouncements = Math.min(uniqueAnnouncements.length, CONFIG.MAX_ANNOUNCEMENTS);
 

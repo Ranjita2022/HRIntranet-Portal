@@ -116,6 +116,9 @@ function displayPositions() {
         return;
     }
 
+    // Sort by posting date — newest first
+    filtered = [...filtered].sort((a, b) => new Date(b.postingDate) - new Date(a.postingDate));
+
     filtered.forEach((position, index) => {
         const applyUrl = getPositionApplyUrl(position);
         const statusBadge = position.status === 'OPEN'

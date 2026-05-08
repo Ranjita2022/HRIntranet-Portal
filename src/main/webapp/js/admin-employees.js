@@ -80,8 +80,8 @@ function renderEmployeesTable() {
     const countEl = document.getElementById('recordCount');
     if (countEl) countEl.textContent = employeesData.length + ' record' + (employeesData.length !== 1 ? 's' : '');
 
-    // Sort by employee_id
-    const sorted = [...employeesData].sort((a, b) => a.employeeId.localeCompare(b.employeeId));
+    // Sort by name alphabetically
+    const sorted = [...employeesData].sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
 
     tbody.innerHTML = sorted.map((employee, index) => {
         const birthDate = employee.birthDate || employee.birthdate;
@@ -108,7 +108,7 @@ function renderEmployeesTable() {
         return `
             <tr>
                 <td class="text-muted">${index + 1}</td>
-                <td class="fw-500">${escapeHtml(employee.employeeId)}</td>
+                <td class="fw-500 d-none">${escapeHtml(employee.employeeId)}</td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
                         ${profileImage}

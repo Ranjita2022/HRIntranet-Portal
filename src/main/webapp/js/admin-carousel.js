@@ -52,7 +52,11 @@ function renderCarouselTable() {
         return;
     }
 
+    // Active slides first, then inactive; within each group sort by displayOrder
     const sortedData = [...carouselData].sort((a, b) => {
+        const aActive = a.isActive ? 0 : 1;
+        const bActive = b.isActive ? 0 : 1;
+        if (aActive !== bActive) return aActive - bActive;
         if (a.displayOrder !== b.displayOrder) return a.displayOrder - b.displayOrder;
         return new Date(b.createdAt) - new Date(a.createdAt);
     });

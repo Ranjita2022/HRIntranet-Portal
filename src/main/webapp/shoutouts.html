@@ -25,83 +25,40 @@
             padding: 1.5rem 2rem;
             height: auto;
         }
-        .shoutout-header {
-            text-align: center;
-            margin-bottom: 1.25rem;
-        }
-        .shoutout-header h1 {
-            color: #667eea;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            font-size: 1.6rem;
-        }
-        .shoutout-header p {
-            color: #666;
-            font-size: 0.95rem;
-        }
-        .shoutout-icon {
-            font-size: 2.5rem;
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
+        .shoutout-header { text-align: center; margin-bottom: 1.25rem; }
+        .shoutout-header h1 { color: #667eea; font-weight: 700; margin-bottom: 0.25rem; font-size: 1.6rem; }
+        .shoutout-header p { color: #666; font-size: 0.95rem; }
+        .shoutout-icon { font-size: 2.5rem; color: #667eea; margin-bottom: 0.5rem; }
         .category-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            margin: 0.25rem;
-            border-radius: 20px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
-            cursor: pointer;
-            transition: all 0.3s;
+            display: inline-block; padding: 0.5rem 1rem; margin: 0.25rem;
+            border-radius: 20px; border: 2px solid #667eea; background: white;
+            color: #667eea; cursor: pointer; transition: all 0.3s;
         }
-        .category-badge:hover {
-            background: #667eea;
-            color: white;
-        }
-        .category-badge.active {
-            background: #667eea;
-            color: white;
-        }
-        .form-label {
-            font-weight: 600;
-            color: #333;
-        }
+        .category-badge:hover, .category-badge.active { background: #667eea; color: white; }
+        .form-label { font-weight: 600; color: #333; }
         .btn-shoutout {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 0.75rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: transform 0.2s;
+            border: none; padding: 0.75rem 2rem; font-size: 1.1rem;
+            font-weight: 600; border-radius: 10px; transition: transform 0.2s;
         }
-        .btn-shoutout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-        .success-icon {
-            font-size: 5rem;
-            color: #28a745;
-            margin-bottom: 1rem;
-        }
+        .btn-shoutout:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .success-message { display: none; text-align: center; padding: 2rem; }
+        .success-icon { font-size: 5rem; color: #28a745; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
     <div class="shoutout-page">
         <div class="container">
             <div class="shoutout-card">
+
                 <!-- Success Message -->
                 <div class="success-message" id="successMessage">
                     <i class="bi bi-check-circle-fill success-icon"></i>
-                    <h2>Shoutout Submitted!</h2>
-                    <p class="text-muted">Your shoutout will appear on the kiosk display immediately.</p>
-                    <button class="btn btn-primary mt-3" onclick="resetForm()">Submit Another</button>
+                    <h2>Shoutout Submitted! 🎉</h2>
+                    <p class="text-muted">Your shoutout will appear on the kiosk display.</p>
+                    <button class="btn btn-primary mt-3" onclick="resetForm()">
+                        <i class="bi bi-plus-circle me-2"></i>Submit Another
+                    </button>
                 </div>
 
                 <!-- Form -->
@@ -112,50 +69,78 @@
                         <p>Recognize and appreciate your colleagues</p>
                     </div>
 
-                    <form id="submitShoutoutForm">
-                        <!-- From / To side-by-side -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-2 mb-md-0">
-                                <label for="fromEmployee" class="form-label"><i class="bi bi-person-fill text-primary"></i> Your Name</label>
-                                <select class="form-select" id="fromEmployee" required>
-                                    <option value="">Who are you?</option>
-                                </select>
+                    <form id="submitShoutoutForm" novalidate>
+
+                        <!-- Step 1: Your Name -->
+                        <div class="mb-3">
+                            <label for="fromEmployee" class="form-label">
+                                <i class="bi bi-person-fill text-primary me-1"></i>Your Name <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="fromEmployee" required onchange="onFromNameChange()">
+                                <option value="">— Loading employees... —</option>
+                            </select>
+                        </div>
+
+                        <!-- Step 2: Employee ID Verify -->
+                        <div class="mb-3" id="empIdField" style="display:none;">
+                            <label for="employeeId" class="form-label">
+                                <i class="bi bi-person-badge-fill text-warning me-1"></i>Your Employee ID <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control text-uppercase" id="employeeId"
+                                    placeholder="e.g. EMP001" maxlength="20" autocomplete="off"
+                                    oninput="this.value=this.value.toUpperCase(); resetVerification()">
+                                <button class="btn btn-outline-primary" type="button" id="verifyBtn" onclick="verifyEmployee()">
+                                    <i class="bi bi-shield-check me-1"></i>Verify
+                                </button>
                             </div>
-                            <div class="col-md-6">
-                                <label for="toEmployee" class="form-label"><i class="bi bi-star-fill text-warning"></i> Shoutout To</label>
+                            <div id="verifyMsg" class="mt-1"></div>
+                            <div class="form-text text-muted">Enter your Employee ID to confirm your identity (e.g. EMP001)</div>
+                        </div>
+
+                        <!-- Step 3: Shoutout fields (shown after verification) -->
+                        <div id="shoutoutFields" style="display:none;">
+
+                            <!-- Shoutout To -->
+                            <div class="mb-3">
+                                <label for="toEmployee" class="form-label">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>Shoutout To <span class="text-danger">*</span>
+                                </label>
                                 <select class="form-select" id="toEmployee" required>
-                                    <option value="">Who do you want to recognize?</option>
+                                    <option value="">— Who do you want to recognize? —</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <!-- Category -->
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-tag-fill text-success"></i> Category</label>
-                            <div class="d-flex flex-wrap justify-content-center">
-                                <span class="category-badge" data-category="Teamwork">🤝 Teamwork</span>
-                                <span class="category-badge" data-category="Innovation">💡 Innovation</span>
-                                <span class="category-badge" data-category="Excellence">⭐ Excellence</span>
-                                <span class="category-badge active" data-category="Appreciation">❤️ Appreciation</span>
-                                <span class="category-badge" data-category="Leadership">👑 Leadership</span>
+                            <!-- Category -->
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-tag-fill text-success me-1"></i>Category</label>
+                                <div class="d-flex flex-wrap justify-content-center">
+                                    <span class="category-badge" data-category="Teamwork">🤝 Teamwork</span>
+                                    <span class="category-badge" data-category="Innovation">💡 Innovation</span>
+                                    <span class="category-badge" data-category="Excellence">⭐ Excellence</span>
+                                    <span class="category-badge active" data-category="Appreciation">❤️ Appreciation</span>
+                                    <span class="category-badge" data-category="Leadership">👑 Leadership</span>
+                                </div>
+                                <input type="hidden" id="category" value="Appreciation">
                             </div>
-                            <input type="hidden" id="category" value="Appreciation">
-                        </div>
 
-                        <!-- Message -->
-                        <div class="mb-3">
-                            <label for="message" class="form-label"><i class="bi bi-chat-quote-fill text-info"></i> Your Message</label>
-                            <textarea class="form-control" id="message" rows="3"
-                                placeholder="Write your appreciation message here..."
-                                maxlength="500" required></textarea>
-                            <div class="form-text text-end" style="font-size:0.8rem;"><span id="charCount">0</span>/500</div>
-                        </div>
+                            <!-- Message -->
+                            <div class="mb-3">
+                                <label for="message" class="form-label">
+                                    <i class="bi bi-chat-quote-fill text-info me-1"></i>Your Message <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="message" rows="3"
+                                    placeholder="Write your appreciation message here..."
+                                    maxlength="500" required></textarea>
+                                <div class="form-text text-end" style="font-size:0.8rem;"><span id="charCount">0</span>/500</div>
+                            </div>
 
-                        <!-- Submit Button -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-shoutout btn-primary btn-lg">
-                                <i class="bi bi-send-fill me-2"></i>Submit Shoutout
-                            </button>
+                            <!-- Submit -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-shoutout btn-primary btn-lg" id="submitBtn">
+                                    <i class="bi bi-send-fill me-2"></i>Submit Shoutout
+                                </button>
+                            </div>
                         </div>
 
                         <!-- View Kiosk Link -->
@@ -175,50 +160,104 @@
     <script src="js/config.js"></script>
     <script>
         let employees = [];
+        let isVerified = false;
 
-        // Load employees on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadEmployees();
             setupCategorySelection();
             setupCharacterCount();
         });
 
-        // Load employee list
+        // ─── Load employees ────────────────────────────────────────────
         async function loadEmployees() {
+            const fromSel = document.getElementById('fromEmployee');
+            const toSel = document.getElementById('toEmployee');
             try {
-                console.log('Loading employees from:', `${CONFIG.API_BASE_URL}/public/employees`);
-                const response = await fetch(`${CONFIG.API_BASE_URL}/public/employees`);
-                console.log('Response status:', response.status);
-                
-                employees = await response.json();
-                console.log('Loaded employees:', employees.length, employees);
-                
-                const fromSelect = document.getElementById('fromEmployee');
-                const toSelect = document.getElementById('toEmployee');
-                
-                if (!fromSelect || !toSelect) {
-                    console.error('Dropdown elements not found!');
-                    return;
-                }
-                
+                const res = await fetch(`${CONFIG.API_BASE_URL}/public/employees`);
+                const data = await res.json();
+                employees = Array.isArray(data) ? data : (data.employees || []);
+
+                fromSel.innerHTML = '<option value="">— Select your name —</option>';
+                toSel.innerHTML = '<option value="">— Who do you want to recognize? —</option>';
+
                 employees.forEach(emp => {
-                    const option1 = new Option(`${emp.name} - ${emp.department}`, emp.name);
-                    const option2 = new Option(`${emp.name} - ${emp.department}`, emp.name);
-                    fromSelect.add(option1);
-                    toSelect.add(option2);
+                    const label = emp.name + (emp.department ? ` — ${emp.department}` : '');
+                    fromSel.add(new Option(label, emp.name));
+                    toSel.add(new Option(label, emp.name));
                 });
-                
-                console.log('Employees loaded successfully. From dropdown has', fromSelect.options.length, 'options');
-            } catch (error) {
-                console.error('Error loading employees:', error);
-                alert('Failed to load employees. Please refresh the page.');
+            } catch (err) {
+                fromSel.innerHTML = '<option value="">— Failed to load. Refresh the page —</option>';
             }
         }
 
-        // Setup category selection
+        // ─── When "Your Name" changes ──────────────────────────────────
+        function onFromNameChange() {
+            const name = document.getElementById('fromEmployee').value;
+            isVerified = false;
+            document.getElementById('employeeId').value = '';
+            document.getElementById('verifyMsg').innerHTML = '';
+            document.getElementById('empIdField').style.display = name ? '' : 'none';
+            showShoutoutFields(false);
+        }
+
+        // ─── Reset verification when Employee ID is changed ───────────
+        function resetVerification() {
+            if (isVerified) {
+                isVerified = false;
+                document.getElementById('verifyMsg').innerHTML = '';
+                showShoutoutFields(false);
+            }
+        }
+
+        // ─── Verify Employee ID ────────────────────────────────────────
+        async function verifyEmployee() {
+            const name = document.getElementById('fromEmployee').value.trim();
+            const empId = document.getElementById('employeeId').value.trim();
+            const msg = document.getElementById('verifyMsg');
+            const btn = document.getElementById('verifyBtn');
+
+            if (!empId) {
+                msg.innerHTML = '<small class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>Please enter your Employee ID.</small>';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                const res = await fetch(`${CONFIG.API_BASE_URL}/public/validate-employee`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employeeId: empId, name: name })
+                });
+                const data = await res.json();
+
+                if (data.valid) {
+                    isVerified = true;
+                    msg.innerHTML = '<small class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Identity verified! You can now submit your shoutout.</small>';
+                    showShoutoutFields(true);
+                } else {
+                    isVerified = false;
+                    msg.innerHTML = `<small class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>${data.message}</small>`;
+                    showShoutoutFields(false);
+                }
+            } catch (err) {
+                msg.innerHTML = '<small class="text-danger"><i class="bi bi-wifi-off me-1"></i>Network error. Please try again.</small>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Verify';
+            }
+        }
+
+        // ─── Show/hide shoutout fields after verification ──────────────
+        function showShoutoutFields(show) {
+            document.getElementById('shoutoutFields').style.display = show ? '' : 'none';
+        }
+
+        // ─── Category selection ────────────────────────────────────────
         function setupCategorySelection() {
             document.querySelectorAll('.category-badge').forEach(badge => {
-                badge.addEventListener('click', function() {
+                badge.addEventListener('click', function () {
                     document.querySelectorAll('.category-badge').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     document.getElementById('category').value = this.dataset.category;
@@ -226,66 +265,83 @@
             });
         }
 
-        // Character count
+        // ─── Character count ───────────────────────────────────────────
         function setupCharacterCount() {
-            const message = document.getElementById('message');
-            const charCount = document.getElementById('charCount');
-            message.addEventListener('input', function() {
-                charCount.textContent = this.value.length;
+            document.getElementById('message').addEventListener('input', function () {
+                document.getElementById('charCount').textContent = this.value.length;
             });
         }
 
-        // Submit form
-        document.getElementById('submitShoutoutForm').addEventListener('submit', async function(e) {
+        // ─── Submit ────────────────────────────────────────────────────
+        document.getElementById('submitShoutoutForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
-            const fromName = document.getElementById('fromEmployee').value;
-            const toName = document.getElementById('toEmployee').value;
-            
+
+            if (!isVerified) {
+                document.getElementById('verifyMsg').innerHTML = '<small class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>Please verify your Employee ID first.</small>';
+                return;
+            }
+
+            const fromName = document.getElementById('fromEmployee').value.trim();
+            const toName = document.getElementById('toEmployee').value.trim();
+
+            if (!toName) {
+                alert('Please select who you want to shoutout.');
+                return;
+            }
             if (fromName === toName) {
                 alert('You cannot give a shoutout to yourself!');
                 return;
             }
-            
-            const shoutout = {
-                fromName: fromName,
-                toName: toName,
-                message: document.getElementById('message').value,
-                category: document.getElementById('category').value
-            };
-            
+
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('Please write a message.');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
             try {
-                const response = await fetch(`${CONFIG.API_BASE_URL}/public/shoutouts`, {
+                const res = await fetch(`${CONFIG.API_BASE_URL}/public/shoutouts`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(shoutout)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fromName: fromName,
+                        toName: toName,
+                        message: message,
+                        category: document.getElementById('category').value
+                    })
                 });
-                
-                const result = await response.json();
-                
+                const result = await res.json();
                 if (result.success) {
                     document.getElementById('shoutoutForm').style.display = 'none';
                     document.getElementById('successMessage').style.display = 'block';
                 } else {
-                    alert('Error: ' + result.message);
+                    alert('Error: ' + (result.message || 'Failed to submit.'));
                 }
-            } catch (error) {
-                console.error('Error submitting shoutout:', error);
+            } catch (err) {
                 alert('Failed to submit shoutout. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Submit Shoutout';
             }
         });
 
-        // Reset form
+        // ─── Reset ─────────────────────────────────────────────────────
         function resetForm() {
             document.getElementById('submitShoutoutForm').reset();
             document.getElementById('charCount').textContent = '0';
             document.querySelectorAll('.category-badge').forEach(b => b.classList.remove('active'));
             document.querySelector('[data-category="Appreciation"]').classList.add('active');
             document.getElementById('category').value = 'Appreciation';
+            document.getElementById('empIdField').style.display = 'none';
+            document.getElementById('verifyMsg').innerHTML = '';
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('shoutoutForm').style.display = 'block';
+            showShoutoutFields(false);
+            isVerified = false;
         }
     </script>
 </body>
