@@ -296,8 +296,13 @@ function renderEmployeesTable() {
     const countEl = document.getElementById('recordCount');
     if (countEl) countEl.textContent = employeesData.length + ' record' + (employeesData.length !== 1 ? 's' : '');
 
-    // Sort by name alphabetically
-    const sorted = [...employeesData].sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+    // Sort filtered list by name alphabetically for consistent paging
+    const sortedFiltered = [...filteredEmployeesData].sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+
+    // Pagination calculations
+    const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / itemsPerPage));
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const pageEmployees = sortedFiltered.slice(startIndex, startIndex + itemsPerPage);
 
     tbody.innerHTML = pageEmployees.map((employee, index) => {
         const birthDate = employee.birthDate || employee.birthdate;
