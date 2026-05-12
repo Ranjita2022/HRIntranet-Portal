@@ -111,8 +111,9 @@ public class DailyQuoteService {
                 new QuoteData("The only way to do great work is to love what you do.", "Steve Jobs", null),
                 new QuoteData("Success is not final, failure is not fatal: it is the courage to continue that counts.", "Winston Churchill", null),
                 new QuoteData("The future depends on what you do today.", "Mahatma Gandhi", null),
-                new QuoteData("It always seems impossible until it is done.", "Nelson Mandela", null), 
-                new QuoteData("Keep going. Everything you need will come to you at the perfect time.", "Unknown", null));
+                new QuoteData("It always seems impossible until it is done.", "Nelson Mandela", null),
+                 new QuoteData("Keep going. Everything you need will come to you at the perfect time.", "Unknown", null)
+                );
 
         int index = Math.abs(dayKey.hashCode()) % fallbackQuotes.size();
         QuoteData selected = fallbackQuotes.get(index);

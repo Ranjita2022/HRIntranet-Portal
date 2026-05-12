@@ -125,7 +125,7 @@ function renderAdminUsersTable() {
                 <td>${statusBadge} ${mustChangePwd}</td>
                 <td class="text-muted small">${lastLogin}</td>
                 <td class="text-center">
-                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                    <div class="d-flex gap-1 justify-content-center">
                         <button class="btn btn-sm btn-outline-primary" onclick="showEditAdminUserModal(${user.id})" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -348,7 +348,7 @@ async function toggleAdminActive(id) {
     if (!user) return;
 
     const action = user.isActive ? 'deactivate' : 'activate';
-    if (!confirm(`Are you sure you want to ${action} "${user.username}"?`)) return;
+    if (!(await confirmAction(`Are you sure you want to ${action} "${user.username}"?`, { title: `${action === 'activate' ? 'Activate' : 'Deactivate'} User`, confirmText: action === 'activate' ? 'Activate' : 'Deactivate', confirmIcon: 'check2' }))) return;
 
     try {
         await AdminAPI.adminUsers.toggleActive(id);
@@ -366,7 +366,7 @@ async function deleteAdminUser(id) {
     const user = adminUsersData.find(u => u.id === id);
     if (!user) return;
 
-    if (!confirm(`Are you sure you want to DELETE admin user "${user.username}"?\n\nThis action cannot be undone.`)) return;
+    if (!(await confirmAction(`Are you sure you want to delete admin user "${user.username}"?\n\nThis action cannot be undone.`, { title: 'Delete Admin User' }))) return;
 
     try {
         await AdminAPI.adminUsers.delete(id);

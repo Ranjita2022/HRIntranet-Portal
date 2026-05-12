@@ -100,16 +100,16 @@ function displayPositions() {
     $('#emptyState').hide();
     $('#tableContainer').show();
 
-    // Record count badge
-    const countEl = document.getElementById('positionsRecordCount');
-    if (countEl) countEl.textContent = allPositions.length + ' record' + (allPositions.length !== 1 ? 's' : '');
-
     // Apply status filter
     const selectedStatus = $('#statusFilter').val();
     let filtered = allPositions;
     if (selectedStatus) {
         filtered = allPositions.filter(p => p.status === selectedStatus);
     }
+
+    // Record count badge — show filtered count, not total
+    const countEl = document.getElementById('positionsRecordCount');
+    if (countEl) countEl.textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
 
     if (filtered.length === 0) {
         $tbody.html('<tr><td colspan="6" class="text-center py-3 text-muted">No positions match the selected filter</td></tr>');
@@ -289,8 +289,8 @@ function editPosition(id) {
     }
 }
 
-function deletePosition(id) {
-    if (!confirm('Are you sure you want to delete this position?')) return;
+async function deletePosition(id) {
+    if (!(await confirmAction('Are you sure you want to delete this position?', { title: 'Delete Open Position' }))) return;
 
     // Check if user is authenticated
     if (!AdminAPI || !AdminAPI.isAuthenticated()) {
@@ -299,17 +299,16 @@ function deletePosition(id) {
         return;
     }
 
-    AdminAPI.fetch(`/admin/positions/${id}`, {
-        method: 'DELETE'
-    })
-    .then(() => {
+    try {
+        await AdminAPI.fetch(`/admin/positions/${id}`, {
+            method: 'DELETE'
+        });
         loadPositions();
         showToast('Position deleted successfully!', 'success');
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error deleting position:', error);
         showToast('Error deleting position: ' + error.message, 'danger');
-    });
+    }
 }
 
 function showToast(message, type = 'info') {
@@ -351,6 +350,13 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+/**
+ * Handler for status filter change — re-render table with filtered data
+ */
+function onStatusFilterChange() {
+    displayPositions();
+}
+
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -382,10 +388,7 @@ function exportToCSV() {
 }
 
 function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        AdminAPI.logout();
-        window.location.href = 'admin-login.html';
-    }
+    showLogoutConfirmation();
 }
 
 function setupAutoMenuHighlight() {

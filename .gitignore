@@ -40,10 +40,6 @@ DEPLOY-VM-*.md
 DEPLOY-LINUX.md
 DEPLOY-*.md
 
-# Uploaded user content - never commit
-uploads/
-uploads/images/
-
 # Sample data files - local use only
 open-positions-sample.*
 
@@ -51,3 +47,12 @@ open-positions-sample.*
 *.pptx
 generate_ppt.py
 Presentation-Talking-Script.txt
+
+# Local scripts and generated utilities — ignore added files
+scripts/
+/scripts/
+start-app.bat
+# Ignore local utility classes created during development
+src/main/java/org/ieee/hrintranet/util/
+# Ensure uploads images stay ignored
+uploads/images/

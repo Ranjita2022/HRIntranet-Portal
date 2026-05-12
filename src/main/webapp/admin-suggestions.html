@@ -12,10 +12,57 @@
         .stat-card { background: white; border-radius: 12px; padding: 1.2rem 1.5rem; border: 1px solid #dee2e6; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
         .stat-card .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
         .stat-card .stat-label { font-size: 0.78rem; color: #6c757d; margin-top: 4px; }
-        .filter-btn { border-radius: 20px; font-size: 0.85rem; }
-        .filter-btn.active { font-weight: 600; }
+        
+        /* Suggestion Tabs */
+        .suggestion-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0;
+        }
+        
+        .suggestion-tab {
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+        
+        .suggestion-tab:hover {
+            background: #f8f9fa;
+            color: #495057;
+        }
+        
+        .suggestion-tab.active {
+            background: #1a1a1a;
+            color: white;
+            border-bottom: 2px solid #1a1a1a;
+            margin-bottom: -2px;
+        }
+        
+        /* Table responsive and stretching */
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-gutter: stable;
+        }
+        
+        .table-responsive .table {
+            margin: 0;
+            min-width: 970px;
+            table-layout: auto;
+        }
+        
         .table th, .table td { vertical-align: middle; }
-        .suggestion-text-cell { max-width: 280px; word-break: break-word; font-size: 0.88rem; }
+        .suggestion-text-cell { word-break: break-word; font-size: 0.88rem; white-space: normal; }
         .modal-suggestion-text { background: #f8f9fa; border-radius: 8px; padding: 1rem; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow-y: auto; }
     </style>
 </head>
@@ -37,11 +84,15 @@
         <a href="admin-carousel.html" class="menu-item"><i class="bi bi-images"></i><span>Carousel Slides</span></a>
         <a href="admin-gallery.html" class="menu-item"><i class="bi bi-folder2-open"></i><span>Gallery</span></a>
         <a href="admin-quick-links.html" class="menu-item"><i class="bi bi-link-45deg"></i><span>Quick Links</span></a>
-        <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
         <a href="admin-work-anniversaries.html" class="menu-item"><i class="bi bi-award-fill"></i><span>Work Anniversaries</span></a>
         <a href="admin-open-positions.html" class="menu-item"><i class="bi bi-briefcase-fill"></i><span>Open Positions</span></a>
         <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
         <a href="admin-suggestions.html" class="menu-item active"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+
+        <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
+
+        <div class="menu-section">System</div>
+
         <a href="admin-users.html" class="menu-item super-admin-only"><i class="bi bi-person-gear"></i><span>User Management</span></a>
         <a href="admin-audit.html" class="menu-item admin-only"><i class="bi bi-journal-text"></i><span>Audit Logs</span></a>
         <div class="menu-item" onclick="window.open('index.html','_blank')"><i class="bi bi-eye-fill"></i><span>View Portal</span></div>
@@ -106,13 +157,13 @@
             </div>
         </div>
 
-        <!-- Filter buttons -->
-        <div class="d-flex flex-wrap gap-2 mb-3">
-            <button class="btn btn-outline-dark filter-btn active" data-filter="ALL"         onclick="loadSuggestions('ALL')">All</button>
-            <button class="btn btn-outline-primary filter-btn"     data-filter="NEW"         onclick="loadSuggestions('NEW')"><i class="bi bi-circle-fill me-1" style="font-size:.6rem;"></i>New</button>
-            <button class="btn btn-outline-warning filter-btn"     data-filter="REVIEWED"    onclick="loadSuggestions('REVIEWED')">Reviewed</button>
-            <button class="btn btn-outline-success filter-btn"     data-filter="IMPLEMENTED" onclick="loadSuggestions('IMPLEMENTED')">Implemented</button>
-            <button class="btn btn-outline-secondary filter-btn"   data-filter="DISMISSED"   onclick="loadSuggestions('DISMISSED')">Dismissed</button>
+        <!-- Filter tabs -->
+        <div class="suggestion-tabs mb-4">
+            <button class="suggestion-tab active" data-filter="ALL"         onclick="loadSuggestions('ALL')">All</button>
+            <button class="suggestion-tab"         data-filter="NEW"         onclick="loadSuggestions('NEW')"><i class="bi bi-circle-fill me-1" style="font-size:.6rem;"></i>New</button>
+            <button class="suggestion-tab"         data-filter="REVIEWED"    onclick="loadSuggestions('REVIEWED')">Reviewed</button>
+            <button class="suggestion-tab"         data-filter="IMPLEMENTED" onclick="loadSuggestions('IMPLEMENTED')">Implemented</button>
+            <button class="suggestion-tab"         data-filter="DISMISSED"   onclick="loadSuggestions('DISMISSED')">Dismissed</button>
         </div>
 
         <!-- Table -->
@@ -249,10 +300,7 @@
     }
 
     function handleLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            AdminAPI.logout();
-            window.location.href = 'admin-login.html';
-        }
+        showLogoutConfirmation();
     }
 </script>
 </body>

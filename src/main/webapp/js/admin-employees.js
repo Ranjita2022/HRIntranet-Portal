@@ -4,13 +4,49 @@
  */
 
 let employeesData = [];
+let filteredEmployeesData = [];
 let editingEmployeeId = null;
+let currentPage = 1;
+let itemsPerPage = 25;
+let searchQuery = '';
+let selectedDepartment = 'ALL';
+let photoValidationError = false;  // Track photo validation state
+let removePhotoOnSave = false;  // Track if user wants to remove existing photo
 
+const DEFAULT_DEPARTMENTS = [
+    'Information Technology (IT)',
+    'Human Resources (HR)',
+    'Global Finance',
+    'Marketing',
+    'India Finance',
+    'Philanthropy',
+    'Standards Association (SA)',
+    'Blended Learning Program (BLP)',
+    'Publication',
+    'Contact Center',
+    'Computer Society',
+    'India Admin',
+    'Finance & Administration'
+];
+
+let departmentOptions = [...DEFAULT_DEPARTMENTS];
 /**
  * Initialize employees section
  */
 async function initEmployees() {
-    await loadEmployees();
+    await Promise.all([loadDepartments(), loadEmployees()]);
+
+    // Setup search input
+    const searchInput = document.getElementById('employeeSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleEmployeeSearch);
+    }
+
+    const departmentFilter = document.getElementById('departmentFilterSelect');
+    if (departmentFilter) {
+        departmentFilter.addEventListener('change', handleDepartmentFilterChange);
+        departmentFilter.value = selectedDepartment;
+    }
 
     // Whenever the employee modal is fully hidden (closed via X, Cancel, backdrop click,
     // or after a successful save) clear the photo file input so a stale selected file
@@ -19,12 +55,68 @@ async function initEmployees() {
     if (employeeModalEl) {
         employeeModalEl.addEventListener('hidden.bs.modal', () => {
             const photoInput = document.getElementById('employeePhoto');
+            const photoFileName = document.getElementById('photoFileName');
             if (photoInput) photoInput.value = '';
             document.getElementById('photoPreviewContainer').style.display = 'none';
             document.getElementById('employeePhotoPreview').src = '';
+            if (photoFileName) photoFileName.style.display = 'none';
+            photoValidationError = false;  // Reset photo validation error
+            removePhotoOnSave = false;  // Reset remove photo flag
             editingEmployeeId = null;
         });
     }
+}
+
+/**
+ * Load department options for the employee form and filter.
+ */
+async function loadDepartments() {
+    try {
+        const departments = await AdminAPI.employees.getDepartments();
+        if (Array.isArray(departments) && departments.length > 0) {
+            departmentOptions = [...new Set([...DEFAULT_DEPARTMENTS, ...departments].filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b));
+        }
+    } catch (error) {
+        console.warn('Could not load department list from API, using defaults:', error);
+    }
+
+    populateDepartmentDropdowns();
+}
+
+/**
+ * Populate both the add/edit department dropdown and the filter dropdown.
+ */
+function populateDepartmentDropdowns() {
+    const formSelect = document.getElementById('employeeDepartment');
+    if (formSelect) {
+        const currentValue = formSelect.value;
+        formSelect.innerHTML = '<option value="">Select Department</option>';
+        departmentOptions.forEach(department => {
+            const option = document.createElement('option');
+            option.value = department;
+            option.textContent = department;
+            formSelect.appendChild(option);
+        });
+        if (currentValue) {
+            formSelect.value = currentValue;
+        }
+    }
+
+    updateDepartmentFilterOptions();
+}
+
+/**
+ * Ensure a department exists in the dropdown lists.
+ */
+function ensureDepartmentOption(department) {
+    const normalized = (department || '').trim();
+    if (!normalized || departmentOptions.includes(normalized)) {
+        return;
+    }
+
+    departmentOptions = [...departmentOptions, normalized].sort((a, b) => a.localeCompare(b));
+    populateDepartmentDropdowns();
 }
 
 /**
@@ -38,7 +130,16 @@ async function loadEmployees() {
         // API returns array directly
         if (Array.isArray(response)) {
             employeesData = response;
-            renderEmployeesTable();
+            // Reset pagination and search when loading fresh data
+            currentPage = 1;
+            searchQuery = '';
+            selectedDepartment = 'ALL';
+            const searchInput = document.getElementById('employeeSearchInput');
+            if (searchInput) searchInput.value = '';
+            const departmentFilter = document.getElementById('departmentFilterSelect');
+            if (departmentFilter) departmentFilter.value = 'ALL';
+            document.getElementById('searchClearBtn').style.display = 'none';
+            filterAndRenderEmployeesTable();
         } else {
             showError('Failed to load employees: Invalid response format');
         }
@@ -49,46 +150,161 @@ async function loadEmployees() {
 }
 
 /**
- * Render employees table
+ * Handle employee search/filter
+ */
+function handleEmployeeSearch(event) {
+    searchQuery = (event.target.value || '').toLowerCase().trim();
+    
+    // Show/hide clear button
+    const clearBtn = document.getElementById('searchClearBtn');
+    if (clearBtn) {
+        clearBtn.style.display = searchQuery ? 'inline-block' : 'none';
+    }
+    
+    // Reset to first page on new search
+    currentPage = 1;
+    filterAndRenderEmployeesTable();
+}
+
+/**
+ * Handle department filter selection.
+ */
+function handleDepartmentFilterChange() {
+    const departmentFilter = document.getElementById('departmentFilterSelect');
+    selectedDepartment = departmentFilter ? (departmentFilter.value || 'ALL') : 'ALL';
+    currentPage = 1;
+    filterAndRenderEmployeesTable();
+}
+
+/**
+ * Clear employee search
+ */
+function clearEmployeeSearch() {
+    searchQuery = '';
+    const searchInput = document.getElementById('employeeSearchInput');
+    if (searchInput) searchInput.value = '';
+    document.getElementById('searchClearBtn').style.display = 'none';
+    currentPage = 1;
+    filterAndRenderEmployeesTable();
+}
+
+/**
+ * Filter and render employees table
+ */
+function filterAndRenderEmployeesTable() {
+    filteredEmployeesData = employeesData.filter(employee => {
+        const searchStr = searchQuery;
+        const matchesSearch = !searchStr || (
+            (employee.fullName && employee.fullName.toLowerCase().includes(searchStr)) ||
+            (employee.employeeId && employee.employeeId.toLowerCase().includes(searchStr)) ||
+            (employee.email && employee.email.toLowerCase().includes(searchStr)) ||
+            (employee.position && employee.position.toLowerCase().includes(searchStr)) ||
+            (employee.department && employee.department.toLowerCase().includes(searchStr))
+        );
+
+        const employeeDepartment = (employee.department || '').trim();
+        const matchesDepartment = selectedDepartment === 'ALL' || employeeDepartment === selectedDepartment;
+
+        return matchesSearch && matchesDepartment;
+    });
+    
+    // Ensure current page is valid
+    const totalPages = Math.ceil(filteredEmployeesData.length / itemsPerPage);
+    if (currentPage > totalPages) {
+        currentPage = Math.max(1, totalPages);
+    }
+    
+    renderEmployeesTable();
+}
+
+/**
+ * Change items per page
+ */
+function changeItemsPerPage() {
+    const select = document.getElementById('itemsPerPageSelect');
+    itemsPerPage = parseInt(select.value);
+    currentPage = 1;
+    filterAndRenderEmployeesTable();
+}
+
+/**
+ * Go to next page
+ */
+function nextPage() {
+    const totalPages = Math.ceil(filteredEmployeesData.length / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        filterAndRenderEmployeesTable();
+        scrollToTable();
+    }
+}
+
+/**
+ * Go to previous page
+ */
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        filterAndRenderEmployeesTable();
+        scrollToTable();
+    }
+}
+
+/**
+ * Scroll to table for better UX
+ */
+function scrollToTable() {
+    const tableCard = document.getElementById('tableCard');
+    if (tableCard) {
+        tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * Render employees table with pagination
  */
 function renderEmployeesTable() {
-    const tbody      = document.getElementById('employeesTableBody');
+    const tbody = document.getElementById('employeesTableBody');
     const emptyState = document.getElementById('employeesEmptyState');
-    const tableCard  = document.getElementById('tableCard');
+    const tableCard = document.getElementById('tableCard');
+
+    if (!tbody) {
+        return;
+    }
 
     if (!employeesData || employeesData.length === 0) {
         tbody.innerHTML = '';
         if (emptyState) emptyState.style.display = 'block';
-        if (tableCard)  tableCard.style.display  = 'none';
+        if (tableCard) tableCard.style.display = 'none';
         updateEmployeeStats([], [], []);
+        updateDepartmentFilterOptions();
         return;
     }
 
     if (emptyState) emptyState.style.display = 'none';
-    if (tableCard)  tableCard.style.display  = '';
+    if (tableCard) tableCard.style.display = '';
 
-    // Stats
-    const active     = employeesData.filter(e => e.status === 'ACTIVE');
-    const inactive   = employeesData.filter(e => e.status === 'INACTIVE' || e.status === 'TERMINATED');
-    const newJoiners = employeesData.filter(e => {
-        const days = Math.floor((new Date() - new Date(e.startDate)) / 86400000);
+    const active = employeesData.filter(employee => employee.status === 'ACTIVE');
+    const inactive = employeesData.filter(employee => employee.status === 'INACTIVE' || employee.status === 'TERMINATED');
+    const newJoiners = employeesData.filter(employee => {
+        const days = Math.floor((new Date() - new Date(employee.startDate)) / 86400000);
         return days >= 0 && days <= 30;
     });
     updateEmployeeStats(active, inactive, newJoiners);
+    updateDepartmentFilterOptions();
 
-    // Record count
     const countEl = document.getElementById('recordCount');
     if (countEl) countEl.textContent = employeesData.length + ' record' + (employeesData.length !== 1 ? 's' : '');
 
     // Sort by name alphabetically
     const sorted = [...employeesData].sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
 
-    tbody.innerHTML = sorted.map((employee, index) => {
+    tbody.innerHTML = pageEmployees.map((employee, index) => {
         const birthDate = employee.birthDate || employee.birthdate;
         const birthDateText = birthDate ? formatDate(birthDate) : '-';
         const startDate = formatDate(employee.startDate);
         const endDate = employee.endDate ? formatDate(employee.endDate) : '-';
-        const days      = Math.floor((new Date() - new Date(employee.startDate)) / 86400000);
+        const days = Math.floor((new Date() - new Date(employee.startDate)) / 86400000);
         const isNewJoiner = days >= 0 && days <= 30;
 
         const firstInitial = (employee.firstName || '').trim().charAt(0).toUpperCase() || '?';
@@ -100,10 +316,12 @@ function renderEmployeesTable() {
             : `<span class="user-avatar" style="width:32px;height:32px;font-size:0.875rem;">${avatarInitials}</span>`;
 
         const statusBadges = {
-            'ACTIVE':     '<span class="badge bg-success">Active</span>',
-            'INACTIVE':   '<span class="badge bg-warning text-dark">Inactive</span>',
+            'ACTIVE': '<span class="badge bg-success">Active</span>',
+            'INACTIVE': '<span class="badge bg-warning text-dark">Inactive</span>',
             'TERMINATED': '<span class="badge bg-danger">Terminated</span>'
         };
+
+        const rowNumber = startIndex + index + 1;
 
         return `
             <tr>
@@ -138,6 +356,83 @@ function renderEmployeesTable() {
             </tr>
         `;
     }).join('');
+
+    updatePaginationControls(totalPages);
+}
+
+/**
+ * Update pagination controls UI
+ */
+function updatePaginationControls(totalPages) {
+    const paginationContainer = document.getElementById('paginationContainer');
+    const currentPageInfo = document.getElementById('currentPageInfo');
+    const totalPagesInfo = document.getElementById('totalPagesInfo');
+    const prevPageItem = document.getElementById('prevPageItem');
+    const nextPageItem = document.getElementById('nextPageItem');
+
+    if (filteredEmployeesData.length <= itemsPerPage) {
+        // Hide pagination if all items fit on one page
+        paginationContainer.style.display = 'none';
+        return;
+    }
+
+    paginationContainer.style.display = 'flex';
+    
+    if (currentPageInfo) currentPageInfo.textContent = currentPage;
+    if (totalPagesInfo) totalPagesInfo.textContent = totalPages;
+
+    // Disable/enable previous button
+    if (prevPageItem) {
+        prevPageItem.classList.toggle('disabled', currentPage <= 1);
+    }
+
+    // Disable/enable next button
+    if (nextPageItem) {
+        nextPageItem.classList.toggle('disabled', currentPage >= totalPages);
+    }
+}
+
+/**
+ * Update the department filter dropdown with counts.
+ */
+function updateDepartmentFilterOptions() {
+    const departmentFilter = document.getElementById('departmentFilterSelect');
+    if (!departmentFilter) {
+        return;
+    }
+
+    const currentValue = selectedDepartment || 'ALL';
+    const departmentCounts = new Map();
+    employeesData.forEach(employee => {
+        const department = (employee.department || 'Unassigned').trim() || 'Unassigned';
+        departmentCounts.set(department, (departmentCounts.get(department) || 0) + 1);
+    });
+
+    departmentFilter.innerHTML = '';
+
+    const allOption = document.createElement('option');
+    allOption.value = 'ALL';
+    allOption.textContent = `All Departments (${employeesData.length})`;
+    departmentFilter.appendChild(allOption);
+
+    departmentOptions.forEach(department => {
+        const count = departmentCounts.get(department) || 0;
+        const option = document.createElement('option');
+        option.value = department;
+        option.textContent = `${department} (${count})`;
+        departmentFilter.appendChild(option);
+    });
+
+    departmentCounts.forEach((count, department) => {
+        if (!departmentOptions.includes(department)) {
+            const option = document.createElement('option');
+            option.value = department;
+            option.textContent = `${department} (${count})`;
+            departmentFilter.appendChild(option);
+        }
+    });
+
+    departmentFilter.value = currentValue;
 }
 
 function updateEmployeeStats(active, inactive, newJoiners) {
@@ -153,6 +448,7 @@ function updateEmployeeStats(active, inactive, newJoiners) {
  */
 function showAddEmployeeModal() {
     editingEmployeeId = null;
+    photoValidationError = false;  // Reset photo validation error
     document.getElementById('employeeModalTitle').textContent = 'Add Employee';
     document.getElementById('employeeForm').reset();
     document.getElementById('employeeStatus').value = 'ACTIVE';
@@ -163,12 +459,20 @@ function showAddEmployeeModal() {
     // Clear birth date when adding
     document.getElementById('employeeBirthDate').value = '';
     
-    // Clear photo preview
+    // Clear photo preview and filename
     document.getElementById('photoPreviewContainer').style.display = 'none';
     document.getElementById('employeePhotoPreview').src = '';
+    const photoFileName = document.getElementById('photoFileName');
+    if (photoFileName) photoFileName.style.display = 'none';
+    
     // Also explicitly clear file input in case form.reset() didn't fully clear it
     const photoInput = document.getElementById('employeePhoto');
+    populateDepartmentDropdowns();
+    document.getElementById('employeeDepartment').value = '';
     if (photoInput) photoInput.value = '';
+    
+    // Setup name auto-capitalization
+    setupNameCapitalization();
     
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
     modal.show();
@@ -185,12 +489,14 @@ async function showEditEmployeeModal(id) {
     }
     
     editingEmployeeId = id;
+    photoValidationError = false;  // Reset photo validation error
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
     document.getElementById('employeeId').value = employee.employeeId;
     document.getElementById('employeeFirstName').value = employee.firstName;
     document.getElementById('employeeLastName').value = employee.lastName || '';
     document.getElementById('employeeEmail').value = employee.email;
     document.getElementById('employeePosition').value = employee.position;
+    ensureDepartmentOption(employee.department);
     document.getElementById('employeeDepartment').value = employee.department;
     document.getElementById('employeeStartDate').value = employee.startDate;
     document.getElementById('employeeEndDate').value = employee.endDate || '';
@@ -201,7 +507,9 @@ async function showEditEmployeeModal(id) {
     // Always clear the file input to prevent a previously selected photo
     // (from a prior add/edit session) from being accidentally uploaded
     const photoInput = document.getElementById('employeePhoto');
+    const photoFileName = document.getElementById('photoFileName');
     if (photoInput) photoInput.value = '';
+    if (photoFileName) photoFileName.style.display = 'none';
 
     // Show photo preview if exists
     if (employee.profileImageUrl) {
@@ -212,6 +520,9 @@ async function showEditEmployeeModal(id) {
         document.getElementById('employeePhotoPreview').src = '';
     }
     
+    // Setup name auto-capitalization
+    setupNameCapitalization();
+    
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
     modal.show();
 }
@@ -221,29 +532,163 @@ async function showEditEmployeeModal(id) {
  */
 function handleEmployeePhotoSelect(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    const photoFileName = document.getElementById('photoFileName');
+    const photoFileNameText = document.getElementById('photoFileNameText');
+    
+    // If no file selected, reset error flag and hide preview/filename
+    if (!file) {
+        photoValidationError = false;
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        return;
+    }
+    
+    // Show filename
+    if (photoFileNameText) {
+        photoFileNameText.textContent = file.name;
+    }
+    if (photoFileName) {
+        photoFileName.style.display = 'block';
+    }
     
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-        showError('Please select a valid image file');
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        showError('Invalid image type. Please use JPG, PNG, GIF, or WebP images only');
         event.target.value = '';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        photoValidationError = true;
         return;
     }
     
     // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-        showError('Image size must be less than 2MB');
+    const maxSizeMB = 2;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        showError(`Image size is ${fileSizeMB}MB. Maximum allowed is ${maxSizeMB}MB`);
         event.target.value = '';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        photoValidationError = true;
         return;
     }
     
-    // Show preview
+    // Validate image dimensions
     const reader = new FileReader();
     reader.onload = (e) => {
-        document.getElementById('photoPreviewContainer').style.display = 'block';
-        document.getElementById('employeePhotoPreview').src = e.target.result;
+        const img = new Image();
+        img.onload = () => {
+            const minDimension = 100;
+            const maxDimension = 4000;  // Match backend limit
+            
+            // Check minimum dimensions
+            if (img.width < minDimension || img.height < minDimension) {
+                showError(`Image dimensions are ${img.width}×${img.height}px. Minimum size is ${minDimension}×${minDimension}px`);
+                event.target.value = '';
+                document.getElementById('photoPreviewContainer').style.display = 'none';
+                document.getElementById('employeePhotoPreview').src = '';
+                if (photoFileName) photoFileName.style.display = 'none';
+                photoValidationError = true;
+                return;
+            }
+            
+            // Check maximum dimensions
+            if (img.width > maxDimension || img.height > maxDimension) {
+                showError(`Image dimensions are ${img.width}×${img.height}px. Maximum allowed is ${maxDimension}×${maxDimension}px`);
+                event.target.value = '';
+                document.getElementById('photoPreviewContainer').style.display = 'none';
+                document.getElementById('employeePhotoPreview').src = '';
+                if (photoFileName) photoFileName.style.display = 'none';
+                photoValidationError = true;
+                return;
+            }
+            
+            // All validations passed, show preview
+            photoValidationError = false;
+            document.getElementById('photoPreviewContainer').style.display = 'block';
+            document.getElementById('employeePhotoPreview').src = e.target.result;
+        };
+        
+        img.onerror = () => {
+            showError('Unable to read image file. Please ensure it is a valid image');
+            event.target.value = '';
+            document.getElementById('photoPreviewContainer').style.display = 'none';
+            document.getElementById('employeePhotoPreview').src = '';
+            if (photoFileName) photoFileName.style.display = 'none';
+            photoValidationError = true;
+        };
+        
+        img.src = e.target.result;
     };
+    
+    reader.onerror = () => {
+        showError('Unable to load image file');
+        event.target.value = '';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('employeePhotoPreview').src = '';
+        if (photoFileName) photoFileName.style.display = 'none';
+        photoValidationError = true;
+    };
+    
     reader.readAsDataURL(file);
+}
+
+/**
+ * Remove employee photo
+ */
+function removeEmployeePhoto() {
+    // Mark for removal
+    removePhotoOnSave = true;
+    
+    // Clear preview
+    document.getElementById('photoPreviewContainer').style.display = 'none';
+    document.getElementById('employeePhotoPreview').src = '';
+    
+    // Clear file input
+    const photoInput = document.getElementById('employeePhoto');
+    if (photoInput) photoInput.value = '';
+    
+    // Clear filename display if exists
+    const photoFileName = document.getElementById('photoFileName');
+    if (photoFileName) photoFileName.style.display = 'none';
+    
+    showToast('Photo will be removed when you save', 'success');
+}
+
+/**
+ * Capitalize first letter of a word
+ */
+function capitalizeFirstLetter(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Setup name auto-capitalization
+ */
+function setupNameCapitalization() {
+    const firstNameInput = document.getElementById('employeeFirstName');
+    const lastNameInput = document.getElementById('employeeLastName');
+    
+    if (firstNameInput) {
+        firstNameInput.addEventListener('blur', (e) => {
+            if (e.target.value.trim()) {
+                e.target.value = capitalizeFirstLetter(e.target.value.trim());
+            }
+        });
+    }
+    
+    if (lastNameInput) {
+        lastNameInput.addEventListener('blur', (e) => {
+            if (e.target.value.trim()) {
+                e.target.value = capitalizeFirstLetter(e.target.value.trim());
+            }
+        });
+    }
 }
 
 /**
@@ -251,6 +696,13 @@ function handleEmployeePhotoSelect(event) {
  */
 async function saveEmployee(event) {
     event.preventDefault();
+    
+    // Check if photo validation has errors (only if user tried to upload an image)
+    const photoFile = document.getElementById('employeePhoto').files[0];
+    if (photoValidationError && photoFile) {
+        showError('Please fix the image issues before saving');
+        return;
+    }
     
     const employeeId = document.getElementById('employeeId').value.trim();
     const firstName = document.getElementById('employeeFirstName').value.trim();
@@ -262,45 +714,68 @@ async function saveEmployee(event) {
     const endDate = document.getElementById('employeeEndDate').value;
     const birthDate = document.getElementById('employeeBirthDate').value;
     const status = document.getElementById('employeeStatus').value;
-    const photoFile = document.getElementById('employeePhoto').files[0];
     
-    // Validation
+    // Validation with user-friendly messages
     if (!employeeId) {
-        showError('Employee ID is required');
+        showError('Please enter an Employee ID');
         return;
     }
     
     if (!firstName) {
-        showError('First name is required');
+        showError('Please enter the Employee\'s First Name');
+        return;
+    }
+    
+    if (firstName.length < 2) {
+        showError('First Name must be at least 2 characters long');
         return;
     }
     
     if (!email) {
-        showError('Email is required');
+        showError('Please enter an Email address');
         return;
     }
     
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        showError('Please enter a valid email address');
+        showError('Please enter a valid email address (e.g., user@company.com)');
         return;
     }
     
-    if (!position || !department) {
-        showError('Position and department are required');
+    if (!position) {
+        showError('Please enter the Employee\'s Position');
+        return;
+    }
+    
+    if (!department || department === '') {
+        showError('Please select a Department');
         return;
     }
     
     if (!startDate) {
-        showError('Start date is required');
+        showError('Please select a Start Date');
         return;
     }
     
+    if (!birthDate) {
+        showError('Please enter a Birth Date');
+        return;
+    }
+    
+    if (status === 'TERMINATED' && !endDate) {
+        showError('Please enter an End Date for terminated employees');
+        return;
+    }
+    
+    // Auto-capitalize first and last names
+    const capitalizedFirstName = capitalizeFirstLetter(firstName);
+    const capitalizedLastName = lastName ? capitalizeFirstLetter(lastName) : '';
+    
     const employeeData = {
         employeeId,
-        firstName,
-        lastName,
+        firstName: capitalizedFirstName,
+        lastName: capitalizedLastName,
         email,
         position,
         department,
@@ -323,6 +798,22 @@ async function saveEmployee(event) {
         // API returns the employee object directly
         if (response && response.id) {
             const empId = editingEmployeeId || response.id;
+            
+            // Delete photo if user requested removal
+            if (removePhotoOnSave && editingEmployeeId) {
+                try {
+                    const deleteResponse = await AdminAPI.employees.deletePhoto(empId);
+                    if (!deleteResponse || deleteResponse.error) {
+                        const errMsg = (deleteResponse && deleteResponse.error) ? deleteResponse.error : 'Unknown error';
+                        showError('Employee saved but photo deletion failed: ' + errMsg);
+                        return;
+                    }
+                } catch (deleteError) {
+                    showError('Employee saved but photo deletion failed: ' + deleteError.message);
+                    return;
+                }
+                removePhotoOnSave = false;  // Reset the flag
+            }
             
             // Upload photo if selected
             if (photoFile) {
@@ -367,7 +858,7 @@ async function deleteEmployee(id) {
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete employee "${employee.fullName}" (${employee.employeeId})?`)) {
+    if (!(await confirmAction(`Are you sure you want to delete employee "${employee.fullName}" (${employee.employeeId})?`, { title: 'Delete Employee' }))) {
         return;
     }
     
@@ -490,3 +981,4 @@ function showToast(message, type = 'info') {
         alert(message);
     }
 }
+

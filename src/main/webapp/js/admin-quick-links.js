@@ -258,7 +258,7 @@ function editQuickLink(id) {
 
 // Delete quick link
 async function deleteQuickLink(id) {
-    if (!confirm('Are you sure you want to delete this quick link?')) {
+    if (!(await confirmAction('Are you sure you want to delete this quick link?', { title: 'Delete Quick Link' }))) {
         return;
     }
     

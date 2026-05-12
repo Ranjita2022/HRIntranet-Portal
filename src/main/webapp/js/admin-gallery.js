@@ -347,7 +347,7 @@ async function toggleFolderStatus(folderId, currentStatus) {
     const newStatus = !currentStatus;
     const action = newStatus ? 'activate' : 'deactivate';
     
-    if (!confirm(`Are you sure you want to ${action} this folder?`)) {
+    if (!(await confirmAction(`Are you sure you want to ${action} this folder?`, { title: `${action === 'activate' ? 'Activate' : 'Deactivate'} Folder`, confirmText: action === 'activate' ? 'Activate' : 'Deactivate', confirmIcon: 'check2' }))) {
         return;
     }
     
@@ -563,7 +563,7 @@ async function deleteFolder(folderId) {
     }
 
     const folderName = folder.displayTitle || folder.folderName;
-    if (!confirm(`Delete folder "${folderName}" and all images inside it? This cannot be undone.`)) {
+    if (!(await confirmAction(`Delete folder "${folderName}" and all images inside it? This cannot be undone.`, { title: 'Delete Folder' }))) {
         return;
     }
 
@@ -586,7 +586,7 @@ async function deleteSelectedFolders() {
         return;
     }
 
-    if (!confirm(`Delete ${selectedIds.length} selected folder(s) and all images inside them? This cannot be undone.`)) {
+    if (!(await confirmAction(`Delete ${selectedIds.length} selected folder(s) and all images inside them? This cannot be undone.`, { title: 'Delete Selected Folders' }))) {
         return;
     }
 
@@ -938,7 +938,7 @@ async function deleteSelectedFolderImages() {
         return;
     }
 
-    if (!confirm(`Delete ${selected.length} selected image(s)? This cannot be undone.`)) {
+    if (!(await confirmAction(`Delete ${selected.length} selected image(s)? This cannot be undone.`, { title: 'Delete Selected Images' }))) {
         return;
     }
 
@@ -997,7 +997,7 @@ async function deleteSelectedFolderImages() {
 // Delete selected image file from folder
 async function deleteFolderImage(folderId, encodedFilename) {
     const filename = decodeURIComponent(encodedFilename);
-    if (!confirm(`Delete image "${filename}"? This cannot be undone.`)) {
+    if (!(await confirmAction(`Delete image "${filename}"? This cannot be undone.`, { title: 'Delete Image' }))) {
         return;
     }
 

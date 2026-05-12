@@ -11,6 +11,16 @@
     <style>
         .holiday-name { font-weight: 600; color: #2c3e50; }
         .date-cell    { color: #495057; font-size: 0.92rem; white-space: nowrap; }
+        .table th:nth-child(4),
+        .table td:nth-child(4) {
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+            word-break: break-word !important;
+            word-wrap: break-word !important;
+            width: 35%;
+            min-width: 250px;
+            vertical-align: top;
+        }
     </style>
 </head>
 <body>
@@ -30,12 +40,15 @@
             <a href="admin-carousel.html" class="menu-item"><i class="bi bi-images"></i><span>Carousel Slides</span></a>
             <a href="admin-gallery.html" class="menu-item"><i class="bi bi-folder2-open"></i><span>Gallery</span></a>
             <a href="admin-quick-links.html" class="menu-item"><i class="bi bi-link-45deg"></i><span>Quick Links</span></a>
-            <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
             <a href="admin-work-anniversaries.html" class="menu-item"><i class="bi bi-award-fill"></i><span>Work Anniversaries</span></a>
             <a href="admin-open-positions.html" class="menu-item"><i class="bi bi-briefcase-fill"></i><span>Open Positions</span></a>
 
         <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
         <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+
+            <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
+
+            <div class="menu-section">System</div>
 
         
 \            <a href="admin-users.html" class="menu-item super-admin-only"><i class="bi bi-person-gear"></i><span>User Management</span></a>
@@ -68,19 +81,19 @@
             <!-- Stats -->
             <div class="stats-row">
                 <div class="stat-card">
-                    <h3 id="statTotal">�</h3>
+                    <h3 id="statTotal">?</h3>
                     <p><i class="bi bi-calendar3 me-1"></i>Total</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="statActive" style="color:#198754;">�</h3>
+                    <h3 id="statActive" style="color:#198754;">?</h3>
                     <p><i class="bi bi-check-circle me-1"></i>Active</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="statUpcoming" style="color:#0084CA;">�</h3>
+                    <h3 id="statUpcoming" style="color:#0084CA;">?</h3>
                     <p><i class="bi bi-clock me-1"></i>Upcoming</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="statPast" style="color:#6c757d;">�</h3>
+                    <h3 id="statPast" style="color:#6c757d;">?</h3>
                     <p><i class="bi bi-calendar-check me-1"></i>Past</p>
                 </div>
             </div>
@@ -97,9 +110,18 @@
 
             <!-- Table Card -->
             <div class="table-card" id="tableCard">
-                <div class="table-card-header">
-                    <h5><i class="bi bi-list-ul me-2 text-primary"></i>Holidays List</h5>
-                    <span class="record-count" id="recordCount">Loading�</span>
+                <div class="table-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h5 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>Holidays List</h5>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <label for="holidaysItemsPerPageSelect" class="form-label mb-0" style="white-space:nowrap;">Items per page:</label>
+                        <select id="holidaysItemsPerPageSelect" class="form-select form-select-sm" style="width:auto;" onchange="holidaysChangeItemsPerPage()">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15" selected>15</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table id="holidaysTable" class="table table-hover mb-0">
@@ -108,7 +130,7 @@
                                 <th width="55">#</th>
                                 <th>Holiday Name</th>
                                 <th width="140">Date</th>
-                                <th>Description</th>
+                                <th width="100">Description</th>
                                 <th width="100">Status</th>
                                 <th width="100" class="text-center">Actions</th>
                             </tr>
@@ -117,11 +139,28 @@
                             <tr>
                                 <td colspan="6" class="text-center py-4">
                                     <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                                    Loading holidays�
+                                    Loading holidays?
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="table-pagination" id="holidaysPaginationContainer" style="display:none; padding: 1rem; border-top: 1px solid #dee2e6; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <small class="text-muted">
+                            Showing page <strong id="holidaysCurrentPageInfo">1</strong> of <strong id="holidaysTotalPagesInfo">1</strong>
+                        </small>
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination mb-0" id="holidaysPaginationList">
+                            <li class="page-item" id="holidaysPrevPageItem">
+                                <button class="page-link" onclick="holidaysPreviousPage()"><i class="bi bi-chevron-left"></i> Previous</button>
+                            </li>
+                            <li class="page-item" id="holidaysNextPageItem">
+                                <button class="page-link" onclick="holidaysNextPage()">Next <i class="bi bi-chevron-right"></i></button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -193,10 +232,7 @@
             initHolidays();
         }
         function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                AdminAPI.logout();
-                window.location.href = 'admin-login.html';
-            }
+            showLogoutConfirmation();
         }
     </script>
 </body>

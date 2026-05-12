@@ -38,6 +38,11 @@
             padding: 4px 8px;
             font-weight: 600;
         }
+        .table-responsive .table {
+            margin: 0;
+            min-width: 970px;
+            table-layout: auto;
+        }
     </style>
 </head>
 <body>
@@ -84,11 +89,6 @@
                 <span>Quick Links</span>
             </a>
             
-            <a href="admin-emergency.html" class="menu-item">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span>Emergency Contacts</span>
-            </a>
-            
             <a href="admin-work-anniversaries.html" class="menu-item">
                 <i class="bi bi-award-fill"></i>
                 <span>Work Anniversaries</span>
@@ -101,6 +101,13 @@
 
         <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
         <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+
+            <div class="menu-section">System</div>
 
         
             <a href="admin-users.html" class="menu-item super-admin-only"><i class="bi bi-person-gear"></i><span>User Management</span></a>
@@ -212,7 +219,7 @@
                                 <th style="width:100px;">Action</th>
                                 <th style="width:130px;">Table</th>
                                 <th style="width:80px;">Record ID</th>
-                                <th>User</th>
+                                <th width="100">User</th>
                                 <th style="width:100px;">Details</th>
                             </tr>
                         </thead>
@@ -322,10 +329,7 @@
             document.getElementById('userName').textContent = user.fullName || user.username;
         }
         function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                AdminAPI.logout();
-                window.location.href = 'admin-login.html';
-            }
+            showLogoutConfirmation();
         }
     </script>
 </body>

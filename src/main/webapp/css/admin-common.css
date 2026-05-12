@@ -16,7 +16,7 @@ body {
     width: 260px;
     background: linear-gradient(180deg, #003C71 0%, #00629B 100%);
     padding: 0;
-    z-index: 1000;
+    z-index: 1100;
     overflow-y: auto;
     scrollbar-gutter: stable;
     transition: all 0.3s ease;
@@ -104,6 +104,24 @@ body {
     margin-top: 1rem;
 }
 
+.sidebar-toggle-btn {
+    display: none;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1f2937;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    z-index: 1102;
+}
+
+.sidebar-backdrop {
+    display: none;
+}
+
 /* Main Content */
 .main-content {
     margin-left: 260px;
@@ -124,7 +142,7 @@ body {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 999;
+    z-index: 1101;
     box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 
@@ -248,11 +266,11 @@ body {
 }
 
 .table thead th {
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.5px;
-    color: #6c757d;
+    color: #000 !important;
     border-bottom: 2px solid #dee2e6;
     white-space: nowrap;
     padding: 0.5rem 0.75rem;
@@ -286,6 +304,14 @@ body {
 }
 
 /* Modals - IEEE Theme */
+.modal {
+    z-index: 2000;
+}
+
+.modal-backdrop {
+    z-index: 1990;
+}
+
 .modal-header {
     background: #00629B;
     color: white;
@@ -317,12 +343,85 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
-        width: 0;
+        width: 260px;
+        transform: translateX(-100%);
+        overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+        z-index: 1101;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-toggle-btn {
+        display: inline-flex;
+    }
+
+    /* When toggle is placed inside the header, position it to the left of the title */
+    .content-header .sidebar-toggle-btn {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        z-index: 1102;
+    }
+
+    /* When the toggle is placed above the header, add extra top padding so the
+       header content (title) is not overlapped by the fixed toggle. */
+    .content-header.has-toggle-above {
+        padding-top: 3.5rem;
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 1100;
+    }
+
+    .sidebar-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .menu-section.collapsible {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .menu-section.collapsible::after {
+        content: '\25BE';
+        font-size: 0.72rem;
+        opacity: 0.85;
+        transition: transform 0.2s ease;
+    }
+
+    .menu-section.collapsible.collapsed::after {
+        transform: rotate(-90deg);
+    }
+
+    .menu-section-items {
         overflow: hidden;
+        max-height: 2200px;
+        transition: max-height 0.25s ease;
+    }
+
+    .menu-section-items.collapsed {
+        max-height: 0;
     }
 
     .main-content {
         margin-left: 0;
+        padding-top: 3.75rem;
     }
 
     .content-header {
@@ -377,17 +476,23 @@ body {
 .table-card-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
+    gap: 0.75rem 1rem;
     background: #fafbfc;
 }
 
 .table-card-header h5 {
     margin: 0;
-    font-weight: 600;
-    color: #2c3e50;
+    font-weight: 700;
+    color: #000 !important;
     font-size: 1rem;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.3;
 }
 
 .table-card-header .record-count {
@@ -397,6 +502,7 @@ body {
     padding: 0.2rem 0.6rem;
     border-radius: 20px;
     font-weight: 500;
+    justify-self: end;
 }
 
 /* ── Table inside table-card ── */

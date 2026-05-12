@@ -47,8 +47,8 @@ async function loadSuggestions(statusFilter) {
         setEl('statImplemented', s.implemented || 0);
         setEl('statDismissed',   s.dismissed   || 0);
 
-        // Active filter button
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        // Active filter tab
+        document.querySelectorAll('.suggestion-tab').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
 
@@ -147,7 +147,7 @@ async function deleteSuggestion(id) {
     const s = suggestionsData.find(x => x.id === id);
     if (!s) return;
     const name = s.isAnonymous ? 'Anonymous' : (s.submitterName || 'Unknown');
-    if (!confirm(`Delete suggestion from "${name}"?\n\nThis cannot be undone.`)) return;
+    if (!(await confirmAction(`Delete suggestion from "${name}"?\n\nThis cannot be undone.`, { title: 'Delete Suggestion' }))) return;
 
     try {
         await AdminAPI.fetch(`/admin/suggestions/${id}`, { method: 'DELETE' });

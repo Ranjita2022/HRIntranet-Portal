@@ -8,6 +8,44 @@
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="css/admin-common.css">
+    <style>
+        /* Keep table rows on single line */
+        #adminUsersTable tbody tr {
+            white-space: nowrap;
+        }
+        
+        #adminUsersTable tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+        
+        /* Actions cell - keep buttons inline without wrapping */
+        #adminUsersTable td:last-child {
+            white-space: normal;
+        }
+        
+        #adminUsersTable td:last-child .d-flex {
+            flex-wrap: nowrap;
+            gap: 0.25rem;
+        }
+        
+        #adminUsersTable .btn-sm {
+            padding: 0.35rem 0.55rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Responsive table for horizontal scroll */
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-gutter: stable;
+        }
+        
+        #adminUsersTable {
+            min-width: 1100px;
+            table-layout: auto;
+        }
+    </style>
 </head>
 <body>
     <!-- Sidebar -->
@@ -26,11 +64,11 @@
             <a href="admin-carousel.html" class="menu-item"><i class="bi bi-images"></i><span>Carousel Slides</span></a>
             <a href="admin-gallery.html" class="menu-item"><i class="bi bi-folder2-open"></i><span>Gallery</span></a>
             <a href="admin-quick-links.html" class="menu-item"><i class="bi bi-link-45deg"></i><span>Quick Links</span></a>
-            <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
             <a href="admin-work-anniversaries.html" class="menu-item"><i class="bi bi-award-fill"></i><span>Work Anniversaries</span></a>
             <a href="admin-open-positions.html" class="menu-item"><i class="bi bi-briefcase-fill"></i><span>Open Positions</span></a>
             <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
             <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+            <a href="admin-emergency.html" class="menu-item"><i class="bi bi-exclamation-triangle-fill"></i><span>Emergency Contacts</span></a>
             <div class="menu-section">System</div>
             <a href="admin-users.html" class="menu-item active"><i class="bi bi-person-gear"></i><span>User Management</span></a>
             <a href="admin-audit.html" class="menu-item admin-only"><i class="bi bi-journal-text"></i><span>Audit Logs</span></a>
@@ -263,10 +301,7 @@
             initAdminUsers();
         }
         function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                AdminAPI.logout();
-                window.location.href = 'admin-login.html';
-            }
+            showLogoutConfirmation();
         }
     </script>
 </body>

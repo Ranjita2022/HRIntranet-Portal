@@ -37,8 +37,19 @@ const AdminAPI = {
             });
             
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(error || 'Login failed');
+                const errorText = await response.text();
+                let errorMessage = 'Login failed';
+                
+                // Try to parse as JSON and extract error message
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.message || 'Invalid username or password';
+                } catch {
+                    // If not JSON, use the text as-is (but only if it looks like a message)
+                    errorMessage = errorText && errorText.length < 200 ? errorText : 'Invalid username or password';
+                }
+                
+                throw new Error(errorMessage);
             }
             
             const data = await response.json();
@@ -149,8 +160,19 @@ const AdminAPI = {
 
             if (!response.ok) {
                 const errorText = await response.text();
-                const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
-                throw new Error(cleanError.substring(0, 200) || `HTTP ${response.status}`);
+                let errorMessage = `HTTP ${response.status}`;
+                
+                // Try to parse as JSON and extract error message
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.message || `HTTP ${response.status}`;
+                } catch {
+                    // If not JSON, strip HTML tags and use the text
+                    const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
+                    errorMessage = cleanError.substring(0, 200) || `HTTP ${response.status}`;
+                }
+                
+                throw new Error(errorMessage);
             }
             
             // Return response for various content types
@@ -205,8 +227,19 @@ const AdminAPI = {
             
             if (!response.ok) {
                 const errorText = await response.text();
-                const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
-                throw new Error(cleanError.substring(0, 200) || `HTTP ${response.status}`);
+                let errorMessage = `HTTP ${response.status}`;
+                
+                // Try to parse as JSON and extract error message
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.message || `HTTP ${response.status}`;
+                } catch {
+                    // If not JSON, strip HTML tags and use the text
+                    const cleanError = errorText.replace(/<[^>]*>/g, '').trim();
+                    errorMessage = cleanError.substring(0, 200) || `HTTP ${response.status}`;
+                }
+                
+                throw new Error(errorMessage);
             }
             
             // Return response for various content types
@@ -225,6 +258,10 @@ const AdminAPI = {
     employees: {
         async getAll() {
             return AdminAPI.fetch('/admin/employees');
+        },
+        
+        async getDepartments() {
+            return AdminAPI.fetch('/admin/employees/departments');
         },
         
         async getById(id) {
@@ -258,6 +295,12 @@ const AdminAPI = {
             return AdminAPI.fetch(`/admin/employees/${id}/upload-photo`, {
                 method: 'POST',
                 body: formData
+            });
+        },
+        
+        async deletePhoto(id) {
+            return AdminAPI.fetch(`/admin/employees/${id}/photo`, {
+                method: 'DELETE'
             });
         }
     },
@@ -576,8 +619,98 @@ function createToastContainer() {
 /**
  * Show confirmation dialog
  */
-function confirmAction(message) {
-    return confirm(message);
+function confirmAction(message, options = {}) {
+    const modalId = 'adminConfirmActionModal';
+    let modalElement = document.getElementById(modalId);
+
+    if (!modalElement) {
+        const modalHTML = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" style="display: none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title d-flex align-items-center gap-2" id="adminConfirmActionTitle">
+                                <i class="bi bi-exclamation-circle text-warning" style="font-size: 1.5rem;"></i>
+                                Confirm Action
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0" id="adminConfirmActionMessage"></p>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="adminConfirmActionCancelBtn">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </button>
+                            <button type="button" class="btn btn-danger" id="adminConfirmActionOkBtn">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalHTML;
+        modalElement = tempDiv.firstElementChild;
+        document.body.appendChild(modalElement);
+    }
+
+    const titleEl = modalElement.querySelector('#adminConfirmActionTitle');
+    const messageEl = modalElement.querySelector('#adminConfirmActionMessage');
+    const okBtn = modalElement.querySelector('#adminConfirmActionOkBtn');
+    const cancelBtn = modalElement.querySelector('#adminConfirmActionCancelBtn');
+
+    const title = options.title || 'Confirm Action';
+    const confirmText = options.confirmText || 'Delete';
+    const confirmIcon = options.confirmIcon || 'trash';
+
+    titleEl.innerHTML = `<i class="bi bi-exclamation-circle text-warning" style="font-size: 1.5rem;"></i><span></span>`;
+    titleEl.querySelector('span').textContent = title;
+    messageEl.textContent = message;
+    okBtn.innerHTML = `<i class="bi bi-${confirmIcon} me-1"></i> <span></span>`;
+    okBtn.querySelector('span').textContent = confirmText;
+
+    return new Promise((resolve) => {
+        let settled = false;
+
+        const cleanup = () => {
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            modalElement.removeEventListener('hidden.bs.modal', handleHidden);
+        };
+
+        const finish = (result) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            cleanup();
+            resolve(result);
+        };
+
+        const handleHidden = () => {
+            if (!settled) {
+                finish(false);
+            }
+        };
+
+        okBtn.onclick = () => {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
+            finish(true);
+        };
+
+        cancelBtn.onclick = () => {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
+            finish(false);
+        };
+
+        modalElement.addEventListener('hidden.bs.modal', handleHidden, { once: true });
+        bootstrap.Modal.getOrCreateInstance(modalElement).show();
+    });
 }
 
 /**
@@ -707,6 +840,63 @@ function revealActiveSidebarItem() {
 }
 
 /**
+ * Show user-friendly logout confirmation dialog
+ */
+function showLogoutConfirmation() {
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal fade" id="logoutConfirmationModal" tabindex="-1" style="display: none;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-circle text-warning" style="font-size: 1.5rem;"></i>
+                            Confirm Logout
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">
+                            <i class="bi bi-info-circle text-primary"></i>
+                            Are you sure you want to logout? You will need to login again to access the admin panel.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" id="confirmLogoutBtn">
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Check if modal already exists
+    let modalElement = document.getElementById('logoutConfirmationModal');
+    if (!modalElement) {
+        // Create modal element
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalHTML;
+        modalElement = tempDiv.firstElementChild;
+        document.body.appendChild(modalElement);
+    }
+    
+    // Set up logout button click handler
+    const confirmBtn = modalElement.querySelector('#confirmLogoutBtn');
+    confirmBtn.onclick = () => {
+        AdminAPI.logout();
+        window.location.href = 'admin-login.html';
+    };
+    
+    // Show modal
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+/**
  * Activate sidebar menu item based on current page URL.
  * Runs automatically on every admin page — no need to hardcode active class.
  */
@@ -746,6 +936,169 @@ function activateCurrentMenu() {
     }
 }
 
+/**
+ * Mobile sidebar toggle with backdrop.
+ */
+function setupMobileSidebarToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+        return;
+    }
+
+    let toggleBtn = document.getElementById('sidebarToggleBtn');
+    if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.id = 'sidebarToggleBtn';
+        toggleBtn.className = 'sidebar-toggle-btn';
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('aria-label', 'Toggle Sidebar');
+        toggleBtn.setAttribute('title', 'Menu');
+        toggleBtn.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i>';
+        // If a page header exists, place the toggle inside the header so it does
+        // not float above and hide the page title when scrolling.
+        const header = document.querySelector('.content-header');
+        if (header) {
+            // Place the toggle *above* the header so it doesn't overlap the title.
+            toggleBtn.setAttribute('data-in-header', 'above');
+            toggleBtn.style.position = 'fixed';
+            toggleBtn.style.left = '0.75rem';
+            toggleBtn.style.top = '0.6rem';
+            toggleBtn.style.transform = '';
+            toggleBtn.style.zIndex = '1200';
+            // Insert before header to ensure logical order and enable header padding adjustment
+            header.parentNode.insertBefore(toggleBtn, header);
+            header.classList.add('has-toggle-above');
+        } else {
+            document.body.appendChild(toggleBtn);
+        }
+    }
+
+    let backdrop = document.getElementById('sidebarBackdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'sidebarBackdrop';
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+    const closeSidebar = () => {
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.remove('active');
+        // Show toggle button again when sidebar is closed
+        if (toggleBtn) {
+            toggleBtn.style.display = '';
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+    };
+
+    const openSidebar = () => {
+        sidebar.classList.add('mobile-open');
+        backdrop.classList.add('active');
+        // Hide the toggle while sidebar is open to avoid covering content
+        if (toggleBtn) {
+            toggleBtn.style.display = 'none';
+            toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+    };
+
+    toggleBtn.onclick = () => {
+        if (!isMobile()) {
+            return;
+        }
+        if (sidebar.classList.contains('mobile-open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    };
+
+    backdrop.onclick = closeSidebar;
+
+    sidebar.addEventListener('click', (event) => {
+        const clickedMenuItem = event.target.closest('.menu-item');
+        if (clickedMenuItem && isMobile()) {
+            closeSidebar();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            closeSidebar();
+        }
+    });
+}
+
+/**
+ * Allow collapsing sidebar sections on smaller screens.
+ */
+function setupSidebarCollapsibleSections() {
+    const sidebarMenu = document.querySelector('.sidebar-menu');
+    if (!sidebarMenu) {
+        return;
+    }
+
+    if (sidebarMenu.dataset.sectionized === 'true') {
+        return;
+    }
+
+    const children = Array.from(sidebarMenu.children);
+    let currentWrapper = null;
+
+    children.forEach((child) => {
+        if (child.classList.contains('menu-section')) {
+            child.classList.add('collapsible');
+            child.setAttribute('role', 'button');
+            child.setAttribute('tabindex', '0');
+
+            currentWrapper = document.createElement('div');
+            currentWrapper.className = 'menu-section-items';
+            child.insertAdjacentElement('afterend', currentWrapper);
+            return;
+        }
+
+        if (currentWrapper && child.classList.contains('menu-item')) {
+            currentWrapper.appendChild(child);
+        }
+    });
+
+    const sections = sidebarMenu.querySelectorAll('.menu-section.collapsible');
+    sections.forEach((section) => {
+        const wrapper = section.nextElementSibling;
+        if (!wrapper || !wrapper.classList.contains('menu-section-items')) {
+            return;
+        }
+
+        const sectionKey = `adminSidebarSection:${section.textContent.trim()}`;
+        const savedState = sessionStorage.getItem(sectionKey);
+
+        const hasActiveItem = Boolean(wrapper.querySelector('.menu-item.active'));
+        const shouldCollapse = savedState === 'collapsed' && !hasActiveItem;
+
+        if (shouldCollapse) {
+            section.classList.add('collapsed');
+            wrapper.classList.add('collapsed');
+        }
+
+        const toggleSection = () => {
+            const isCollapsed = section.classList.toggle('collapsed');
+            wrapper.classList.toggle('collapsed', isCollapsed);
+            sessionStorage.setItem(sectionKey, isCollapsed ? 'collapsed' : 'expanded');
+        };
+
+        section.addEventListener('click', toggleSection);
+        section.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleSection();
+            }
+        });
+    });
+
+    sidebarMenu.dataset.sectionized = 'true';
+}
+
 // Initialize API on load
 AdminAPI.init();
 
@@ -753,6 +1106,8 @@ AdminAPI.init();
 document.addEventListener('DOMContentLoaded', restoreSidebarScrollPosition);
 document.addEventListener('DOMContentLoaded', activateCurrentMenu);
 document.addEventListener('DOMContentLoaded', revealActiveSidebarItem);
+document.addEventListener('DOMContentLoaded', setupMobileSidebarToggle);
+document.addEventListener('DOMContentLoaded', setupSidebarCollapsibleSections);
 document.addEventListener('DOMContentLoaded', function() {
     // Hide role-restricted menu items based on user role
     const role = localStorage.getItem('admin_role');
@@ -773,6 +1128,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.AdminAPI = AdminAPI;
 window.showToast = showToast;
 window.confirmAction = confirmAction;
+window.showLogoutConfirmation = showLogoutConfirmation;
 window.formatDate = formatDate;
 window.formatDateTime = formatDateTime;
 window.showLoading = showLoading;
@@ -782,3 +1138,5 @@ window.previewImage = previewImage;
 window.restoreSidebarScrollPosition = restoreSidebarScrollPosition;
 window.revealActiveSidebarItem = revealActiveSidebarItem;
 window.activateCurrentMenu = activateCurrentMenu;
+window.setupMobileSidebarToggle = setupMobileSidebarToggle;
+window.setupSidebarCollapsibleSections = setupSidebarCollapsibleSections;

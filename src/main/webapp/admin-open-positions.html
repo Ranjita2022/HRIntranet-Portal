@@ -20,10 +20,10 @@
             font-weight: 600;
             text-decoration: none;
             display: block;
-            max-width: 320px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            line-height: 1.3;
         }
         .requisition-title:hover {
             text-decoration: underline;
@@ -46,7 +46,28 @@
             font-size: 0.875rem;
             white-space: nowrap;
         }
-        #positionsTable th, #positionsTable td {
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-gutter: stable;
+        }
+
+        #positionsTable {
+            margin: 0;
+            width: 100%;
+            min-width: 900px;
+            table-layout: auto;
+        }
+
+        #positionsTable th:nth-child(2),
+        #positionsTable td:nth-child(2) {
+            width: 35%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        #positionsTable td {
             vertical-align: middle;
             padding: 0.5rem 0.6rem;
             font-size: 0.875rem;
@@ -159,11 +180,6 @@
                 <span>Quick Links</span>
             </a>
             
-            <a href="admin-emergency.html" class="menu-item">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span>Emergency Contacts</span>
-            </a>
-            
             <a href="admin-work-anniversaries.html" class="menu-item">
                 <i class="bi bi-award-fill"></i>
                 <span>Work Anniversaries</span>
@@ -176,6 +192,13 @@
 
         <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
         <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+
+            <a href="admin-emergency.html" class="menu-item">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Emergency Contacts</span>
+            </a>
+
+            <div class="menu-section">System</div>
 
         
             <a href="admin-users.html" class="menu-item super-admin-only"><i class="bi bi-person-gear"></i><span>User Management</span></a>
@@ -237,15 +260,12 @@
             <!-- Filter Section -->
             <div class="filter-group">
                 <label for="statusFilter">Filter by Status:</label>
-                <select id="statusFilter" class="form-select" style="width: 150px;">
+                <select id="statusFilter" class="form-select" style="width: 150px;" onchange="onStatusFilterChange()">
                     <option value="">All Positions</option>
                     <option value="OPEN">Open</option>
                     <option value="CLOSED">Closed</option>
                     <option value="ON_HOLD">On Hold</option>
                 </select>
-                <button class="btn btn-secondary btn-sm" onclick="loadPositions()">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh
-                </button>
                 <button class="btn btn-secondary btn-sm" onclick="exportToCSV()">
                     <i class="bi bi-download"></i> Export CSV
                 </button>
@@ -269,7 +289,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width:36px">#</th>
-                                <th>Requisition Title</th>
+                                <th width="100">Requisition Title</th>
                                 <th style="width:170px">Location</th>
                                 <th style="width:105px">Posting Date</th>
                                 <th style="width:85px">Status</th>

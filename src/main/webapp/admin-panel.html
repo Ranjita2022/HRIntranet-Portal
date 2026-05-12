@@ -14,13 +14,13 @@
             background: #00629B;
             color: white;
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
             box-shadow: 0 2px 8px rgba(0,98,155,0.2);
         }
 
         .stat-card h3 {
-            font-size: 2rem;
+            font-size: 1.5rem;
             margin: 0;
             font-weight: 700;
             color: #ffffff;
@@ -29,16 +29,16 @@
         }
 
         .stat-card p {
-            margin: 0.4rem 0 0 0;
+            margin: 0.3rem 0 0 0;
             opacity: 1;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: 0.2px;
         }
 
         .stat-card i {
-            font-size: 2rem;
+            font-size: 1.5rem;
             opacity: 0.8;
         }
 
@@ -107,7 +107,7 @@
                 <span>Open Positions</span>
             </a>
             <a href="admin-shoutouts.html" class="menu-item"><i class="bi bi-chat-heart-fill"></i><span>Shoutouts</span></a>
-        <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
+            <a href="admin-suggestions.html" class="menu-item"><i class="bi bi-lightbulb-fill"></i><span>Suggestions</span></a>
 
             <a href="admin-emergency.html" class="menu-item">
                 <i class="bi bi-exclamation-triangle-fill"></i>
@@ -459,12 +459,12 @@
     <script>
         // Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('?? DOM loaded, initializing admin panel...');
+            console.log(' DOM loaded, initializing admin panel...');
             
             // Initialize AdminAPI
             AdminAPI.init();
             
-            console.log('?? Checking authentication...');
+            console.log(' Checking authentication...');
             console.log('Token from localStorage:', localStorage.getItem('admin_jwt_token'));
             console.log('AdminAPI.token:', AdminAPI.token);
             console.log('isAuthenticated:', AdminAPI.isAuthenticated());
@@ -696,17 +696,17 @@
                 const statsHtml = `
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong><i class="bi bi-people-fill text-primary"></i> Active Employees:</strong> ${employees.filter(e => e.status === 'ACTIVE').length} / ${employees.length}</p>
-                            <p><strong><i class="bi bi-star-fill text-warning"></i> New Joiners (This Month):</strong> ${newJoinersThisMonth}</p>
-                            <p><strong><i class="bi bi-megaphone-fill text-info"></i> Active Announcements:</strong> ${activeAnnouncements} / ${announcements.length}</p>
-                            <p><strong><i class="bi bi-briefcase-fill text-primary"></i> Open Positions:</strong> ${openPositions} / ${positions.length}</p>
-                            <p><strong><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:</strong> ${upcomingHolidays} / ${holidays.length}</p>
+                            <p><i class="bi bi-people-fill text-primary">  </i>  Active Employees: <strong>${employees.filter(e => e.status === 'ACTIVE').length} / ${employees.length}</strong></p>
+                            <p><i class="bi bi-star-fill text-warning"></i> New Joiners (This Month):<strong> ${newJoinersThisMonth}</strong></p>
+                            <p><i class="bi bi-megaphone-fill text-info"></i> Active Announcements:<strong> ${activeAnnouncements} / ${announcements.length}</strong></p>
+                            <p><i class="bi bi-briefcase-fill text-primary"></i> Open Positions:<strong> ${openPositions} / ${positions.length}</strong></p>
+                            <p><i class="bi bi-calendar-event-fill text-success"></i> Upcoming Holidays:<strong> ${upcomingHolidays} / ${holidays.length}</strong></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong><i class="bi bi-images text-purple"></i> Carousel Slides:</strong> ${activeCarouselSlides} / ${carousel.length}</p>
-                            <p><strong><i class="bi bi-link-45deg text-primary"></i> Quick Links:</strong> ${activeQuickLinks} / ${quickLinks.length}</p>
-                            <p><strong><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Contacts:</strong> ${emergencyContactsCount} / ${emergencyContacts.length}</p>
-                            <p><strong><i class="bi bi-folder2-open text-secondary"></i> Gallery Images:</strong> ${totalGalleryImages} in ${galleryFolders.length} folders</p>
+                            <p><i class="bi bi-images text-purple"></i> Carousel Slides:<strong> ${activeCarouselSlides} / ${carousel.length}</strong></p>
+                            <p><i class="bi bi-link-45deg text-primary"></i> Quick Links:<strong> ${activeQuickLinks} / ${quickLinks.length}</strong></p>
+                            <p><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Contacts:<strong> ${emergencyContactsCount} / ${emergencyContacts.length}</strong></p>
+                            <p><i class="bi bi-folder2-open text-secondary"></i> Gallery Images:<strong> ${totalGalleryImages} in ${galleryFolders.length} folders</strong></p>
                         </div>
                     </div>
                 `;
@@ -785,7 +785,7 @@
                                     <tr>
                                         <th width="100">Action</th>
                                         <th width="120">User</th>
-                                        <th>Resource</th>
+                                        <th width="200">Resource</th>
                                         <th width="150">Time</th>
                                     </tr>
                                 </thead>
@@ -826,10 +826,7 @@
         }
         
         function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                AdminAPI.logout();
-                window.location.href = 'admin-login.html';
-            }
+            showLogoutConfirmation();
         }
     </script>
 </body>

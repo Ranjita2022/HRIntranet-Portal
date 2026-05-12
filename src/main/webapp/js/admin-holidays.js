@@ -6,6 +6,10 @@
 let holidaysData = [];
 let editingHolidayId = null;
 
+// Pagination variables
+let holidaysCurrentPage = 1;
+let holidaysItemsPerPage = 15;
+
 /**
  * Initialize holidays section
  */
@@ -48,6 +52,7 @@ function renderHolidaysTable() {
         if (emptyState) emptyState.style.display = 'block';
         if (tableCard)  tableCard.style.display  = 'none';
         updateHolidayStats([], [], []);
+        updateHolidaysPaginationControls(0);
         return;
     }
 
@@ -67,12 +72,22 @@ function renderHolidaysTable() {
     // Sort by date (ascending — upcoming first)
     const sorted = [...holidaysData].sort((a, b) => new Date(a.holidayDate) - new Date(b.holidayDate));
 
-    tbody.innerHTML = sorted.map((holiday, index) => {
+    // Calculate pagination
+    const totalPages = Math.ceil(sorted.length / holidaysItemsPerPage);
+    if (holidaysCurrentPage > totalPages) {
+        holidaysCurrentPage = Math.max(1, totalPages);
+    }
+
+    const startIndex = (holidaysCurrentPage - 1) * holidaysItemsPerPage;
+    const pageHolidays = sorted.slice(startIndex, startIndex + holidaysItemsPerPage);
+
+    tbody.innerHTML = pageHolidays.map((holiday, index) => {
+        const rowNumber = startIndex + index + 1;
         const date    = formatDate(holiday.holidayDate);
         const isPast  = new Date(holiday.holidayDate) < now;
-        const statusBadge  = holiday.isActive
-            ? '<span class="badge bg-success">Active</span>'
-            : '<span class="badge bg-secondary">Inactive</span>';
+        const statusBadge  = isPast || !holiday.isActive
+            ? '<span class="badge bg-secondary">Inactive</span>'
+            : '<span class="badge bg-success">Active</span>';
         const timingBadge  = isPast
             ? '<span class="badge bg-secondary ms-1">Past</span>'
             : '<span class="badge bg-primary ms-1">Upcoming</span>';
@@ -82,7 +97,7 @@ function renderHolidaysTable() {
 
         return `
             <tr>
-                <td class="text-muted">${index + 1}</td>
+                <td class="text-muted">${rowNumber}</td>
                 <td><span class="holiday-name">${escapeHtml(holiday.title)}</span></td>
                 <td class="date-cell">${date}</td>
                 <td class="text-muted small" title="${holiday.description ? escapeHtml(holiday.description) : ''}">${descText}</td>
@@ -100,6 +115,8 @@ function renderHolidaysTable() {
             </tr>
         `;
     }).join('');
+
+    updateHolidaysPaginationControls(totalPages);
 }
 
 function updateHolidayStats(active, upcoming, past) {
@@ -207,7 +224,7 @@ async function deleteHoliday(id) {
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete the holiday "${holiday.title}"?`)) {
+    if (!(await confirmAction(`Are you sure you want to delete the holiday "${holiday.title}"?`, { title: 'Delete Holiday' }))) {
         return;
     }
     
@@ -310,4 +327,55 @@ function showToast(message, type = 'info') {
     toastElement.addEventListener('hidden.bs.toast', () => {
         toastElement.remove();
     });
+}
+
+/**
+ * Holidays Pagination Functions
+ */
+function holidaysChangeItemsPerPage() {
+    const select = document.getElementById('holidaysItemsPerPageSelect');
+    holidaysItemsPerPage = parseInt(select.value);
+    holidaysCurrentPage = 1;
+    renderHolidaysTable();
+}
+
+function holidaysNextPage() {
+    const totalPages = Math.ceil(holidaysData.length / holidaysItemsPerPage);
+    if (holidaysCurrentPage < totalPages) {
+        holidaysCurrentPage++;
+        renderHolidaysTable();
+    }
+}
+
+function holidaysPreviousPage() {
+    if (holidaysCurrentPage > 1) {
+        holidaysCurrentPage--;
+        renderHolidaysTable();
+    }
+}
+
+function updateHolidaysPaginationControls(totalPages) {
+    const paginationContainer = document.getElementById('holidaysPaginationContainer');
+    const currentPageInfo = document.getElementById('holidaysCurrentPageInfo');
+    const totalPagesInfo = document.getElementById('holidaysTotalPagesInfo');
+    const prevPageItem = document.getElementById('holidaysPrevPageItem');
+    const nextPageItem = document.getElementById('holidaysNextPageItem');
+
+    if (holidaysData.length <= holidaysItemsPerPage) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+
+    paginationContainer.style.display = 'flex';
+    
+    if (currentPageInfo) currentPageInfo.textContent = holidaysCurrentPage;
+    if (totalPagesInfo) totalPagesInfo.textContent = totalPages;
+
+    if (prevPageItem) {
+        prevPageItem.classList.toggle('disabled', holidaysCurrentPage <= 1);
+    }
+
+    if (nextPageItem) {
+        nextPageItem.classList.toggle('disabled', holidaysCurrentPage >= totalPages);
+    }
 }

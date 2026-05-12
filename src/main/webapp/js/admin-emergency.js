@@ -270,7 +270,7 @@ function editEmergencyContact(id) {
 
 // Delete emergency contact
 async function deleteEmergencyContact(id) {
-    if (!confirm('Are you sure you want to delete this emergency contact?')) {
+    if (!(await confirmAction('Are you sure you want to delete this emergency contact?', { title: 'Delete Emergency Contact' }))) {
         return;
     }
     

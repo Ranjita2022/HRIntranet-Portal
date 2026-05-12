@@ -429,14 +429,17 @@
                 .then(function(html) {
                     document.getElementById('sidebar-container').innerHTML = html;
                     setActivePage('gallery');
+                    // Initialize sidebar behaviors on the injected markup
+                    if (typeof setupMobileSidebarToggle === 'function') setupMobileSidebarToggle();
+                    if (typeof setupSidebarCollapsibleSections === 'function') setupSidebarCollapsibleSections();
+                    if (typeof activateCurrentMenu === 'function') activateCurrentMenu();
+                    if (typeof restoreSidebarScrollPosition === 'function') restoreSidebarScrollPosition();
+                    if (typeof revealActiveSidebarItem === 'function') revealActiveSidebarItem();
                 });
         }
 
         function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                AdminAPI.logout();
-                window.location.href = 'admin-login.html';
-            }
+            showLogoutConfirmation();
         }
     </script>
 </body>

@@ -69,12 +69,12 @@ function renderCarouselTable() {
                     ? `<img src="${escapeHtml(getCarouselImageUrl(slide))}" alt="Preview" class="slide-thumb">`
                     : '<span class="slide-thumb-placeholder"><i class="bi bi-image"></i></span>'}
             </td>
-            <td style="max-width:0">
+            <td>
                 <span class="slide-title-cell d-block" title="${escapeHtml(slide.title || '')}">
                     ${escapeHtml(slide.title || '—')}
                 </span>
             </td>
-            <td style="max-width:0">
+            <td>
                 <span class="slide-subtitle-cell d-block" title="${escapeHtml(slide.subtitle || '')}">
                     ${escapeHtml(slide.subtitle || '—')}
                 </span>
@@ -221,7 +221,7 @@ function editCarouselSlide(id) {
 
 // Delete carousel slide
 async function deleteCarouselSlide(id) {
-    if (!confirm('Are you sure you want to delete this carousel slide?')) {
+    if (!(await confirmAction('Are you sure you want to delete this carousel slide?', { title: 'Delete Carousel Slide' }))) {
         return;
     }
     
