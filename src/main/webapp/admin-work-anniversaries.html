@@ -75,6 +75,11 @@
         .anniversary-employee-cell {
             min-width: 220px;
         }
+        .anniversary-view-switch .btn-check:checked + .btn {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
          .table th:nth-child(3),
         .table td:nth-child(3) {
             white-space: normal !important;
@@ -221,6 +226,18 @@
 
             <!-- Filter Section -->
             <div class="filter-group">
+                <div style="display:flex; gap:0.75rem; align-items:center; flex:1; min-width:320px;">
+                    <div style="flex:1;">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="anniversarySearchInput" class="form-control" placeholder="Search by name, position...">
+                            <button class="btn btn-outline-secondary" type="button" id="anniversarySearchClearBtn" onclick="clearAnniversarySearch()" style="display:none;">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <label for="experienceFilter">Filter by Experience:</label>
                 <select id="experienceFilter" class="form-select" style="width: 180px;">
                     <option value="">All Experience</option>
@@ -230,19 +247,26 @@
                 </button>
             </div>
 
-            <!-- View Tabs -->
-            <ul class="nav nav-tabs mb-4" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="allTab" data-bs-toggle="tab" data-bs-target="#allView" type="button" role="tab">
-                        <i class="bi bi-list"></i> All Anniversaries
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="currentTab" data-bs-toggle="tab" data-bs-target="#currentView" type="button" role="tab">
-                        <i class="bi bi-calendar3"></i> This Month
-                    </button>
-                </li>
-            </ul>
+            <!-- View switch + shared pagination size -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div class="btn-group anniversary-view-switch" role="group" aria-label="Anniversary view switch">
+                    <input type="radio" class="btn-check" name="anniversaryView" id="allViewBtn" autocomplete="off" checked onchange="switchAnniversaryView('allView')">
+                    <label class="btn btn-outline-primary" for="allViewBtn"><i class="bi bi-list"></i> All Anniversaries</label>
+
+                    <input type="radio" class="btn-check" name="anniversaryView" id="currentViewBtn" autocomplete="off" onchange="switchAnniversaryView('currentView')">
+                    <label class="btn btn-outline-primary" for="currentViewBtn"><i class="bi bi-calendar3"></i> This Month</label>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <label for="anniversaryItemsPerPageSelect" class="form-label mb-0" style="white-space:nowrap; font-weight:600;">Items per page:</label>
+                    <select id="anniversaryItemsPerPageSelect" class="form-select form-select-sm" style="width:auto;" onchange="changeAnniversaryItemsPerPage()">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
 
             <!-- Tab Content -->
             <div class="tab-content">
@@ -257,18 +281,6 @@
 
                     <!-- Anniversaries Table Card -->
                     <div class="table-card">
-                        <div class="table-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h5 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>All Anniversaries</h5>
-                            <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <label for="allViewItemsPerPageSelect" class="form-label mb-0" style="white-space:nowrap;">Items per page:</label>
-                                <select id="allViewItemsPerPageSelect" class="form-select form-select-sm" style="width:auto;" onchange="allViewChangeItemsPerPage()">
-                                    <option value="10">10</option>
-                                    <option value="25" selected>25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
-                        </div>
                         <div class="table-responsive">
                             <table id="anniversariesTable" class="table table-hover mb-0">
                                 <thead class="table-light">
@@ -315,17 +327,6 @@
                 <!-- Current Month View -->
                 <div class="tab-pane fade" id="currentView" role="tabpanel">
                     <div class="table-card">
-                        <div class="table-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h5 class="mb-0"><i class="bi bi-calendar3 me-2 text-primary"></i>This Month's Anniversaries</h5>
-                            <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <label for="currentMonthItemsPerPageSelect" class="form-label mb-0" style="white-space:nowrap;">Items per page:</label>
-                                <select id="currentMonthItemsPerPageSelect" class="form-select form-select-sm" style="width:auto;" onchange="currentMonthChangeItemsPerPage()">
-                                    <option value="10">10</option>
-                                    <option value="25" selected>25</option>
-                                    <option value="50">50</option>
-                                </select>
-                            </div>
-                        </div>
                         <div class="table-responsive">
                             <table id="currentMonthTable" class="table table-hover mb-0">
                                 <thead class="table-light">
@@ -422,7 +423,11 @@
                 $('#userAvatar').text(userName.charAt(0).toUpperCase());
             }
 
+            // Setup filters for search and year select
+            setupAnniversaryFilters();
+
             loadAnniversaries();
+            switchAnniversaryView('allView');
         }
 
         function loadAnniversaries() {
@@ -492,21 +497,14 @@
 
             $('#emptyState').hide();
 
-            // Apply experience filter
-            const selectedExperience = $('#experienceFilter').val();
-            let filtered = allAnniversaries;
-            if (selectedExperience) {
-                filtered = allAnniversaries.filter(a => String(a.yearsOfExperience || 0) === selectedExperience);
-            }
+            // Apply filters (experience, department, search)
+            let filtered = getFilteredAnniversaries();
 
             if (filtered.length === 0) {
                 $tbody.html('<tr><td colspan="8" class="text-center">No anniversaries match the selected filter</td></tr>');
                 updateAllViewPaginationControls(0);
                 return;
             }
-
-            // Sort by anniversary date
-            filtered.sort((a, b) => new Date(a.anniversaryDate) - new Date(b.anniversaryDate));
 
             // Calculate pagination
             const totalPages = Math.ceil(filtered.length / allViewItemsPerPage);
@@ -546,20 +544,30 @@
             const $tbody = $('#currentMonthTableBody');
             $tbody.empty();
 
-            if (currentMonthAnniversaries.length === 0) {
+            // Build filtered list for current month, applying same filters
+            const filteredAll = getFilteredAnniversaries();
+            const today = new Date();
+            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            const filteredThisMonth = filteredAll.filter(item => {
+                const d = new Date(item.anniversaryDate);
+                return !Number.isNaN(d.getTime()) && d >= startOfMonth && d <= endOfMonth;
+            });
+
+            if (filteredThisMonth.length === 0) {
                 $tbody.html('<tr><td colspan="7" class="text-center text-muted">No anniversaries this month</td></tr>');
                 updateCurrentMonthPaginationControls(0);
                 return;
             }
 
             // Calculate pagination
-            const totalPages = Math.ceil(currentMonthAnniversaries.length / currentMonthItemsPerPage);
+            const totalPages = Math.ceil(filteredThisMonth.length / currentMonthItemsPerPage);
             if (currentMonthCurrentPage > totalPages) {
                 currentMonthCurrentPage = Math.max(1, totalPages);
             }
 
             const startIndex = (currentMonthCurrentPage - 1) * currentMonthItemsPerPage;
-            const pageAnniversaries = currentMonthAnniversaries.slice(startIndex, startIndex + currentMonthItemsPerPage);
+            const pageAnniversaries = filteredThisMonth.slice(startIndex, startIndex + currentMonthItemsPerPage);
 
             pageAnniversaries.forEach((anniversary, index) => {
                 const rowNumber = startIndex + index + 1;
@@ -598,6 +606,60 @@
             $select.off('change').on('change', function() {
                 displayAnniversaries();
             });
+        }
+
+        // Setup search input and department filter wiring
+        function setupAnniversaryFilters() {
+            const $search = $('#anniversarySearchInput');
+            const $clear = $('#anniversarySearchClearBtn');
+            if ($search.length) {
+                $search.on('input', function() {
+                    const q = ($search.val() || '').toString().trim();
+                    if (q) $clear.show(); else $clear.hide();
+                    allViewCurrentPage = 1;
+                    currentMonthCurrentPage = 1;
+                    displayAnniversaries();
+                    displayCurrentMonth();
+                });
+            }
+
+            if ($clear.length) {
+                $clear.on('click', clearAnniversarySearch);
+            }
+        }
+
+        function clearAnniversarySearch() {
+            const $search = $('#anniversarySearchInput');
+            if ($search.length) $search.val('');
+            $('#anniversarySearchClearBtn').hide();
+            allViewCurrentPage = 1;
+            currentMonthCurrentPage = 1;
+            displayAnniversaries();
+            displayCurrentMonth();
+        }
+
+        function switchAnniversaryView(viewId) {
+            const $allView = $('#allView');
+            const $currentView = $('#currentView');
+
+            if (viewId === 'currentView') {
+                $allView.removeClass('show active');
+                $currentView.addClass('show active');
+            } else {
+                $currentView.removeClass('show active');
+                $allView.addClass('show active');
+            }
+        }
+
+        function changeAnniversaryItemsPerPage() {
+            const select = document.getElementById('anniversaryItemsPerPageSelect');
+            const value = parseInt(select.value, 10) || 25;
+            allViewItemsPerPage = value;
+            currentMonthItemsPerPage = value;
+            allViewCurrentPage = 1;
+            currentMonthCurrentPage = 1;
+            displayAnniversaries();
+            displayCurrentMonth();
         }
 
         function updateStats() {
@@ -739,11 +801,24 @@
         }
 
         function getFilteredAnniversaries() {
-            const selectedExperience = $('#experienceFilter').val();
-            let filtered = allAnniversaries;
-            if (selectedExperience) {
-                filtered = allAnniversaries.filter(a => String(a.yearsOfExperience || 0) === selectedExperience);
-            }
+            const selectedExperience = ($('#experienceFilter').val() || '').toString();
+            const searchQuery = ($('#anniversarySearchInput').val() || '').toString().toLowerCase().trim();
+
+            let filtered = allAnniversaries.filter(a => {
+                // Year filter applies across all departments.
+                if (selectedExperience) {
+                    if (String(a.yearsOfExperience || 0) !== selectedExperience) return false;
+                }
+
+                // Search text across name, position, department
+                if (searchQuery) {
+                    const hay = ((a.employeeName || '') + ' ' + (a.position || '') + ' ' + (a.department || '')).toLowerCase();
+                    if (!hay.includes(searchQuery)) return false;
+                }
+
+                return true;
+            });
+
             return filtered.sort((a, b) => new Date(a.anniversaryDate) - new Date(b.anniversaryDate));
         }
 
