@@ -52,7 +52,6 @@ Presentation-Talking-Script.txt
 scripts/
 /scripts/
 start-app.bat
-# Ignore local utility classes created during development
-src/main/java/org/ieee/hrintranet/util/
+
 # Ensure uploads images stay ignored
 uploads/images/
