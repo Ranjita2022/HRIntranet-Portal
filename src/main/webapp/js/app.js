@@ -1134,7 +1134,7 @@ function renderAnnouncements(announcements) {
     });
 
     if (uniqueAnnouncements.length === 0) {
-        $section.hide();
+        $section.hide().addClass('no-data');
         return;
     }
 
