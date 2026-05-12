@@ -1937,7 +1937,7 @@ function updateTVHeaderClock() {
  */
 function updateTVHeaderSection(label, iconClass) {
     const fallbackIcons = {
-        'New Joiners': 'bi-person-plus-fill',
+        'Team Updates': 'bi-people-fill',
         'Upcoming Holidays': 'bi-calendar-event-fill',
         'Announcements': 'bi-megaphone-fill',
         'Open Positions': 'bi-briefcase-fill',
@@ -2062,13 +2062,13 @@ function buildAndStartContentRotation() {
 
 /**
  * Build list of content sections that actually have data.
- * Order: New Joiners → Upcoming Holidays → Announcements → Open Positions
+ * Order: Team Updates → Upcoming Holidays → Announcements → Open Positions
  */
 function getTVContentSections() {
     console.log('🎯 getTVContentSections() called, positionsData.length:', positionsData.length);
 
     const candidates = [
-        { id: '#teamUpdates', label: 'New Joiners', icon: 'bi-person-plus-fill' },
+        { id: '#teamUpdates', label: 'Team Updates', icon: 'bi-people-fill' },
         { id: '#holidays', label: 'Upcoming Holidays', icon: 'bi-calendar-event-fill' },
         { id: '#announcements', label: 'Announcements', icon: 'bi-megaphone-fill' },
     ];

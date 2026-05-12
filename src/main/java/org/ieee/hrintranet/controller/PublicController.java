@@ -572,7 +572,7 @@ public class PublicController {
     public ResponseEntity<Map<String, String>> health() {
         Map<String, String> status = new HashMap<>();
         status.put("status", "UP");
-        status.put("message", "HR Intranet Portal API is running");
+        status.put("message", "IEEE Intranet Portal API is running");
         status.put("timestamp", LocalDate.now().toString());
         return ResponseEntity.ok(status);
     }
