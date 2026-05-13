@@ -302,7 +302,7 @@ function renderEmployeesTable() {
     updateDepartmentFilterOptions();
 
     const countEl = document.getElementById('recordCount');
-    if (countEl) countEl.textContent = employeesData.length + ' record' + (employeesData.length !== 1 ? 's' : '');
+    if (countEl) countEl.textContent = filteredEmployeesData.length + ' record' + (filteredEmployeesData.length !== 1 ? 's' : '');
 
     // Sort filtered list by name alphabetically for consistent paging
     const sortedFiltered = [...filteredEmployeesData].sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
