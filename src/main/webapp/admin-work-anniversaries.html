@@ -30,9 +30,9 @@
         
         .filter-group {
             background: #f8f9fa;
-            padding: 1.5rem;
+            padding: 0.5rem;
             border-radius: 8px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
@@ -75,10 +75,23 @@
         .anniversary-employee-cell {
             min-width: 220px;
         }
-        .anniversary-view-switch .btn-check:checked + .btn {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
+        .anniversary-view-switch .btn {
+            border-color: #181a1c;
+            color: #181b1e;
+            font-weight: 500;
+        }
+        .anniversary-view-switch .btn:hover {
+            background-color: #7e868e;
+            border-color: #7e868e;
             color: #fff;
+        }
+        .anniversary-view-switch .btn-check:checked + .btn {
+            background-color: #7e868e;
+            border-color: #7e868e;
+            color: #fff;
+        }
+        #experienceFilter {
+            min-width: 220px;
         }
          .table th:nth-child(3),
         .table td:nth-child(3) {
@@ -99,6 +112,9 @@
             width: 35%;
             min-width: 250px;
             vertical-align: top;
+        }
+        .bi bi-list{
+            color: #198754;
         }
     </style>
 </head>
@@ -224,47 +240,48 @@
                 </div>
             </div>
 
-            <!-- Filter Section -->
-            <div class="filter-group">
-                <div style="display:flex; gap:0.75rem; align-items:center; flex:1; min-width:320px;">
-                    <div style="flex:1;">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" id="anniversarySearchInput" class="form-control" placeholder="Search by name, position...">
-                            <button class="btn btn-outline-secondary" type="button" id="anniversarySearchClearBtn" onclick="clearAnniversarySearch()" style="display:none;">
-                                <i class="bi bi-x-circle"></i> Clear
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!-- View Toggle and Export (Top Row) -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div class="btn-group anniversary-view-switch" role="group" aria-label="Anniversary view switch">
+                    <input type="radio" class="btn-check" name="anniversaryView" id="allViewBtn" autocomplete="off" checked onchange="switchAnniversaryView('allView')">
+                    <label class="btn btn-outline-dark" for="allViewBtn"><i class="bi bi-list"></i> All Anniversaries</label>
 
-                <label for="experienceFilter">Filter by Experience:</label>
-                <select id="experienceFilter" class="form-select" style="width: 180px;">
-                    <option value="">All Experience</option>
-                </select>
+                    <input type="radio" class="btn-check" name="anniversaryView" id="currentViewBtn" autocomplete="off" onchange="switchAnniversaryView('currentView')">
+                    <label class="btn btn-outline-dark" for="currentViewBtn"><i class="bi bi-calendar3"></i> This Month</label>
+                </div>
                 <button class="btn btn-secondary btn-sm" onclick="exportToCSV()">
                     <i class="bi bi-download"></i> Export CSV
                 </button>
             </div>
 
-            <!-- View switch + shared pagination size -->
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                <div class="btn-group anniversary-view-switch" role="group" aria-label="Anniversary view switch">
-                    <input type="radio" class="btn-check" name="anniversaryView" id="allViewBtn" autocomplete="off" checked onchange="switchAnniversaryView('allView')">
-                    <label class="btn btn-outline-primary" for="allViewBtn"><i class="bi bi-list"></i> All Anniversaries</label>
-
-                    <input type="radio" class="btn-check" name="anniversaryView" id="currentViewBtn" autocomplete="off" onchange="switchAnniversaryView('currentView')">
-                    <label class="btn btn-outline-primary" for="currentViewBtn"><i class="bi bi-calendar3"></i> This Month</label>
-                </div>
-
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <label for="anniversaryItemsPerPageSelect" class="form-label mb-0" style="white-space:nowrap; font-weight:600;">Items per page:</label>
-                    <select id="anniversaryItemsPerPageSelect" class="form-select form-select-sm" style="width:auto;" onchange="changeAnniversaryItemsPerPage()">
-                        <option value="10">10</option>
-                        <option value="25" selected>25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
+            <!-- Search, Filter, and Items Per Page (Bottom Row) -->
+            <div class="table-search-bar" style="margin-bottom: 1rem;">
+                <div class="row g-2 align-items-center">
+                    <div class="col-lg-5 col-md-12">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="anniversarySearchInput" class="form-control" placeholder="Search by name, email, ID or position...">
+                            <button class="btn btn-outline-secondary" type="button" id="anniversarySearchClearBtn" onclick="clearAnniversarySearch()" style="display:none;">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <select id="experienceFilter" class="form-select form-select-sm">
+                            <option value="">All Experience</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-6 text-lg-end">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
+                            <label for="anniversaryItemsPerPageSelect" class="form-label mb-0" style="display:inline; white-space:nowrap; font-size:0.9rem;">Items per page:</label>
+                            <select id="anniversaryItemsPerPageSelect" class="form-select form-select-sm" style="width:auto;display:inline-block;" onchange="changeAnniversaryItemsPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -593,18 +610,28 @@
         }
 
         function populateYearFilter() {
-            const experiences = [...new Set(allAnniversaries.map(a => Number(a.yearsOfExperience || 0)))]
-                .sort((a, b) => b - a);
+            const yearCounts = new Map();
+            allAnniversaries.forEach(a => {
+                const years = Number(a.yearsOfExperience || 0);
+                yearCounts.set(years, (yearCounts.get(years) || 0) + 1);
+            });
+
+            const experiences = Array.from(yearCounts.keys()).sort((a, b) => b - a);
             const $select = $('#experienceFilter');
 
-            $select.html('<option value="">All Experience</option>');
+            $select.html(`<option value="">All Experience (${allAnniversaries.length})</option>`);
 
             experiences.forEach(years => {
-                $select.append(`<option value="${years}">${years}</option>`);
+                const count = yearCounts.get(years) || 0;
+                const yearLabel = `${years} ${years === 1 ? 'Year' : 'Years'}`;
+                $select.append(`<option value="${years}">${yearLabel} (${count})</option>`);
             });
 
             $select.off('change').on('change', function() {
+                allViewCurrentPage = 1;
+                currentMonthCurrentPage = 1;
                 displayAnniversaries();
+                displayCurrentMonth();
             });
         }
 

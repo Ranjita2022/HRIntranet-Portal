@@ -30,6 +30,14 @@ const DEFAULT_DEPARTMENTS = [
 ];
 
 let departmentOptions = [...DEFAULT_DEPARTMENTS];
+
+function normalizeDepartment(department) {
+    const value = (department || '').trim();
+    if (value === 'IT' || value === 'Information Technology(IT)') {
+        return 'Information Technology (IT)';
+    }
+    return value;
+}
 /**
  * Initialize employees section
  */
@@ -74,7 +82,7 @@ async function loadDepartments() {
     try {
         const departments = await AdminAPI.employees.getDepartments();
         if (Array.isArray(departments) && departments.length > 0) {
-            departmentOptions = [...new Set([...DEFAULT_DEPARTMENTS, ...departments].filter(Boolean))]
+            departmentOptions = [...new Set([...DEFAULT_DEPARTMENTS, ...departments.map(normalizeDepartment)].filter(Boolean))]
                 .sort((a, b) => a.localeCompare(b));
         }
     } catch (error) {
@@ -110,7 +118,7 @@ function populateDepartmentDropdowns() {
  * Ensure a department exists in the dropdown lists.
  */
 function ensureDepartmentOption(department) {
-    const normalized = (department || '').trim();
+    const normalized = normalizeDepartment(department);
     if (!normalized || departmentOptions.includes(normalized)) {
         return;
     }
@@ -202,8 +210,8 @@ function filterAndRenderEmployeesTable() {
             (employee.department && employee.department.toLowerCase().includes(searchStr))
         );
 
-        const employeeDepartment = (employee.department || '').trim();
-        const matchesDepartment = selectedDepartment === 'ALL' || employeeDepartment === selectedDepartment;
+        const employeeDepartment = normalizeDepartment(employee.department);
+        const matchesDepartment = selectedDepartment === 'ALL' || employeeDepartment === normalizeDepartment(selectedDepartment);
 
         return matchesSearch && matchesDepartment;
     });
@@ -343,7 +351,7 @@ function renderEmployeesTable() {
                 </td>
                 <td class="text-muted small">${escapeHtml(employee.email)}</td>
                 <td>${escapeHtml(employee.position)}</td>
-                <td>${escapeHtml(employee.department)}</td>
+                <td>${escapeHtml(normalizeDepartment(employee.department))}</td>
                 <td class="text-muted small">${birthDateText}</td>
                 <td class="text-muted small">${startDate}</td>
                 <td class="text-muted small">${employee.status === 'TERMINATED' ? endDate : '-'}</td>
@@ -409,7 +417,7 @@ function updateDepartmentFilterOptions() {
     const currentValue = selectedDepartment || 'ALL';
     const departmentCounts = new Map();
     employeesData.forEach(employee => {
-        const department = (employee.department || 'Unassigned').trim() || 'Unassigned';
+        const department = normalizeDepartment(employee.department || 'Unassigned') || 'Unassigned';
         departmentCounts.set(department, (departmentCounts.get(department) || 0) + 1);
     });
 
@@ -429,10 +437,10 @@ function updateDepartmentFilterOptions() {
     });
 
     departmentCounts.forEach((count, department) => {
-        if (!departmentOptions.includes(department)) {
+        if (!departmentOptions.includes(normalizeDepartment(department))) {
             const option = document.createElement('option');
-            option.value = department;
-            option.textContent = `${department} (${count})`;
+            option.value = normalizeDepartment(department);
+            option.textContent = `${normalizeDepartment(department)} (${count})`;
             departmentFilter.appendChild(option);
         }
     });
@@ -502,7 +510,7 @@ async function showEditEmployeeModal(id) {
     document.getElementById('employeeEmail').value = employee.email;
     document.getElementById('employeePosition').value = employee.position;
     ensureDepartmentOption(employee.department);
-    document.getElementById('employeeDepartment').value = employee.department;
+    document.getElementById('employeeDepartment').value = normalizeDepartment(employee.department);
     document.getElementById('employeeStartDate').value = employee.startDate;
     document.getElementById('employeeEndDate').value = employee.endDate || '';
     document.getElementById('employeeStatus').value = employee.status;
@@ -714,7 +722,7 @@ async function saveEmployee(event) {
     const lastName = document.getElementById('employeeLastName').value.trim();
     const email = document.getElementById('employeeEmail').value.trim();
     const position = document.getElementById('employeePosition').value.trim();
-    const department = document.getElementById('employeeDepartment').value.trim();
+    const department = normalizeDepartment(document.getElementById('employeeDepartment').value.trim());
     const startDate = document.getElementById('employeeStartDate').value;
     const endDate = document.getElementById('employeeEndDate').value;
     const birthDate = document.getElementById('employeeBirthDate').value;
