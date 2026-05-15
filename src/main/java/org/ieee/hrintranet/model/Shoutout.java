@@ -16,7 +16,7 @@ public class Shoutout {
     @Column(name = "from_name", nullable = false, length = 100)
     private String fromName;
     
-    @Column(name = "to_name", nullable = false, length = 100)
+    @Column(name = "to_name", nullable = false, length = 255)
     private String toName;
     
     @Column(name = "message", nullable = false, length = 500)

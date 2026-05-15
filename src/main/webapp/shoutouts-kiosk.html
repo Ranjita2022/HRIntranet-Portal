@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Shoutouts Display - IEEE HR Portal</title>
+    <title>Employee Shoutouts Display - IEEE Intranet Portal</title>
     <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
@@ -131,7 +131,7 @@
         /* ── Quote message ──────────────────────────────── */
         .message {
             font-size: clamp(1rem, 2.2vw, 1.65rem);
-            line-height: 1.7;
+            line-height: 1.4;
             color: #555;
             font-style: italic;
             margin: 0.75rem 0;
@@ -139,9 +139,9 @@
             background: #f8f9fa;
             border-radius: 16px;
             border-left: 5px solid #667eea;
-            max-height: 35vh;
-            overflow-y: auto;
-            scrollbar-width: thin;
+            /* allow JS to control fitting; avoid native scrollbars */
+            max-height: none;
+            overflow: hidden;
         }
 
         /* ── Date stamp ─────────────────────────────────── */
@@ -315,6 +315,8 @@
             `;
             document.getElementById('counter').textContent = `${currentIndex + 1} / ${shoutouts.length}`;
             animateProgressBar();
+            // Ensure the message fits without scrolling on the kiosk (defer to allow layout)
+            setTimeout(() => { fitMessageToContainer(); }, 50);
         }
 
         function animateProgressBar() {
@@ -357,6 +359,60 @@
             if (autoPlayInterval) clearInterval(autoPlayInterval);
             autoPlayInterval = setInterval(() => { if (!isPaused) nextShoutout(); }, DISPLAY_DURATION);
         }
+
+        // Reduce message font-size until it fits available area (or reach minimum), then hide overflow if necessary.
+        function fitMessageToContainer() {
+            const content = document.getElementById('shoutoutContent');
+            if (!content) return;
+            const msgEl = content.querySelector('.message');
+            if (!msgEl) return;
+
+            // Reset any previously adjusted font-size
+            msgEl.style.fontSize = '';
+            msgEl.style.overflow = 'hidden';
+
+            // Calculate available space inside shoutout-content for the message
+            // Measure heights of non-message siblings
+            const siblings = Array.from(content.children).filter(c => !c.classList.contains('message'));
+            let siblingsHeight = 0;
+            siblings.forEach(s => { siblingsHeight += s.getBoundingClientRect().height; });
+
+            const contentHeight = content.getBoundingClientRect().height;
+            let available = Math.max(40, contentHeight - siblingsHeight - 24); // safe padding
+
+            // start from computed font-size
+            const style = window.getComputedStyle(msgEl);
+            let fontSizePx = parseFloat(style.fontSize) || 20;
+            const minFontPx = 12;
+
+            // Give browser a moment to lay out (useful when called right after innerHTML set)
+            // but this is synchronous here; loop to reduce
+            let fits = msgEl.scrollHeight <= available;
+            let safety = 0;
+            while (!fits && fontSizePx > minFontPx && safety < 100) {
+                fontSizePx = Math.max(minFontPx, fontSizePx - 1);
+                msgEl.style.fontSize = fontSizePx + 'px';
+                fits = msgEl.scrollHeight <= available;
+                safety++;
+            }
+
+            // If still doesn't fit, truncate text to the max characters that can fit at min font size
+            if (!fits) {
+                const original = msgEl.textContent || '';
+                // try binary search for max chars that fit
+                let low = 0, high = original.length, best = 0;
+                while (low <= high && safety < 1000) {
+                    const mid = Math.floor((low + high) / 2);
+                    msgEl.textContent = original.slice(0, mid) + '…';
+                    if (msgEl.scrollHeight <= available) { best = mid; low = mid + 1; } else { high = mid - 1; }
+                    safety++;
+                }
+                msgEl.textContent = original.slice(0, best) + (best < original.length ? '…' : '');
+            }
+        }
+
+        // Re-fit on resize
+        window.addEventListener('resize', () => { fitMessageToContainer(); });
 
         function nextShoutout() {
             if (!shoutouts.length) return;

@@ -44,6 +44,21 @@ function normalizeDepartment(department) {
 async function initEmployees() {
     await Promise.all([loadDepartments(), loadEmployees()]);
 
+    // Hide/Disable editing features if user is HR_STAFF (cannot edit employees)
+    if (isHRStaffRestricted()) {
+        // Hide Add Employee button
+        const addEmployeeBtn = document.querySelector('button[onclick="showAddEmployeeModal()"]');
+        if (addEmployeeBtn) {
+            addEmployeeBtn.style.display = 'none';
+        }
+        
+        // Hide Export button
+        const exportBtn = document.querySelector('button[onclick="exportEmployeesToExcel()"]');
+        if (exportBtn) {
+            exportBtn.style.display = 'none';
+        }
+    }
+
     // Setup search input
     const searchInput = document.getElementById('employeeSearchInput');
     if (searchInput) {
@@ -358,10 +373,12 @@ function renderEmployeesTable() {
                 <td>${statusBadges[employee.status] || employee.status}</td>
                 <td class="text-center">
                     <div class="d-flex gap-1 justify-content-center">
-                        <button class="btn btn-sm btn-outline-primary" onclick="showEditEmployeeModal(${employee.id})" title="Edit">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEditEmployeeModal(${employee.id})" title="Edit"
+                            ${isHRStaffRestricted() ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(${employee.id})" title="Delete">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(${employee.id})" title="Delete"
+                            ${isHRStaffRestricted() ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>

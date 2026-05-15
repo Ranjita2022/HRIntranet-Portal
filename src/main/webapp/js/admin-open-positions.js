@@ -32,6 +32,14 @@ function initializePage() {
         $('#userAvatar').text(userName.charAt(0).toUpperCase());
     }
 
+    // Hide/Disable editing features if user is HR_STAFF (cannot edit open positions)
+    if (isHRStaffRestricted()) {
+        const addPositionBtn = document.querySelector('button[onclick="showAddPositionModal()"]');
+        if (addPositionBtn) {
+            addPositionBtn.style.display = 'none';
+        }
+    }
+
     loadPositions();
 }
 
@@ -145,10 +153,12 @@ function displayPositions() {
                 <td>${statusBadge}</td>
                 <td class="text-center">
                     <div class="d-flex gap-1 justify-content-center">
-                        <button class="btn btn-sm btn-outline-primary" onclick="editPosition(${position.id})" title="Edit">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editPosition(${position.id})" title="Edit"
+                            ${isHRStaffRestricted() ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deletePosition(${position.id})" title="Delete">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deletePosition(${position.id})" title="Delete"
+                            ${isHRStaffRestricted() ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>

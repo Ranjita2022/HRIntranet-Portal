@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Shoutouts - IEEE HR Portal</title>
+    <title>Employee Shoutouts - IEEE Intranet Portal</title>
     <link href="vendor/fonts/fonts/fonts.css" rel="stylesheet">
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
@@ -56,9 +56,14 @@
                     <i class="bi bi-check-circle-fill success-icon"></i>
                     <h2>Shoutout Submitted! 🎉</h2>
                     <p class="text-muted">Your shoutout will appear on the kiosk display.</p>
-                    <button class="btn btn-primary mt-3" onclick="resetForm()">
-                        <i class="bi bi-plus-circle me-2"></i>Submit Another
-                    </button>
+                    <div class="d-flex gap-2 justify-content-center mt-3 flex-wrap">
+                        <button class="btn btn-primary" onclick="resetForm()">
+                            <i class="bi bi-plus-circle me-2"></i>Submit Another
+                        </button>
+                        <a href="shoutouts-kiosk.html" class="btn btn-outline-secondary" target="_blank">
+                            <i class="bi bi-tv me-2"></i>View Shoutouts Display
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Form -->
@@ -106,9 +111,16 @@
                                 <label for="toEmployee" class="form-label">
                                     <i class="bi bi-star-fill text-warning me-1"></i>Shoutout To <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="toEmployee" required>
-                                    <option value="">— Who do you want to recognize? —</option>
-                                </select>
+                                <div class="input-group">
+                                    <select class="form-select" id="toEmployee" required>
+                                        <option value="">— Who do you want to recognize? —</option>
+                                    </select>
+                                    <button class="btn btn-outline-primary" type="button" id="addRecipientBtn" onclick="addRecipient()">
+                                        <i class="bi bi-plus-lg me-1"></i>Add
+                                    </button>
+                                </div>
+                                <div class="form-text text-muted">Select one employee at a time and click Add to include more people.</div>
+                                <div id="selectedRecipients" class="d-flex flex-wrap gap-2 mt-2"></div>
                             </div>
 
                             <!-- Category -->
@@ -161,6 +173,7 @@
     <script>
         let employees = [];
         let isVerified = false;
+        let selectedRecipients = [];
 
         document.addEventListener('DOMContentLoaded', function () {
             loadEmployees();
@@ -196,6 +209,7 @@
             isVerified = false;
             document.getElementById('employeeId').value = '';
             document.getElementById('verifyMsg').innerHTML = '';
+            clearRecipients();
             document.getElementById('empIdField').style.display = name ? '' : 'none';
             showShoutoutFields(false);
         }
@@ -205,8 +219,71 @@
             if (isVerified) {
                 isVerified = false;
                 document.getElementById('verifyMsg').innerHTML = '';
+                clearRecipients();
                 showShoutoutFields(false);
             }
+        }
+
+        function getEmployeeLabel(name) {
+            const employee = employees.find(emp => emp.name === name);
+            return employee ? employee.name + (employee.department ? ` — ${employee.department}` : '') : name;
+        }
+
+        function renderRecipients() {
+            const container = document.getElementById('selectedRecipients');
+            if (!container) return;
+
+            if (selectedRecipients.length === 0) {
+                container.innerHTML = '<small class="text-muted">No employees added yet.</small>';
+                return;
+            }
+
+            container.innerHTML = selectedRecipients.map(name => `
+                <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center gap-2 py-2 px-3">
+                    <span>${getEmployeeLabel(name)}</span>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Remove ${name}" style="font-size:0.7rem;" onclick="removeRecipient('${name.replace(/'/g, "\\'")}')"></button>
+                </span>
+            `).join('');
+        }
+
+        function clearRecipients() {
+            selectedRecipients = [];
+            const toSelect = document.getElementById('toEmployee');
+            if (toSelect) toSelect.value = '';
+            renderRecipients();
+        }
+
+        function addRecipient() {
+            const toSelect = document.getElementById('toEmployee');
+            const name = toSelect.value.trim();
+            const msg = document.getElementById('verifyMsg');
+
+            if (!name) {
+                alert('Please select an employee to add.');
+                return;
+            }
+
+            const fromName = document.getElementById('fromEmployee').value.trim();
+            if (name === fromName) {
+                alert('You cannot give a shoutout to yourself.');
+                return;
+            }
+
+            if (selectedRecipients.includes(name)) {
+                msg.innerHTML = '<small class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>This employee is already added.</small>';
+                toSelect.value = '';
+                return;
+            }
+
+            selectedRecipients.push(name);
+            msg.innerHTML = '';
+            toSelect.value = '';
+            renderRecipients();
+        }
+
+        function removeRecipient(name) {
+            selectedRecipients = selectedRecipients.filter(recipient => recipient !== name);
+            renderRecipients();
         }
 
         // ─── Verify Employee ID ────────────────────────────────────────
@@ -282,13 +359,13 @@
             }
 
             const fromName = document.getElementById('fromEmployee').value.trim();
-            const toName = document.getElementById('toEmployee').value.trim();
+            const toName = selectedRecipients.join(', ');
 
-            if (!toName) {
-                alert('Please select who you want to shoutout.');
+            if (selectedRecipients.length === 0) {
+                alert('Please add at least one employee to shoutout.');
                 return;
             }
-            if (fromName === toName) {
+            if (selectedRecipients.includes(fromName)) {
                 alert('You cannot give a shoutout to yourself!');
                 return;
             }
@@ -341,8 +418,11 @@
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('shoutoutForm').style.display = 'block';
             showShoutoutFields(false);
+            clearRecipients();
             isVerified = false;
         }
+
+        renderRecipients();
     </script>
 </body>
 </html>

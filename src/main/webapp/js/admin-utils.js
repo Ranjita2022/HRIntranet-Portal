@@ -1124,6 +1124,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+/**
+ * Check if the current user has HR_STAFF role
+ * HR_STAFF role has restrictions on editing Employees and Open Positions
+ */
+function isHRStaffRestricted() {
+    const role = localStorage.getItem('admin_role');
+    return role === 'HR_STAFF';
+}
+
 // Make AdminAPI available globally
 window.AdminAPI = AdminAPI;
 window.showToast = showToast;
