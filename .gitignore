@@ -57,3 +57,7 @@ start-app.bat
 uploads/images/
 
 src/main/webapp/images/
+src/main/java/org/ieee/hrintranet/util/AdminPasswordUtility.java
+src/main/java/org/ieee/hrintranet/util/DatabaseExporter.java
+src/main/java/org/ieee/hrintranet/util/DatabaseMaintenanceUtil.java
+src/main/java/org/ieee/hrintranet/util/QuickPasswordUpdate.java
