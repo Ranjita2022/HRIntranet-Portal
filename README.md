@@ -339,8 +339,8 @@ spring.datasource.password=root
 
 # ── File Uploads ──────────────────────────────────────
 app.upload.dir=uploads/images
-spring.servlet.multipart.max-file-size=10MB
-spring.servlet.multipart.max-request-size=10MB
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=5MB
 
 # ── JWT (CHANGE THE SECRET IN PRODUCTION!) ───────────
 app.jwt.secret=YourSuperSecretKeyForJWTTokenGenerationChangeThisInProduction123456789
@@ -552,7 +552,7 @@ Make sure `PRODUCTION_API_URL` in `config.js` is correct if deployed.
 
 - Verify `uploads/images/` directory exists and is writable by the process user
 - Check `app.upload.dir=uploads/images` in `application.properties`
-- File must be under 10MB and an image type (JPG, PNG, GIF, WebP)
+-- File must be under 5MB and an image type (JPG, PNG, GIF, WebP)
 
 ### Admin login rejected
 

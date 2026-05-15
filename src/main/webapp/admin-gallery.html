@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,17 +14,17 @@
             transition: transform 0.2s, box-shadow 0.2s;
             border-left: 4px solid #00629B;
         }
-        
+
         .folder-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
         .folder-card.inactive {
             opacity: 0.6;
             border-left-color: #6c757d;
         }
-        
+
         .photo-count-badge {
             background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
             color: white;
@@ -31,24 +32,24 @@
             border-radius: 20px;
             font-weight: 500;
         }
-        
+
         .status-badge {
             padding: 6px 12px;
             border-radius: 12px;
             font-size: 0.875rem;
             font-weight: 500;
         }
-        
+
         .status-badge.active {
             background-color: #d1e7dd;
             color: #0f5132;
         }
-        
+
         .status-badge.inactive {
             background-color: #f8d7da;
             color: #842029;
         }
-        
+
         .action-buttons .btn {
             padding: 6px 12px;
             font-size: 0.875rem;
@@ -91,7 +92,7 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-        
+
         .scan-section {
             background: linear-gradient(135deg, #00629B 0%, #003C71 100%);
             color: white;
@@ -99,7 +100,7 @@
             padding: 24px;
             margin-bottom: 24px;
         }
-        
+
         .folder-path {
             font-family: 'Courier New', monospace;
             background: #f8f9fa;
@@ -107,19 +108,20 @@
             border-radius: 4px;
             font-size: 0.875rem;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #6c757d;
         }
-        
+
         .empty-state i {
             font-size: 64px;
             margin-bottom: 16px;
         }
     </style>
 </head>
+
 <body>
     <!-- Include Sidebar -->
     <div id="sidebar-container"></div>
@@ -147,67 +149,73 @@
 
         <!-- Scan Section -->
         <div class="content-body">
-        <div class="scan-section">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h4 class="mb-3"><i class="bi bi-folder-plus me-2"></i>Gallery Folder Management</h4>
-                    <p class="mb-0">Create new folders, upload images, or scan <code>images/gallery/</code> directory.</p>
-                </div>
-                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                    <button class="btn btn-light me-2" onclick="showCreateFolderModal()">
-                        <i class="bi bi-folder-plus me-2"></i>Create Folder
-                    </button>
-                    <button class="btn btn-light" onclick="scanFolders()">
-                        <i class="bi bi-arrow-clockwise me-2"></i>Scan Folders
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-row mb-4">
-            <div class="stat-card">
-                <h3 id="totalFolders">0</h3>
-                <p><i class="bi bi-folder me-1"></i>Total Folders</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="activeFolders" style="color:#198754;">0</h3>
-                <p><i class="bi bi-check-circle me-1"></i>Active Folders</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="totalPhotos" style="color:#0084CA;">0</h3>
-                <p><i class="bi bi-images me-1"></i>Total Photos</p>
-            </div>
-        </div>
-
-        <!-- Folders List -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h5 class="mb-0">Gallery Folders</h5>
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="form-check mb-0">
-                            <input class="form-check-input" type="checkbox" id="selectAllFolders" onchange="toggleSelectAllFolders(this.checked)">
-                            <label class="form-check-label" for="selectAllFolders">Select all</label>
-                        </div>
-                        <span class="text-muted small" id="selectedFoldersCount">0 selected</span>
-                        <button type="button" class="btn btn-sm btn-danger" id="deleteSelectedFoldersBtn" onclick="deleteSelectedFolders()" disabled>
-                            <i class="bi bi-trash me-1"></i>Delete Selected Folders
+            <div class="scan-section">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h4 class="mb-3"><i class="bi bi-folder-plus me-2"></i>Gallery Folder Management</h4>
+                        <p class="mb-0">Create new folders, upload images, or scan <code>images/gallery/</code>
+                            directory.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <button class="btn btn-light me-1" onclick="showCreateFolderModal()">
+                            <i class="bi bi-folder-plus me-1"></i>Create Folder
+                        </button>
+                        <button class="btn btn-light me-1" onclick="showUploadFolderModal()">
+                            <i class="bi bi-cloud-upload me-1"></i>Upload Folder
+                        </button>
+                        <button class="btn btn-light" onclick="scanFolders()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Scan Folders
                         </button>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div id="foldersContainer">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-3 text-muted">Loading gallery folders...</p>
-                    </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-row mb-4">
+                <div class="stat-card">
+                    <h3 id="totalFolders">0</h3>
+                    <p><i class="bi bi-folder me-1"></i>Total Folders</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="activeFolders" style="color:#198754;">0</h3>
+                    <p><i class="bi bi-check-circle me-1"></i>Active Folders</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalPhotos" style="color:#0084CA;">0</h3>
+                    <p><i class="bi bi-images me-1"></i>Total Photos</p>
                 </div>
             </div>
-        </div><!-- /card (folders list) -->
+
+            <!-- Folders List -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <h5 class="mb-0">Gallery Folders</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" id="selectAllFolders"
+                                    onchange="toggleSelectAllFolders(this.checked)">
+                                <label class="form-check-label" for="selectAllFolders">Select all</label>
+                            </div>
+                            <span class="text-muted small" id="selectedFoldersCount">0 selected</span>
+                            <button type="button" class="btn btn-sm btn-danger" id="deleteSelectedFoldersBtn"
+                                onclick="deleteSelectedFolders()" disabled>
+                                <i class="bi bi-trash me-1"></i>Delete Selected Folders
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="foldersContainer">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Loading gallery folders...</p>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /card (folders list) -->
         </div><!-- /content-body -->
 
         <!-- Footer -->
@@ -272,7 +280,8 @@
                     <div class="mb-3">
                         <label class="form-label">Folder Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="newFolderName" placeholder="e.g., christmas-2024">
-                        <small class="form-text text-muted">Use lowercase letters, numbers, hyphens, and underscores only</small>
+                        <small class="form-text text-muted">Use lowercase letters, numbers, hyphens, and underscores
+                            only</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Display Title</label>
@@ -281,7 +290,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" id="newDescription" rows="3" placeholder="Optional description for this folder"></textarea>
+                        <textarea class="form-control" id="newDescription" rows="3"
+                            placeholder="Optional description for this folder"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -303,28 +313,78 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Hidden inputs for folder data -->
                     <input type="hidden" id="uploadFolderId">
                     <input type="hidden" id="uploadFolderName">
-                    
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i><strong>Folder:</strong> <span id="uploadFolderDisplayName"></span>
+
+                    <!-- Shown when opened from a specific folder card -->
+                    <div id="folderDisplaySection" style="display: none;">
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-folder me-2"></i>
+                            <strong>Destination Folder:</strong> <span id="uploadFolderDisplayName"></span>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Select Images <span class="text-danger">*</span></label>
-                        <input type="file" class="form-control" id="imageFiles" multiple accept="image/*">
-                        <small class="form-text text-muted">
-                            Select multiple images (JPG, PNG, GIF). Max 5MB per file. Images will be automatically numbered sequentially.
+
+                    <!-- Upload Mode Toggle (shown only when opened from a folder card) -->
+                    <div id="uploadModeSection" style="display: none;" class="mb-4">
+                        <label class="form-label"><strong>What would you like to upload?</strong></label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="uploadMode" id="selectImagesMode"
+                                value="selectImages" onchange="toggleUploadModeUI()">
+                            <label class="form-check-label" for="selectImagesMode">
+                                <i class="bi bi-images me-1"></i> Upload Images
+                            </label>
+                            <small class="form-text text-muted d-block ms-4">Choose individual image files to add to
+                                this folder</small>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="uploadMode" id="uploadFolderMode"
+                                value="uploadFolder" onchange="toggleUploadModeUI()">
+                            <label class="form-check-label" for="uploadFolderMode">
+                                <i class="bi bi-folder-symlink me-1"></i> Upload Folder
+                            </label>
+                            <small class="form-text text-muted d-block ms-4">Select a folder — all images inside will be
+                                uploaded to this folder</small>
+                        </div>
+                    </div>
+
+                    <!-- Mode: Select individual image files -->
+                    <div id="individualFilesSection" style="display: none;" class="mb-4">
+                        <label class="form-label"><strong>Select Images</strong> <span
+                                class="text-danger">*</span></label>
+                        <input type="file" class="form-control form-control-lg" id="imageFilesInput" multiple
+                            accept="image/*">
+                        <small class="form-text text-muted d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i>Select one or more image files. Each must be 5 MB or
+                            smaller.
                         </small>
                     </div>
-                    
-                    <div id="uploadPreview" class="row g-2 mt-2" style="display: none;">
+
+                    <!-- Mode: Select entire folder (default for header Upload Folder button, and optional for card button) -->
+                    <div id="folderPickerSection" class="mb-4">
+                        <label class="form-label"><strong>Select Folder with Images</strong> <span
+                                class="text-danger">*</span></label>
+                        <input type="file" class="form-control form-control-lg" id="imageFolderInput" webkitdirectory
+                            mozdirectory directory multiple accept="image/*">
+                        <small class="form-text text-muted d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i>Select a folder from your computer. Each image must be
+                            5 MB or smaller.
+                        </small>
+                        <div class="alert alert-info mt-3" id="detectedFolderNameAlert" style="display: none;">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            <strong>Detected Folder:</strong> <span id="detectedFolderName"
+                                class="font-monospace">Select a folder...</span>
+                        </div>
+                    </div>
+
+                    <div id="uploadPreview" class="row g-2 mt-3" style="display: none;">
                         <!-- Image previews will be shown here -->
                     </div>
-                    
+
                     <div id="uploadProgress" style="display: none;">
                         <div class="progress">
-                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                role="progressbar" style="width: 0%"></div>
                         </div>
                         <p class="text-center mt-2" id="uploadStatusText">Uploading...</p>
                     </div>
@@ -357,12 +417,14 @@
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <div class="d-flex align-items-center gap-3">
                             <div class="form-check mb-0">
-                                <input class="form-check-input" type="checkbox" id="selectAllFolderImages" onchange="toggleSelectAllFolderImages(this.checked)">
+                                <input class="form-check-input" type="checkbox" id="selectAllFolderImages"
+                                    onchange="toggleSelectAllFolderImages(this.checked)">
                                 <label class="form-check-label" for="selectAllFolderImages">Select all</label>
                             </div>
                             <span class="text-muted small" id="selectedImagesCount">0 selected</span>
                         </div>
-                        <button type="button" class="btn btn-sm btn-danger" id="deleteSelectedImagesBtn" onclick="deleteSelectedFolderImages()" disabled>
+                        <button type="button" class="btn btn-sm btn-danger" id="deleteSelectedImagesBtn"
+                            onclick="deleteSelectedFolderImages()" disabled>
                             <i class="bi bi-trash me-1"></i>Delete Selected
                         </button>
                     </div>
@@ -392,21 +454,21 @@
         // Mark the active sidebar menu item after the sidebar template loads
         function setActivePage(pageKey) {
             const linkMap = {
-                'dashboard':     'admin-panel.html',
-                'employees':     'admin-employees.html',
+                'dashboard': 'admin-panel.html',
+                'employees': 'admin-employees.html',
                 'announcements': 'admin-announcements.html',
-                'holidays':      'admin-holidays.html',
-                'carousel':      'admin-carousel.html',
-                'gallery':       'admin-gallery.html',
-                'quick-links':   'admin-quick-links.html',
-                'emergency':     'admin-emergency.html',
+                'holidays': 'admin-holidays.html',
+                'carousel': 'admin-carousel.html',
+                'gallery': 'admin-gallery.html',
+                'quick-links': 'admin-quick-links.html',
+                'emergency': 'admin-emergency.html',
                 'anniversaries': 'admin-work-anniversaries.html',
-                'positions':     'admin-open-positions.html',
-                'audit':         'admin-audit.html'
+                'positions': 'admin-open-positions.html',
+                'audit': 'admin-audit.html'
             };
             const href = linkMap[pageKey];
             if (href) {
-                document.querySelectorAll('.sidebar .menu-item').forEach(function(el) {
+                document.querySelectorAll('.sidebar .menu-item').forEach(function (el) {
                     if (el.getAttribute('href') === href) {
                         el.classList.add('active');
                     }
@@ -425,8 +487,8 @@
                 document.getElementById('userName').textContent = user.fullName || user.username;
             }
             fetch('admin-sidebar-template.html')
-                .then(function(response) { return response.text(); })
-                .then(function(html) {
+                .then(function (response) { return response.text(); })
+                .then(function (html) {
                     document.getElementById('sidebar-container').innerHTML = html;
                     setActivePage('gallery');
                     // Initialize sidebar behaviors on the injected markup
@@ -443,4 +505,5 @@
         }
     </script>
 </body>
+
 </html>

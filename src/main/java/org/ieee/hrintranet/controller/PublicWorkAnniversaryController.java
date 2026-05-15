@@ -84,27 +84,19 @@ public class PublicWorkAnniversaryController {
     }
 
     private int calculateAnniversaryYears(LocalDate startDate, LocalDate today) {
-        return Math.max(0, today.getYear() - startDate.getYear());
+        // Use Period to account for whether the most recent anniversary has occurred this year
+        java.time.Period p = java.time.Period.between(startDate, today);
+        return Math.max(0, p.getYears());
     }
 
     private int calculateDisplayMonths(LocalDate startDate, LocalDate today, int yearsOfService) {
         if (yearsOfService >= 1) {
             return 0;
         }
-        return Math.max(0, (int) ChronoUnit.MONTHS.between(startDate, today));
-    }
-
-    private LocalDate resolveCompletedExperienceDate(LocalDate startDate, LocalDate today, int yearsOfService, int totalMonths) {
-        if (yearsOfService < 1) {
-            return startDate.plusMonths(totalMonths);
-        }
-
-        LocalDate anniversaryThisYear = safeAnniversaryDate(startDate, today.getYear());
-        if (anniversaryThisYear.isAfter(today)) {
-            return safeAnniversaryDate(startDate, today.getYear() - 1);
-        }
-
-        return anniversaryThisYear;
+        // For employees with less than 1 year, show whole months of experience
+        java.time.Period p = java.time.Period.between(startDate, today);
+        int months = p.getMonths() + p.getYears() * 12;
+        return Math.max(0, months);
     }
 
     /**

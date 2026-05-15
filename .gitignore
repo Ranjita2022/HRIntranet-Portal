@@ -55,3 +55,5 @@ start-app.bat
 
 # Ensure uploads images stay ignored
 uploads/images/
+
+src/main/webapp/images/

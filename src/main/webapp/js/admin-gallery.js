@@ -6,7 +6,7 @@ let selectedFolderImages = new Set();
 let selectedFolders = new Set();
 
 // Initialize on page load
-$(document).ready(function() {
+$(document).ready(function () {
     // Check authentication if function exists
     if (typeof checkAuth === 'function') {
         checkAuth();
@@ -15,6 +15,16 @@ $(document).ready(function() {
     loadFolders();
 });
 
+// Helper: safely parse response as JSON when possible, else return text
+async function parseResponseSafely(response) {
+    const text = await response.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        return text;
+    }
+}
+
 // Load all gallery folders
 async function loadFolders() {
     try {
@@ -22,15 +32,15 @@ async function loadFolders() {
         if (typeof CONFIG === 'undefined') {
             throw new Error('Configuration not loaded. Please refresh the page (Ctrl+Shift+R)');
         }
-        
+
         // Use the admin endpoint so inactive folders remain visible in the admin UI.
         // The public gallery page should keep using the public active-only endpoint.
         allFolders = await AdminAPI.fetch('/admin/gallery/folders');
         console.log('Loaded folders:', allFolders);
-        
+
         renderFolders();
         updateStats();
-        
+
     } catch (error) {
         console.error('Error loading folders:', error);
         showError('Failed to load gallery folders. Please try again.');
@@ -50,7 +60,7 @@ async function loadFolders() {
 // Render folders list
 function renderFolders() {
     const container = $('#foldersContainer');
-    
+
     if (allFolders.length === 0) {
         selectedFolders.clear();
         updateFolderSelectionUI();
@@ -63,18 +73,18 @@ function renderFolders() {
         `);
         return;
     }
-    
+
     // Sort by display order
     const sortedFolders = [...allFolders].sort((a, b) => a.displayOrder - b.displayOrder);
-    
+
     let html = '<div class="row g-3">';
-    
+
     sortedFolders.forEach(folder => {
         const isActive = folder.isActive !== false; // Default to true if undefined
         const statusClass = isActive ? 'active' : 'inactive';
         const cardClass = isActive ? '' : 'inactive';
         const isSelected = selectedFolders.has(folder.id);
-        
+
         html += `
             <div class="col-md-6 col-lg-4">
                 <div class="card folder-card ${cardClass} h-100">
@@ -121,12 +131,12 @@ function renderFolders() {
                                 <i class="bi bi-pencil me-2"></i>Edit
                             </button>
                             <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="showFolderImages(${folder.id}, '${escapeHtml(folder.displayTitle || folder.folderName)}')"
+                                    onclick="showFolderImages(${folder.id}, '${escapeJsString(folder.displayTitle || folder.folderName)}')"
                                     title="View and delete images">
                                 <i class="bi bi-images me-2"></i>Images
                             </button>
                             <button class="btn btn-sm btn-outline-info" 
-                                    onclick="showUploadModal(${folder.id}, '${escapeHtml(folder.folderName)}', '${escapeHtml(folder.displayTitle || folder.folderName)}')"
+                                    onclick="showUploadModal(${folder.id}, '${escapeJsString(folder.folderName)}', '${escapeJsString(folder.displayTitle || folder.folderName)}')"
                                     title="Upload images">
                                 <i class="bi bi-upload me-2"></i>Upload
                             </button>
@@ -146,7 +156,7 @@ function renderFolders() {
             </div>
         `;
     });
-    
+
     html += '</div>';
     container.html(html);
     updateFolderSelectionUI();
@@ -208,7 +218,7 @@ function updateStats() {
     const totalCount = allFolders.length;
     const activeCount = allFolders.filter(f => f.isActive !== false).length;
     const totalPhotoCount = allFolders.reduce((sum, f) => sum + (f.photoCount || 0), 0);
-    
+
     $('#totalFolders').text(totalCount);
     $('#activeFolders').text(activeCount);
     $('#totalPhotos').text(totalPhotoCount);
@@ -222,15 +232,15 @@ async function scanFolders() {
             alert('Configuration not loaded. Please refresh the page (Ctrl+Shift+R) to clear browser cache.');
             return;
         }
-        
+
         showLoading('Scanning folders from filesystem...');
-        
+
         const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
-        
+
         console.log('Attempting to scan folders...');
         console.log('Token exists:', !!token);
         console.log('API URL:', `${CONFIG.API_BASE_URL}/admin/gallery/folders/scan`);
-        
+
         const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/scan`, {
             method: 'POST',
             headers: {
@@ -238,30 +248,30 @@ async function scanFolders() {
                 'Content-Type': 'application/json'
             }
         });
-        
+
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error response:', errorText);
             throw new Error(errorText || `Server returned ${response.status}`);
         }
-        
+
         const result = await response.json();
         console.log('Scan result:', result);
-        
+
         showSuccess(`
             <strong>Scan Completed!</strong><br>
             New folders: ${result.newCount}<br>
             Updated folders: ${result.updatedCount}
         `);
-        
+
         // Reload folders to show updated data
         setTimeout(() => {
             loadFolders();
         }, 1500);
-        
+
     } catch (error) {
         console.error('Error scanning folders:', error);
         showError('Failed to scan folders: ' + error.message);
@@ -277,13 +287,13 @@ function editFolder(folderId) {
         showError('Folder not found');
         return;
     }
-    
+
     $('#editFolderId').val(folder.id);
     $('#editFolderName').val(folder.folderName);
     $('#editDisplayTitle').val(folder.displayTitle || '');
     $('#editDescription').val(folder.description || '');
     $('#editDisplayOrder').val(folder.displayOrder || 0);
-    
+
     editModal.show();
 }
 
@@ -293,27 +303,27 @@ async function saveFolder() {
     const displayTitle = $('#editDisplayTitle').val().trim();
     const description = $('#editDescription').val().trim();
     const displayOrder = parseInt($('#editDisplayOrder').val()) || 0;
-    
+
     if (!displayTitle) {
         showError('Display title is required');
         return;
     }
-    
+
     try {
         // Check if CONFIG is defined (in case of browser cache issues)
         if (typeof CONFIG === 'undefined') {
             alert('Configuration not loaded. Please refresh the page (Ctrl+Shift+R) to clear browser cache.');
             return;
         }
-        
+
         showLoading('Saving changes...');
-        
+
         const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
 
         if (!token) {
             throw new Error('Please login first');
         }
-        
+
         const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}`, {
             method: 'PUT',
             headers: {
@@ -322,18 +332,18 @@ async function saveFolder() {
             },
             body: JSON.stringify({ displayTitle, description, displayOrder })
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: `Server returned ${response.status}` }));
             throw new Error(errorData.error || `Failed to save folder changes (${response.status})`);
         }
-        
+
         editModal.hide();
         showSuccess('Changes saved successfully');
-        
+
         // Reload folders
         setTimeout(() => loadFolders(), 500);
-        
+
     } catch (error) {
         console.error('Error saving folder:', error);
         showError('Failed to save changes: ' + error.message);
@@ -346,22 +356,22 @@ async function saveFolder() {
 async function toggleFolderStatus(folderId, currentStatus) {
     const newStatus = !currentStatus;
     const action = newStatus ? 'activate' : 'deactivate';
-    
+
     if (!(await confirmAction(`Are you sure you want to ${action} this folder?`, { title: `${action === 'activate' ? 'Activate' : 'Deactivate'} Folder`, confirmText: action === 'activate' ? 'Activate' : 'Deactivate', confirmIcon: 'check2' }))) {
         return;
     }
-    
+
     try {
         // Check if CONFIG is defined (in case of browser cache issues)
         if (typeof CONFIG === 'undefined') {
             showError('Configuration not loaded. Please refresh the page (Ctrl+Shift+R).');
             return;
         }
-        
+
         showLoading(`${newStatus ? 'Activating' : 'Deactivating'} folder...`);
-        
+
         const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
-        
+
         // Debug logging
         console.log('Toggle folder request:', {
             folderId,
@@ -370,7 +380,7 @@ async function toggleFolderStatus(folderId, currentStatus) {
             url: `${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}/toggle`,
             hasToken: !!token
         });
-        
+
         const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}/toggle`, {
             method: 'PATCH',
             headers: {
@@ -378,23 +388,23 @@ async function toggleFolderStatus(folderId, currentStatus) {
                 'Authorization': `Bearer ${token}`
             }
         });
-        
+
         console.log('Toggle response status:', response.status);
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
             console.error('Toggle failed:', errorData);
             throw new Error(errorData.error || `Server returned ${response.status}`);
         }
-        
+
         const result = await response.json();
         console.log('Toggle successful:', result);
-        
+
         showSuccess(`Folder ${newStatus ? 'activated' : 'deactivated'} successfully`);
-        
+
         // Reload folders
         setTimeout(() => loadFolders(), 500);
-        
+
     } catch (error) {
         console.error('Error toggling folder status:', error);
         showError('Failed to update folder status: ' + error.message);
@@ -408,6 +418,14 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Utility function to escape text for inline JavaScript string literals
+function escapeJsString(text) {
+    return String(text)
+        .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+        .replace(/\r?\n/g, ' ');
 }
 
 // Loading state
@@ -481,44 +499,46 @@ function showCreateFolderModal() {
     $('#newFolderName').val('');
     $('#newDisplayTitle').val('');
     $('#newDescription').val('');
-    
+
     const modal = new bootstrap.Modal(document.getElementById('createFolderModal'));
     modal.show();
 }
 
 // Create new folder
+// FIX (Bug 2): Response body was consumed twice via parseResponseSafely().
+// Now the body is read once, used for both error-checking and success handling.
 async function createFolder() {
     try {
         const folderName = $('#newFolderName').val().trim();
         const displayTitle = $('#newDisplayTitle').val().trim();
         const description = $('#newDescription').val().trim();
-        
+
         if (!folderName) {
             showToast('Please enter a folder name', 'warning');
             return;
         }
-        
+
         // Validate folder name format
         if (!/^[a-zA-Z0-9_-]+$/.test(folderName)) {
             showToast('Folder name can only contain letters, numbers, hyphens, and underscores', 'warning');
             return;
         }
-        
+
         // Check if CONFIG is defined (in case of browser cache issues)
         if (typeof CONFIG === 'undefined') {
             alert('Configuration not loaded. Please refresh the page (Ctrl+Shift+R) to clear browser cache.');
             return;
         }
-        
+
         const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
-        
+
         if (!token) {
             showToast('Please login first', 'danger');
             return;
         }
-        
+
         showLoading('Creating folder...');
-        
+
         const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/create`, {
             method: 'POST',
             headers: {
@@ -531,22 +551,34 @@ async function createFolder() {
                 description: description || null
             })
         });
-        
+
+        // Read response body exactly once
+        const data = await parseResponseSafely(response);
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || `Server returned ${response.status}`);
+            const msg = (data && data.error) ? data.error : (typeof data === 'string' ? data : `Server returned ${response.status}`);
+            throw new Error(msg);
         }
-        
-        const folder = await response.json();
-        
-        // Close modal
+
+        if (typeof data === 'string') {
+            throw new Error(data);
+        }
+
+        const folder = data;
+
+        // Close create modal
         bootstrap.Modal.getInstance(document.getElementById('createFolderModal')).hide();
-        
-        // Reload folders
+
+        // Reload folders so new folder appears in the list
         await loadFolders();
-        
-        showToast(`Folder "${folder.displayTitle}" created successfully!`, 'success');
-        
+
+        showToast(`Folder "${folder.displayTitle || folder.folderName}" created! Upload images now.`, 'success');
+
+        // Automatically open the upload modal for the newly created folder
+        setTimeout(() => {
+            showUploadModal(folder.id, folder.folderName, folder.displayTitle || folder.folderName);
+        }, 400);
+
     } catch (error) {
         console.error('Create folder error:', error);
         showToast(`Failed to create folder: ${error.message}`, 'danger');
@@ -643,134 +675,263 @@ async function deleteGalleryFolderById(folderId) {
     }
 }
 
-// Show upload images modal
-function showUploadModal(folderId, folderName, displayTitle) {
-    $('#uploadFolderId').val(folderId);
-    $('#uploadFolderName').val(folderName);
-    $('#uploadFolderDisplayName').text(displayTitle);
-    $('#imageFiles').val('');
+// Show upload modal from header "Upload Folder" button — creates a brand new folder
+function showUploadFolderModal() {
+    $('#uploadFolderId').val('');
+    $('#uploadFolderName').val('');
+    $('#imageFolderInput').val('');
+    $('#imageFilesInput').val('');
     $('#uploadPreview').hide().html('');
     $('#uploadProgress').hide();
     $('#uploadButton').prop('disabled', false);
-    
+    $('#detectedFolderName').text('Select a folder...');
+    $('#detectedFolderNameAlert').hide();
+
+    // Hide folder destination display & mode toggle (not needed for new-folder flow)
+    $('#folderDisplaySection').hide();
+    $('#uploadModeSection').hide();
+
+    // Show folder picker, hide individual file picker
+    $('#folderPickerSection').show();
+    $('#individualFilesSection').hide();
+
     const modal = new bootstrap.Modal(document.getElementById('uploadImagesModal'));
     modal.show();
 }
 
-// Preview selected images
-$('#imageFiles').on('change', function() {
-    const files = this.files;
-    const previewContainer = $('#uploadPreview');
-    
-    if (files.length === 0) {
-        previewContainer.hide().html('');
-        return;
-    }
-    
-    previewContainer.html('').show();
-    
-    Array.from(files).forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const col = $(`
-                <div class="col-md-2 col-4">
-                    <div class="card">
-                        <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
-                        <div class="card-body p-1 text-center">
-                            <small class="text-muted">${file.name}</small>
-                        </div>
-                    </div>
-                </div>
-            `);
-            previewContainer.append(col);
-        };
-        reader.readAsDataURL(file);
-    });
-});
+// Show upload modal from a specific folder card's Upload button
+// Gives the user a choice: upload individual images OR upload a whole folder into it
+function showUploadModal(folderId, folderName, displayTitle) {
+    $('#uploadFolderId').val(folderId);
+    $('#uploadFolderName').val(folderName);
+    $('#imageFolderInput').val('');
+    $('#imageFilesInput').val('');
+    $('#uploadPreview').hide().html('');
+    $('#uploadProgress').hide();
+    $('#uploadButton').prop('disabled', false);
+    $('#detectedFolderName').text('Select a folder...');
+    $('#detectedFolderNameAlert').hide();
 
-// Upload images
+    // Show which folder images will go into
+    $('#uploadFolderDisplayName').text(displayTitle || folderName);
+    $('#folderDisplaySection').show();
+
+    // Show mode toggle so user can choose upload type
+    $('#uploadModeSection').show();
+
+    // Default to "Upload Images" (individual files)
+    $('#selectImagesMode').prop('checked', true);
+    toggleUploadModeUI();
+
+    const modal = new bootstrap.Modal(document.getElementById('uploadImagesModal'));
+    modal.show();
+}
+
+// Show/hide the correct file input based on selected upload mode
+function toggleUploadModeUI() {
+    const mode = $('input[name="uploadMode"]:checked').val();
+    if (mode === 'selectImages') {
+        $('#individualFilesSection').show();
+        $('#folderPickerSection').hide();
+    } else {
+        $('#individualFilesSection').hide();
+        $('#folderPickerSection').show();
+    }
+}
+
+// Upload images — two modes:
+//   selectImages  → upload individual files into an existing folder (from folder card)
+//   uploadFolder  → auto-create a new folder and upload all images (from header),
+//                   OR dump folder contents into an existing folder (from folder card)
 async function uploadImages() {
     try {
-        const folderId = $('#uploadFolderId').val();
-        const files = $('#imageFiles')[0].files;
-        
-        if (!files || files.length === 0) {
-            showToast('Please select at least one image', 'warning');
-            return;
-        }
-        
         const token = localStorage.getItem('authToken') || localStorage.getItem('admin_jwt_token');
-        
         if (!token) {
             showToast('Please login first', 'danger');
             return;
         }
-        
-        // Check if CONFIG is defined (in case of browser cache issues)
         if (typeof CONFIG === 'undefined') {
-            alert('Configuration not loaded. Please refresh the page (Ctrl+Shift+R) to clear browser cache.');
+            alert('Configuration not loaded. Please refresh the page (Ctrl+Shift+R).');
             return;
         }
-        
-        // Disable upload button
+
+        const mode = $('input[name="uploadMode"]:checked').val() || 'uploadFolder';
+        let folderId = $('#uploadFolderId').val();
+        let uploadLabel = '';
+
         $('#uploadButton').prop('disabled', true);
-        
-        // Show progress
         $('#uploadProgress').show();
-        $('#uploadProgressBar').css('width', '50%');
-        $('#uploadStatusText').text(`Uploading ${files.length} image(s)...`);
-        
-        // Create FormData
-        const formData = new FormData();
-        Array.from(files).forEach(file => {
-            formData.append('files', file);
-        });
-        
-        const response = await fetch(`${CONFIG.API_BASE_URL}/admin/gallery/folders/${folderId}/upload`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || `Server returned ${response.status}`);
+        $('#uploadProgressBar').css('width', '0%');
+
+        // ── MODE: Upload individual image files into an existing folder ──────
+        if (mode === 'selectImages') {
+            const filesInput = document.getElementById('imageFilesInput');
+            const imageFiles = Array.from(filesInput.files).filter(f => f.type.startsWith('image/'));
+
+            if (imageFiles.length === 0) {
+                showToast('Please select at least one image file', 'warning');
+                $('#uploadButton').prop('disabled', false);
+                $('#uploadProgress').hide();
+                return;
+            }
+
+            uploadLabel = $('#uploadFolderDisplayName').text();
+            $('#uploadStatusText').text('Uploading ' + imageFiles.length + ' image(s)...');
+
+            const { uploadedCount, failedCount, errors } = await uploadFilesToFolder(folderId, imageFiles, token);
+
+            $('#uploadProgressBar').css('width', '100%');
+            $('#uploadStatusText').text('Upload complete!');
+
+            setTimeout(() => {
+                try { bootstrap.Modal.getInstance(document.getElementById('uploadImagesModal')).hide(); } catch (e) { }
+                loadFolders();
+                let message = 'Uploaded ' + uploadedCount + ' of ' + imageFiles.length + ' image(s) to "' + uploadLabel + '"';
+                if (failedCount > 0) {
+                    message += ' (' + failedCount + ' failed)';
+                    showToast(message, 'warning');
+                    if (errors.length > 0) showToast('Errors:' + errors.slice(0, 3).join(''), 'danger');
+                } else {
+                    showToast(message, 'success');
+                }
+            }, 1000);
+
+            // ── MODE: Upload entire folder ────────────────────────────────────────
+        } else {
+            const folderInput = document.getElementById('imageFolderInput');
+            const imageFiles = Array.from(folderInput.files).filter(f => f.type.startsWith('image/'));
+
+            if (imageFiles.length === 0) {
+                showToast('No image files found in the selected folder', 'warning');
+                $('#uploadButton').prop('disabled', false);
+                $('#uploadProgress').hide();
+                return;
+            }
+
+            // Detect folder name from webkitRelativePath
+            let detectedName = 'upload';
+            if (imageFiles[0].webkitRelativePath) {
+                detectedName = imageFiles[0].webkitRelativePath.split('/')[0];
+            }
+            uploadLabel = detectedName;
+
+            if (folderId) {
+                // Opened from a folder card — upload into the existing folder
+                uploadLabel = $('#uploadFolderDisplayName').text();
+                $('#uploadStatusText').text('Uploading folder contents into "' + uploadLabel + '"...');
+            } else {
+                // Opened from header — auto-create a new folder first
+                $('#uploadStatusText').text('Creating folder...');
+                const createResponse = await fetch(CONFIG.API_BASE_URL + '/admin/gallery/folders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        folderName: detectedName.replace(/[^a-zA-Z0-9_-]/g, '_'),
+                        displayTitle: detectedName,
+                        description: null
+                    })
+                });
+
+                const createData = await parseResponseSafely(createResponse);
+                if (!createResponse.ok) {
+                    const msg = (createData && createData.error) ? createData.error : 'Failed to create folder (' + createResponse.status + ')';
+                    throw new Error(msg);
+                }
+                folderId = createData.id;
+                $('#uploadStatusText').text('Uploading ' + imageFiles.length + ' image(s)...');
+            }
+
+            const { uploadedCount, failedCount, errors } = await uploadFilesToFolder(folderId, imageFiles, token);
+
+            $('#uploadProgressBar').css('width', '100%');
+            $('#uploadStatusText').text('Upload complete!');
+
+            setTimeout(() => {
+                try { bootstrap.Modal.getInstance(document.getElementById('uploadImagesModal')).hide(); } catch (e) { }
+                loadFolders();
+                let message = '"' + uploadLabel + '" — uploaded ' + uploadedCount + ' of ' + imageFiles.length + ' image(s)';
+                if (failedCount > 0) {
+                    message += ' (' + failedCount + ' failed)';
+                    showToast(message, 'warning');
+                    if (errors.length > 0) showToast('Errors:' + errors.slice(0, 3).join(''), 'danger');
+                } else {
+                    showToast(message, 'success');
+                }
+            }, 1000);
         }
-        
-        const result = await response.json();
-        
-        // Update progress
-        $('#uploadProgressBar').css('width', '100%');
-        $('#uploadStatusText').text('Upload complete!');
-        
-        // Close modal after a short delay
-        setTimeout(() => {
-            bootstrap.Modal.getInstance(document.getElementById('uploadImagesModal')).hide();
-            
-            // Reload folders to update photo counts
-            loadFolders();
-            
-            let message = `Uploaded ${result.uploadedCount} image(s) successfully!`;
-            if (result.errors && result.errors.length > 0) {
-                message += ` (${result.errors.length} failed)`;
-            }
-            
-            showToast(message, result.errors && result.errors.length > 0 ? 'warning' : 'success');
-            
-            // Log errors if any
-            if (result.errors && result.errors.length > 0) {
-                console.error('Upload errors:', result.errors);
-            }
-        }, 1000);
-        
+
     } catch (error) {
         console.error('Upload error:', error);
-        showToast(`Failed to upload images: ${error.message}`, 'danger');
+        showToast('Failed to upload: ' + error.message, 'danger');
         $('#uploadButton').prop('disabled', false);
         $('#uploadProgress').hide();
     }
+}
+
+// Shared helper: sequentially upload an array of File objects into a given folder
+async function uploadFilesToFolder(folderId, imageFiles, token) {
+    const totalFiles = imageFiles.length;
+    let uploadedCount = 0;
+    let failedCount = 0;
+    const errors = [];
+
+    for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        try {
+            if (file.size > 5 * 1024 * 1024) {
+                errors.push(file.name + ': File too large (max 5MB)');
+                failedCount++;
+                continue;
+            }
+
+            $('#uploadStatusText').text('Uploading ' + (i + 1) + ' of ' + totalFiles + ': ' + file.name + '...');
+
+            const formData = new FormData();
+            formData.append('files', file);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+            const response = await fetch(CONFIG.API_BASE_URL + '/admin/gallery/folders/' + folderId + '/upload', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                let errorMsg = 'Server returned ' + response.status;
+                if (response.status === 413) {
+                    errorMsg = 'File too large (max 5MB)';
+                } else {
+                    const data = await parseResponseSafely(response);
+                    if (data && typeof data === 'object' && data.error) errorMsg = data.error;
+                    else if (typeof data === 'string' && data.trim()) errorMsg = data;
+                }
+                errors.push(file.name + ': ' + errorMsg);
+                failedCount++;
+            } else {
+                uploadedCount++;
+            }
+
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                errors.push(file.name + ': Upload timeout (network too slow)');
+            } else {
+                errors.push(file.name + ': ' + err.message);
+            }
+            failedCount++;
+        }
+
+        $('#uploadProgressBar').css('width', Math.round(((i + 1) / totalFiles) * 100) + '%');
+    }
+
+    return { uploadedCount, failedCount, errors };
 }
 
 // Show folder images modal
@@ -851,7 +1012,7 @@ async function loadFolderImages(folderId) {
                         <div class="card-body p-2">
                             <div class="small text-truncate mb-2" title="${escapeHtml(image.filename)}">${escapeHtml(image.filename)}</div>
                             <button class="btn btn-sm btn-outline-danger w-100"
-                                    onclick="deleteFolderImage(${folderId}, '${encodedFilename}')">
+                                    onclick="deleteFolderImage(${folderId}, '${escapeJsString(encodedFilename)}')">
                                 <i class="bi bi-trash me-1"></i>Delete
                             </button>
                         </div>
@@ -1016,8 +1177,8 @@ async function deleteFolderImage(folderId, encodedFilename) {
         }
 
         showToast(`Deleted ${filename}`, 'success');
-    selectedFolderImages.delete(encodedFilename);
-    updateSelectedImagesUI();
+        selectedFolderImages.delete(encodedFilename);
+        updateSelectedImagesUI();
         await loadFolderImages(folderId);
         await loadFolders();
     } catch (error) {
