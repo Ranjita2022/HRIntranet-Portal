@@ -5,14 +5,36 @@ import org.ieee.hrintranet.entity.Image;
 import org.ieee.hrintranet.repository.EmployeeRepository;
 import org.ieee.hrintranet.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Picture;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +65,92 @@ public class EmployeeController {
         return employeeRepository.findById(id)
                 .map(emp -> ResponseEntity.ok(toResponseMap(emp)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportEmployeesExcel() {
+        List<Employee> employees = employeeRepository.findAll().stream()
+                .sorted(Comparator
+                        .comparing((Employee emp) -> safeSortValue(emp.getFullName()), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(emp -> safeSortValue(emp.getEmployeeId()), String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Employees");
+            CreationHelper helper = workbook.getCreationHelper();
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            String[] headers = {
+                    "Serial No",
+                    "Employee ID",
+                    "Full Name",
+                    "Email",
+                    "Birth Date",
+                    "Position",
+                    "Department",
+                    "Start Date",
+                    "End Date",
+                    "Status",
+                    "Photo"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIndex = 1;
+            for (Employee employee : employees) {
+                Row row = sheet.createRow(rowIndex);
+                row.setHeightInPoints(80f);
+
+                createTextCell(row, 0, String.valueOf(rowIndex));
+                createTextCell(row, 1, employee.getEmployeeId());
+                createTextCell(row, 2, employee.getFullName());
+                createTextCell(row, 3, employee.getEmail());
+                createTextCell(row, 4, formatDate(employee.getBirthDate()));
+                createTextCell(row, 5, employee.getPosition());
+                createTextCell(row, 6, employee.getDepartment());
+                createTextCell(row, 7, formatDate(employee.getStartDate()));
+                createTextCell(row, 8, formatDate(employee.getEndDate()));
+                createTextCell(row, 9, employee.getStatus() != null ? employee.getStatus().name() : "");
+
+                String photoText = addEmployeePhoto(sheet, workbook, drawing, helper, employee, rowIndex, 10);
+                createTextCell(row, 10, photoText);
+
+                rowIndex++;
+            }
+
+            for (int i = 0; i < headers.length - 1; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            sheet.setColumnWidth(10, 18 * 256);
+
+            workbook.write(outputStream);
+
+            HttpHeaders headersResponse = new HttpHeaders();
+            headersResponse.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headersResponse.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employees-with-photos.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(headersResponse)
+                    .body(outputStream.toByteArray());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 
     /** Build a response map that includes computed profileImageUrl */
@@ -77,6 +185,70 @@ public class EmployeeController {
         }
         map.put("profileImageUrl", profileImageUrl);
         return map;
+    }
+
+    private String safeSortValue(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String formatDate(LocalDate date) {
+        return date != null ? date.toString() : "";
+    }
+
+    private void createTextCell(Row row, int columnIndex, String value) {
+        Cell cell = row.createCell(columnIndex);
+        cell.setCellValue(value != null ? value : "");
+    }
+
+    private String addEmployeePhoto(Sheet sheet,
+                                    Workbook workbook,
+                                    Drawing<?> drawing,
+                                    CreationHelper helper,
+                                    Employee employee,
+                                    int rowIndex,
+                                    int photoColumnIndex) throws IOException {
+        Image image = employee.getProfileImage();
+        if (image == null || image.getFilePath() == null) {
+            return "";
+        }
+
+        Path filePath = Paths.get(image.getFilePath());
+        if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
+            return "Missing photo";
+        }
+
+        int pictureType = resolvePictureType(image.getMimeType(), image.getFilename());
+        if (pictureType == -1) {
+            return "Unsupported image type";
+        }
+
+        byte[] imageBytes = Files.readAllBytes(filePath);
+        int pictureIndex = workbook.addPicture(imageBytes, pictureType);
+
+        ClientAnchor anchor = helper.createClientAnchor();
+        anchor.setCol1(photoColumnIndex);
+        anchor.setRow1(rowIndex);
+        anchor.setCol2(photoColumnIndex + 1);
+        anchor.setRow2(rowIndex + 1);
+
+        Picture picture = drawing.createPicture(anchor, pictureIndex);
+        picture.resize(0.9, 0.9);
+        return "";
+    }
+
+    private int resolvePictureType(String mimeType, String filename) {
+        String normalizedMimeType = mimeType != null ? mimeType.toLowerCase() : "";
+        String normalizedFilename = filename != null ? filename.toLowerCase() : "";
+
+        if (normalizedMimeType.contains("png") || normalizedFilename.endsWith(".png")) {
+            return Workbook.PICTURE_TYPE_PNG;
+        }
+        if (normalizedMimeType.contains("jpeg") || normalizedMimeType.contains("jpg")
+                || normalizedFilename.endsWith(".jpg") || normalizedFilename.endsWith(".jpeg")) {
+            return Workbook.PICTURE_TYPE_JPEG;
+        }
+
+        return -1;
     }
     
     @PostMapping

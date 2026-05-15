@@ -457,6 +457,55 @@ function updateEmployeeStats(active, inactive, newJoiners) {
 }
 
 /**
+ * Export employees to Excel with embedded photos.
+ */
+async function exportEmployeesToExcel() {
+    if (!Array.isArray(employeesData) || employeesData.length === 0) {
+        showError('No employee data available to export');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${AdminAPI.baseURL}/admin/employees/export/excel`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${AdminAPI.token}`
+            }
+        });
+
+        if (response.status === 401) {
+            AdminAPI.logout();
+            window.location.href = 'admin-login.html';
+            return;
+        }
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Export failed with HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `employees-with-photos-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        showSuccess(`Exported ${employeesData.length} employee record(s)`);
+    } catch (error) {
+        console.error('Error exporting employees:', error);
+        showError('Error exporting employees: ' + error.message);
+    }
+}
+
+function exportEmployeesToCSV() {
+    exportEmployeesToExcel();
+}
+
+/**
  * Show add employee modal
  */
 function showAddEmployeeModal() {
@@ -673,35 +722,10 @@ function removeEmployeePhoto() {
 }
 
 /**
- * Capitalize first letter of a word
- */
-function capitalizeFirstLetter(str) {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
-
-/**
- * Setup name auto-capitalization
+ * Name input is intentionally left exactly as entered by the user.
  */
 function setupNameCapitalization() {
-    const firstNameInput = document.getElementById('employeeFirstName');
-    const lastNameInput = document.getElementById('employeeLastName');
-    
-    if (firstNameInput) {
-        firstNameInput.addEventListener('blur', (e) => {
-            if (e.target.value.trim()) {
-                e.target.value = capitalizeFirstLetter(e.target.value.trim());
-            }
-        });
-    }
-    
-    if (lastNameInput) {
-        lastNameInput.addEventListener('blur', (e) => {
-            if (e.target.value.trim()) {
-                e.target.value = capitalizeFirstLetter(e.target.value.trim());
-            }
-        });
-    }
+    // Intentionally no-op: preserve user-entered letter case.
 }
 
 /**
@@ -781,14 +805,10 @@ async function saveEmployee(event) {
         return;
     }
     
-    // Auto-capitalize first and last names
-    const capitalizedFirstName = capitalizeFirstLetter(firstName);
-    const capitalizedLastName = lastName ? capitalizeFirstLetter(lastName) : '';
-    
     const employeeData = {
         employeeId,
-        firstName: capitalizedFirstName,
-        lastName: capitalizedLastName,
+        firstName,
+        lastName,
         email,
         position,
         department,

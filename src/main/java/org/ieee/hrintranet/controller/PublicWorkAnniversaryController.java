@@ -44,12 +44,10 @@ public class PublicWorkAnniversaryController {
         for (Employee emp : allActiveEmployees) {
             LocalDate startDate = emp.getStartDate();
             if (startDate == null || startDate.isAfter(today)) continue;
-            
-            int totalMonths = (int) ChronoUnit.MONTHS.between(startDate, today);
-            int yearsOfService = totalMonths / 12;
-            int monthsOfExperience = totalMonths % 12;
 
-            LocalDate experienceDate = resolveCompletedExperienceDate(startDate, today, yearsOfService, totalMonths);
+            LocalDate anniversaryDate = safeAnniversaryDate(startDate, today.getYear());
+            int yearsOfService = calculateAnniversaryYears(startDate, today);
+            int monthsOfExperience = calculateDisplayMonths(startDate, today, yearsOfService);
 
             WorkAnniversaryDisplay displayEntity = new WorkAnniversaryDisplay(
                 emp.getId(),
@@ -57,7 +55,7 @@ public class PublicWorkAnniversaryController {
                 emp.getDepartment(),
                 emp.getPosition(),
                 startDate,
-                experienceDate,
+                anniversaryDate,
                 yearsOfService
             );
             displayEntity.setProfileImageUrl(buildProfileImageUrl(emp));
@@ -85,6 +83,17 @@ public class PublicWorkAnniversaryController {
         return LocalDate.of(year, month, safeDay);
     }
 
+    private int calculateAnniversaryYears(LocalDate startDate, LocalDate today) {
+        return Math.max(0, today.getYear() - startDate.getYear());
+    }
+
+    private int calculateDisplayMonths(LocalDate startDate, LocalDate today, int yearsOfService) {
+        if (yearsOfService >= 1) {
+            return 0;
+        }
+        return Math.max(0, (int) ChronoUnit.MONTHS.between(startDate, today));
+    }
+
     private LocalDate resolveCompletedExperienceDate(LocalDate startDate, LocalDate today, int yearsOfService, int totalMonths) {
         if (yearsOfService < 1) {
             return startDate.plusMonths(totalMonths);
@@ -99,8 +108,9 @@ public class PublicWorkAnniversaryController {
     }
 
     /**
-     * Get all work anniversaries for all employees, regardless of status.
-     * Used by admin views that need to show active, inactive, and terminated employees.
+     * Get all work anniversaries for ACTIVE employees only.
+     * Returns anniversary date in the current year for proper "This Month" filtering.
+     * Used by admin views that need to show active employees with current-year anniversary dates.
      */
     @GetMapping("/all-employees")
     public ResponseEntity<List<WorkAnniversaryDisplay>> getAllEmployeeAnniversaries() {
@@ -108,16 +118,22 @@ public class PublicWorkAnniversaryController {
         List<WorkAnniversaryDisplay> calculatedAnniversaries = new java.util.ArrayList<>();
 
         List<Employee> allEmployees = employeeRepository.findAll();
+        
+        // Filter for ACTIVE employees only
+        List<Employee> activeEmployees = allEmployees.stream()
+            .filter(emp -> emp.getStatus() != null && emp.getStatus() == Employee.EmployeeStatus.ACTIVE)
+            .collect(Collectors.toList());
 
-        for (Employee emp : allEmployees) {
+        for (Employee emp : activeEmployees) {
             LocalDate startDate = emp.getStartDate();
             if (startDate == null || startDate.isAfter(today)) continue;
 
-            int totalMonths = (int) ChronoUnit.MONTHS.between(startDate, today);
-            int yearsOfService = totalMonths / 12;
-            int monthsOfExperience = totalMonths % 12;
+            int yearsOfService = calculateAnniversaryYears(startDate, today);
+            int monthsOfExperience = calculateDisplayMonths(startDate, today, yearsOfService);
 
-            LocalDate experienceDate = resolveCompletedExperienceDate(startDate, today, yearsOfService, totalMonths);
+            // Use current year anniversary date for proper month filtering
+            // This matches the home page behavior and enables "This Month" filtering to work correctly
+            LocalDate anniversaryDate = safeAnniversaryDate(startDate, today.getYear());
 
             WorkAnniversaryDisplay displayEntity = new WorkAnniversaryDisplay(
                 emp.getId(),
@@ -125,7 +141,7 @@ public class PublicWorkAnniversaryController {
                 emp.getDepartment(),
                 emp.getPosition(),
                 startDate,
-                experienceDate,
+                anniversaryDate,
                 yearsOfService
             );
             displayEntity.setProfileImageUrl(buildProfileImageUrl(emp));
@@ -137,9 +153,7 @@ public class PublicWorkAnniversaryController {
         }
 
         calculatedAnniversaries.sort((a1, a2) -> {
-            int yearComp = a2.getYearsOfExperience().compareTo(a1.getYearsOfExperience());
-            if (yearComp != 0) return yearComp;
-            return a1.getEmployeeName().compareTo(a2.getEmployeeName());
+            return a1.getEmployeeName().compareToIgnoreCase(a2.getEmployeeName());
         });
 
         return ResponseEntity.ok(calculatedAnniversaries);
@@ -151,12 +165,7 @@ public class PublicWorkAnniversaryController {
     @GetMapping("/all")
     public ResponseEntity<List<WorkAnniversaryDisplay>> getAllAnniversaries() {
         List<WorkAnniversaryDisplay> anniversaries = calculateAnniversariesForDisplay();
-        
-        anniversaries.sort((a1, a2) -> {
-            int yearComp = a2.getYearsOfExperience().compareTo(a1.getYearsOfExperience());
-            if (yearComp != 0) return yearComp;
-            return a1.getEmployeeName().compareTo(a2.getEmployeeName());
-        });
+        anniversaries.sort((a1, a2) -> a1.getEmployeeName().compareToIgnoreCase(a2.getEmployeeName()));
         
         return ResponseEntity.ok(anniversaries);
     }
@@ -174,7 +183,7 @@ public class PublicWorkAnniversaryController {
         
         List<WorkAnniversaryDisplay> currentMonth = anniversaries.stream()
                 .filter(wa -> !wa.getAnniversaryDate().isBefore(startOfMonth) && !wa.getAnniversaryDate().isAfter(endOfMonth))
-                .sorted((a1, a2) -> a1.getAnniversaryDate().compareTo(a2.getAnniversaryDate()))
+            .sorted((a1, a2) -> a1.getEmployeeName().compareToIgnoreCase(a2.getEmployeeName()))
                 .collect(Collectors.toList());
         
         return ResponseEntity.ok(currentMonth);

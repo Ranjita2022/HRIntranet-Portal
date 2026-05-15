@@ -846,7 +846,7 @@
                 return true;
             });
 
-            return filtered.sort((a, b) => new Date(a.anniversaryDate) - new Date(b.anniversaryDate));
+            return filtered.sort((a, b) => (a.employeeName || '').localeCompare((b.employeeName || ''), undefined, { sensitivity: 'base' }));
         }
 
         function updateAllViewPaginationControls(totalPages) {
